@@ -121,18 +121,20 @@ gulp.task('build-resource-bundles', (cb) => {
     })
 })
 
+const compress = process.env.disableCompression === 'true' ? [] : ['client:gzip', 'client:brotli']
+
 gulp.task('deploy',
     gulpSequence('clean:app:dist',
         'clean:editors',
         ['download:content:editor',
-            'download:collection:editor',
-            'download:generic:editor'],
+        'download:collection:editor',
+        'download:generic:editor'],
         'gzip:editors',
         'build-resource-bundles',
         'clean:client:install',
         'client:install',
         'client:dist',
-        ['client:gzip', 'client:brotli'],
+        compress,
         'update:index:file',
         'clean:index:file',
         'prepare:app:dist')
