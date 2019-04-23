@@ -1,0 +1,94 @@
+<div 
+  class="ui card" 
+  *ngIf="data" 
+  (click)="onAction(data,data.action.onImage)" 
+  appTelemetryInteract 
+  [telemetryInteractObject]="{id:data.metaData.identifier,type:data.telemetryObjectType,ver:data.metaData.pkgVersion ? data.metaData.pkgVersion.toString():'1.0'}" 
+  [telemetryInteractEdata]="data.telemetryInteractEdata" [telemetryInteractCdata]="telemetryCdata"
+  tabindex="0"
+  >
+    <!--Body-->
+    <div class="content">
+
+      <!--Metas-->
+      <div class="sb-card-metas">
+        <!--Image-->
+        <!-- <div class="ui image mr-15" *ngIf="data.showImage? false : true">
+          <img src="{{data.image || 'assets/images/book.png' | cdnprefixurl}}" alt="{{data.name}}">
+        </div> -->
+        <!--/Image-->
+ <!--Card Title-->
+ <!-- <div class="bgColor"> -->
+ <div class="ui grid bgColor">
+    <div class="four wide column">
+        <div class="thick-green-border sprite hardwareimg" >
+          <!-- <img src="images"> -->
+        </div>
+       </div>
+   <div class="twelve wide coloumn">
+    <h5 class="card-title mt-12 color " id="res-title">{{data?.name | titlecase | slice:0:16}}<span *ngIf="data.name && data.name.length > 16">...</span></h5>
+    <p class="card-text1 text-light color" id="res-para">version : {{data?.version}}.0</p>
+   </div>
+   
+ </div>
+ <!-- </div> -->
+        <!-- <hr> -->
+<!--/Card Title-->
+        <!--Meta Details - Course-->
+        <div class=" course" *ngIf="data.contentType && data.contentType.toLowerCase() === 'course'">
+          <div class=" mb-15" *ngIf="data.topic" title="{{data.topic}}">
+            {{data.topic | slice:0:40}} 
+            <span *ngIf="data.topic && data.topic.length > 40">...</span>
+          </div>
+          <div class="" *ngIf="data.subTopic" title="{{data.subTopic}}">
+            {{data.subTopic | slice:0:40}} 
+            <span *ngIf="data.subTopic && data.subTopic.length > 40">...</span>
+          </div>
+        </div>
+        <p class="card-text1 text-light mt-24" id="res-para">created By : {{data?.creator}}</p>
+        <p class="card-text1 text-light" id="res-para">created Date : {{data?.createdDate |  date }}</p>
+        <!-- <p class="card-text1 text-light" id="res-para">sumbitBy : {{data?.sumbitBy}}</p> -->
+        <p class="card-text1 text-light" id="res-para">Link : <a href="sunbird.org" target="blank">Sunbird.org</a></p>
+        <p class="card-text1 text-light mb-15" id="res-para">Region : India</p>
+        <!-- <div class="mb-15 ellipsis">
+        Owner : {{data.orgDetails?.orgName}}
+        </div> -->
+        <hr>
+        <div class="card-text text-secondary mt-10">{{data?.description | titlecase | slice:0:70}} <span *ngIf="data.description && data.description.length > 70">...</span></div>
+        <!--/Meta Details - Course-->
+
+        <!--Meta Details - Non-Course-->
+        <!-- <div class=" non-course" *ngIf="!data.contentType || data.contentType.toLowerCase() !== 'course'">
+          <div class="d-flex mb-auto">
+            <div class="label" *ngIf="data.ribbon && data.ribbon.right && data.ribbon.right.name">{{data.ribbon.right.name}}</div>
+            <img src="{{data.ribbon.left.image}}" class=" ml-auto" *ngIf="data.ribbon && data.ribbon.left && data.ribbon.left.image" alt="{{data.ribbon.left.name}}">
+          </div>
+          <div class=" ellipsis" *ngIf="data.subject" title="{{data.subject}}">
+            {{resourceService.frmelmnts.lbl.subject}} : {{data.subject}}
+          </div>
+          <div class=" ellipsis mt-4" *ngIf="data.gradeLevel" title="{{data.gradeLevel}}">
+            {{resourceService.frmelmnts.lbl.class}} : {{data.gradeLevel}}
+          </div>
+          <div class=" ellipsis mt-4" *ngIf="data.medium" title="{{data.medium}}">
+            {{resourceService.frmelmnts.lbl.medium}} : {{data.medium}}
+          </div>
+        </div> -->
+        <!--/Meta Details - Non-Course-->
+        </div>
+      <!--Metas-->
+
+     
+
+      <!--Org-->
+     
+      <!--Org-->
+
+    </div>
+    <!--/Body-->
+   
+    <!--Progress Bar-->
+    <div class="">
+      <sui-progress class="ui progress" [value]="data.progress" [maximum]="data.maxCount" *ngIf="data.maxCount && data.progress > 0"></sui-progress>
+    </div>
+    <!--/Progress Bar-->
+</div>

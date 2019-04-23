@@ -1,0 +1,43 @@
+.color{
+    /* font-size: 1.3rem !important;
+    font-family: -webkit-body !important; */
+    color: white !important;
+  }
+  a{
+      list-style: none;
+  }
+  .bgColor {
+    background-color: #024f9d;
+  }
+  .content {
+    height: 19.8rem;
+  }
+  .card-text {
+        font-size: 1.1rem !important;
+        font-family: inherit;
+  }
+  .thick-green-border {
+    border-color: gray;
+    border-width: 1px;
+    border-style: solid;
+    border-radius: 50%;
+    height: 63px;
+    margin-left: 1rem; 
+    background: white;
+    width: fit-content; 
+    /* margin-top: 1rem */
+  }
+  
+  .sprite {
+    width: 63px;
+    height:63px;
+    position: relative;
+    right: 0;
+    bottom: 0;
+    background-image: url('../../../../../assets/images/Sprite-image.png');
+    background-origin: 0;
+  }
+ .hardwareimg {
+    background-position: -9px -607px;
+  }
+  
