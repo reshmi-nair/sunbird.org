@@ -21,7 +21,7 @@ export class UtilService {
     return <ICard[]>list;
   }
   processContent(data, staticData, dynamicFields, metaData) {
-    console.log('data util',data);
+    console.log('data util', data);
     let fieldValue: any;
     const content: any = {
       name: data.name || data.courseName,
@@ -37,9 +37,11 @@ export class UtilService {
       subTopic: this.getTopicSubTopic('subTopic', data.topic),
       metaData: {},
       creator: data.creator,
-      createdDate: data.createdOn,
-      sumbitBy: data.lastUpdatedBy,
-      sumbitedDate: data.lastUpdatedOn,
+      lastUpdatedOn: data.lastUpdatedOn,
+      link: data.link,
+      assetType: data.assetType,
+      region: data.region
+
     };
 
 
