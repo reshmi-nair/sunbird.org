@@ -102,7 +102,6 @@ gulp.task('prepare:app:dist', () => {
         'framework.config.js',
         'package-lock.json',
         'sunbird-plugins/**/*',
-        'tenant/**/*',
         'routes/**/*',
         'server.js'], { 'base': '.' })
         .pipe(gulp.dest('./app_dist'))
@@ -120,7 +119,7 @@ gulp.task('build-resource-bundles', (cb) => {
         cb(err)
     })
 })
-
+const compress = process.env.disableCompression === 'true' ? [] : ['client:gzip', 'client:brotli']
 gulp.task('deploy',
     gulpSequence('clean:app:dist',
         'clean:editors',
@@ -132,7 +131,7 @@ gulp.task('deploy',
         'clean:client:install',
         'client:install',
         'client:dist',
-        ['client:gzip', 'client:brotli'],
+        compress,  
         'update:index:file',
         'clean:index:file',
         'prepare:app:dist')

@@ -52,15 +52,15 @@ export class ExploreContentComponent implements OnInit, OnDestroy, AfterViewInit
     ngOnInit() {
         this.orgDetailsService.getOrgDetails(this.activatedRoute.snapshot.params.slug).pipe(
             mergeMap((orgDetails: any) => {
-            this.hashTagId = orgDetails.hashTagId;
-            this.initFilters = true;
-            return this.dataDrivenFilterEvent;
+                this.hashTagId = orgDetails.hashTagId;
+                this.initFilters = true;
+                return this.dataDrivenFilterEvent;
             }), first()
         ).subscribe((filters: any) => {
             this.dataDrivenFilters = filters;
             this.fetchContentOnParamChange();
             this.setNoResultMessage();
-            },
+        },
             error => {
                 this.router.navigate(['']);
             }
@@ -70,7 +70,7 @@ export class ExploreContentComponent implements OnInit, OnDestroy, AfterViewInit
         this.facets = filters.map(element => element.code);
         const defaultFilters = _.reduce(filters, (collector: any, element) => {
             if (element.code === 'board') {
-            collector.board = _.get(_.orderBy(element.range, ['index'], ['asc']), '[0].name') || '';
+                collector.board = _.get(_.orderBy(element.range, ['index'], ['asc']), '[0].name') || '';
             }
             return collector;
         }, {});
@@ -78,70 +78,69 @@ export class ExploreContentComponent implements OnInit, OnDestroy, AfterViewInit
     }
     private fetchContentOnParamChange() {
         combineLatest(this.activatedRoute.params, this.activatedRoute.queryParams)
-        .pipe( debounceTime(5),
-            tap(data => this.inView({inview: []})),
-            delay(10),
-            tap(data => this.setTelemetryData()),
-            map(result => ({params: { pageNumber: Number(result[0].pageNumber)}, queryParams: result[1]})),
-            takeUntil(this.unsubscribe$)
-        ).subscribe(({params, queryParams}) => {
-            this.showLoader = true;
-            this.paginationDetails.currentPage = params.pageNumber;
-            this.queryParams = { ...queryParams };
-            this.contentList = [];
-            this.fetchContents();
-        });
+            .pipe(debounceTime(5),
+                tap(data => this.inView({ inview: [] })),
+                delay(10),
+                tap(data => this.setTelemetryData()),
+                map(result => ({ params: { pageNumber: Number(result[0].pageNumber) }, queryParams: result[1] })),
+                takeUntil(this.unsubscribe$)
+            ).subscribe(({ params, queryParams }) => {
+                this.showLoader = true;
+                this.paginationDetails.currentPage = params.pageNumber;
+                this.queryParams = { ...queryParams };
+                this.contentList = [];
+                this.fetchContents();
+            });
     }
     private fetchContents() {
         let filters = _.pickBy(this.queryParams, (value: Array<string> | string) => value && value.length);
         filters = _.omit(filters, ['key', 'sort_by', 'sortType', 'appliedFilters']);
-          const softConstraintData: any = {
+        const softConstraintData: any = {
             filters: {
                 channel: this.hashTagId,
             },
             softConstraints: _.get(this.activatedRoute.snapshot, 'data.softConstraints'),
             mode: 'soft'
-          };
-          if (this.dataDrivenFilters.board) {
+        };
+        if (this.dataDrivenFilters.board) {
             softConstraintData.board = [this.dataDrivenFilters.board];
-          }
-          const manipulatedData = this.utilService.manipulateSoftConstraint( _.get(this.queryParams,
-             'appliedFilters'), softConstraintData );
+        }
+        const manipulatedData = this.utilService.manipulateSoftConstraint(_.get(this.queryParams,
+            'appliedFilters'), softConstraintData);
         const option = {
-            filters: _.get(this.queryParams, 'appliedFilters') ? filters :  manipulatedData.filters,
+            filters: _.get(this.queryParams, 'appliedFilters') ? filters : {},
             limit: this.configService.appConfig.SEARCH.PAGE_LIMIT,
             pageNumber: this.paginationDetails.currentPage,
             query: this.queryParams.key,
             mode: _.get(manipulatedData, 'mode'),
-            facets: this.facets,
+            // facets: this.facets,
             params: this.configService.appConfig.ExplorePage.contentApiQueryParams
         };
-        option.filters.contentType = filters.contentType ||
-        ['Collection', 'TextBook', 'LessonPlan', 'Resource'];
-        if (manipulatedData.filters) {
-            option['softConstraints'] = _.get(manipulatedData, 'softConstraints');
-          }
+        option.filters.objectType = 'Asset';
+        // if (manipulatedData.filters) {
+        //     option['softConstraints'] = _.get(manipulatedData, 'softConstraints');
+        // }
         this.frameworkService.channelData$.subscribe((channelData) => {
-          if (!channelData.err) {
-            option.params.framework = _.get(channelData, 'channelData.defaultFramework');
-          }
+            if (!channelData.err) {
+                option.params.framework = _.get(channelData, 'channelData.defaultFramework');
+            }
         });
-        this.searchService.contentSearch(option)
-        .subscribe(data => {
-            this.showLoader = false;
-            this.facetsList = this.searchService.processFilterData(_.get(data, 'result.facets'));
-            this.paginationDetails = this.paginationService.getPager(data.result.count, this.paginationDetails.currentPage,
-                this.configService.appConfig.SEARCH.PAGE_LIMIT);
-            const { constantData, metaData, dynamicFields } = this.configService.appConfig.LibrarySearch;
-            this.contentList = this.utilService.getDataForCard(data.result.content, constantData, dynamicFields, metaData);
-        }, err => {
-            this.showLoader = false;
-            this.contentList = [];
-            this.facetsList = [];
-            this.paginationDetails = this.paginationService.getPager(0, this.paginationDetails.currentPage,
-                this.configService.appConfig.SEARCH.PAGE_LIMIT);
-            this.toasterService.error(this.resourceService.messages.fmsg.m0051);
-        });
+        this.searchService.contentSearch(option, false)
+            .subscribe(data => {
+                this.showLoader = false;
+                this.facetsList = this.searchService.processFilterData(_.get(data, 'result.facets'));
+                this.paginationDetails = this.paginationService.getPager(data.result.count, this.paginationDetails.currentPage,
+                    this.configService.appConfig.SEARCH.PAGE_LIMIT);
+                const { constantData, metaData, dynamicFields } = this.configService.appConfig.LibrarySearch;
+                this.contentList = this.utilService.getDataForCard(data.result.content, constantData, dynamicFields, metaData);
+            }, err => {
+                this.showLoader = false;
+                this.contentList = [];
+                this.facetsList = [];
+                this.paginationDetails = this.paginationService.getPager(0, this.paginationDetails.currentPage,
+                    this.configService.appConfig.SEARCH.PAGE_LIMIT);
+                this.toasterService.error(this.resourceService.messages.fmsg.m0051);
+            });
     }
     public navigateToPage(page: number): void {
         if (page < 1 || page > this.paginationDetails.totalPages) {
@@ -180,7 +179,7 @@ export class ExploreContentComponent implements OnInit, OnDestroy, AfterViewInit
     }
     public inView(event) {
         _.forEach(event.inview, (elem, key) => {
-            const obj = _.find(this.inViewLogs, { objid: elem.data.metaData.identifier});
+            const obj = _.find(this.inViewLogs, { objid: elem.data.metaData.identifier });
             if (!obj) {
                 this.inViewLogs.push({
                     objid: elem.data.metaData.identifier,
@@ -196,9 +195,9 @@ export class ExploreContentComponent implements OnInit, OnDestroy, AfterViewInit
             this.telemetryImpression = Object.assign({}, this.telemetryImpression);
         }
     }
-    ngAfterViewInit () {
+    ngAfterViewInit() {
         setTimeout(() => {
-          this.setTelemetryData();
+            this.setTelemetryData();
         });
     }
     ngOnDestroy() {
@@ -207,8 +206,8 @@ export class ExploreContentComponent implements OnInit, OnDestroy, AfterViewInit
     }
     private setNoResultMessage() {
         this.noResultMessage = {
-          'message': 'messages.stmsg.m0007',
-          'messageText': 'messages.stmsg.m0006'
+            'message': 'messages.stmsg.m0007',
+            'messageText': 'messages.stmsg.m0006'
         };
     }
 }
