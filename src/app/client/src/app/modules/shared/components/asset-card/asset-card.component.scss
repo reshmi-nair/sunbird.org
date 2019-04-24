@@ -6,10 +6,10 @@
     border-radius: 50%;
     height: 57px;
     background: white;
-    width: fit-content; 
+    width: fit-content;
     margin-right: 1rem;
     margin-bottom: 1rem
-    
+
   }
 
   .header {
@@ -37,4 +37,10 @@
 }
 #contentBackground {
     background: #024f9d;
+}
+.extras {
+    display: none;
+}
+#des:hover .extras {
+    display: inline-block;
 }
