@@ -171,7 +171,9 @@ export class SearchService {
         }
       }
     };
-    const objectType = requestParam && requestParam.filters && requestParam.filters.objectType;
+    if (requestParam['pageNumber'] && requestParam['limit']) {
+      option.data.request['offset'] = (requestParam.pageNumber - 1) * requestParam.limit;
+    }
     return this.content.post(option);
   }
   /**
