@@ -3,7 +3,7 @@ import { ResourceService } from '@sunbird/shared';
 import { environment } from '@sunbird/environment';
 import { IInteractEventEdata } from '@sunbird/telemetry';
 @Component({
-  selector: 'app-main-footer',
+  selector: 'app-footer',
   templateUrl: './main-footer.component.html'
 })
 export class MainFooterComponent implements OnInit {
