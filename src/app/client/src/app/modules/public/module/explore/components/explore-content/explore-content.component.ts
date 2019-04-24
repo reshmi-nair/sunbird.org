@@ -171,12 +171,15 @@ export class ExploreContentComponent implements OnInit, OnDestroy, AfterViewInit
         };
     }
     public playContent(event) {
+
         if (!this.userService.loggedIn && event.data.contentType === 'Course') {
-            this.showLoginModal = true;
-            this.baseUrl = '/' + 'learn' + '/' + 'course' + '/' + event.data.metaData.identifier;
-        } else {
-            this.publicPlayerService.playContent(event);
-        }
+          this.showLoginModal = true;
+          this.baseUrl = '/' + 'learn' + '/' + 'course' + '/' + event.data.metaData.identifier;
+      } if (event.data.link) {
+        return;
+    }  else if (!event.data.link) {
+          this.publicPlayerService.playContent(event);
+      }
     }
     public inView(event) {
         _.forEach(event.inview, (elem, key) => {
