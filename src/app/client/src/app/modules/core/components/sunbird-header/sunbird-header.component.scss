@@ -15,3 +15,13 @@
 .ui.menu .item:active {
   text-decoration: underline !important;
 }
+.ui.sidebar.visible.uncover {
+  max-height: 12rem !important;
+  top: 6rem !important;
+}
+.ui.right.sidebar {
+  width: -webkit-fill-available !important;
+}
+.align {
+  text-align: right;
+}
