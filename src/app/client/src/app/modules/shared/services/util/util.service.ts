@@ -20,8 +20,8 @@ export class UtilService {
     });
     return <ICard[]>list;
   }
-
   processContent(data, staticData, dynamicFields, metaData) {
+    console.log('data util', data);
     let fieldValue: any;
     const content: any = {
       name: data.name || data.courseName,
@@ -43,6 +43,7 @@ export class UtilService {
       region: data.region
 
     };
+
 
     // this customization is done for enrolled courses
     if (_.has(data, 'content')) {
