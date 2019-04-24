@@ -24,6 +24,8 @@ export class AssetCardComponent  {
   }
 
   public onAction(data, action) {
+    if (!data.link) {
     this.clickEvent.emit({ 'action': action, 'data': data });
+    } else { return; }
   }
-}
+  }
