@@ -98,6 +98,7 @@ gulp.task('prepare:app:dist', () => {
         'resourcebundles/**/*',
         'cassandra_migration/**/*',
         'themes/**/*',
+        'tenant/**/*',
         'package.json',
         'framework.config.js',
         'package-lock.json',
