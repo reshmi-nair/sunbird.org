@@ -1,4 +1,4 @@
-<div class="ui card" *ngIf="data" (click)="onAction(data,data.action.onImage)"
+<div class="ui card" *ngIf="data"
 appTelemetryInteract
 [telemetryInteractObject]="{id:data.metaData.identifier,type:data.telemetryObjectType,ver:data.metaData.pkgVersion ? data.metaData.pkgVersion.toString():'1.0'}"
 [telemetryInteractEdata]="data.telemetryInteractEdata" [telemetryInteractCdata]="telemetryCdata"
@@ -9,16 +9,16 @@ tabindex="0">
   </div>
 
    <div class="header pt-5">{{data?.name | titlecase | slice:0:15}}<span *ngIf="data.name && data.name.length > 15">...</span>
-     <p class="text-light pt-10">Version : {{data?.version || '1.0'}}</p>
      <p class="text-light pt-10" *ngIf="data?.assetType">{{data?.assetType | titlecase}}</p>
    </div>
  </div>
  <div class="content">
    <div class="details">
+     <span class="card-text" *ngIf="data?.focusArea">Focus Areas : {{data?.focusArea | titlecase}}</span>
      <span class="card-text" *ngIf="data?.creator">Created By : {{data?.creator | titlecase}}</span>
-     <span class="card-text" *ngIf="data?.link">Link: <a href="{{data?.link}}" target="blank">{{data?.link}}</a></span>
      <span class="card-text" *ngIf="data?.region">Region : {{data?.region | titlecase}}</span>
-     <span class="card-text" *ngIf="data?.orgDetails?.orgName">Owner : {{data?.orgDetails?.orgName}}</span>
+     <span class="card-text" *ngIf="data?.organization">Owner : {{data?.organization}}</span>
+     <span class="card-text" *ngIf="data?.link">Link: <a href="{{data?.link}}" target="blank">{{data?.link}}</a></span>
    </div>
  </div>
  <div class="extra content" id="des">

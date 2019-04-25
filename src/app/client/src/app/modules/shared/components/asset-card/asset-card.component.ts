@@ -8,7 +8,7 @@ import { ResourceService } from '../../services/index';
   templateUrl: './asset-card.component.html',
   styleUrls: ['./asset-card.component.scss']
 })
-export class AssetCardComponent  {
+export class AssetCardComponent {
 
   @Input() data: ICard;
   @Input() dialCode: string;
@@ -24,8 +24,6 @@ export class AssetCardComponent  {
   }
 
   public onAction(data, action) {
-    if (!data.link) {
     this.clickEvent.emit({ 'action': action, 'data': data });
-    } else { return; }
   }
-  }
+}
