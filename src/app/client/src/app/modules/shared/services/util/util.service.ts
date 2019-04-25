@@ -40,7 +40,8 @@ export class UtilService {
       lastUpdatedOn: data.lastUpdatedOn,
       link: data.link,
       assetType: data.assetType,
-      region: data.region
+      region: data.region,
+      organization: data.organization
 
     };
 
