@@ -22,8 +22,4 @@ export class AssetCardComponent {
       this.telemetryCdata = [{ 'type': 'dialCode', 'id': this.dialCode }];
     }
   }
-
-  public onAction(data, action) {
-    this.clickEvent.emit({ 'action': action, 'data': data });
-  }
 }
