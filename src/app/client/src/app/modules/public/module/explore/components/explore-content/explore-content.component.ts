@@ -127,28 +127,12 @@ export class ExploreContentComponent implements OnInit, OnDestroy, AfterViewInit
         });
         this.searchService.compositeSearch(option)
             .subscribe(data => {
-                const mockData = [];
-                for ( let i = 0; i < 10 ; i++) {
-                    mockData.push({
-                        name: 'Principles For Registry Usage',
-                        assetType : 'Software',
-                        focusArea: 'Learning',
-                        language: 'English',
-                        region: 'India',
-                        description: 'Design Considerations When Evaluating Registry For A Use Case',
-                        link: 'https://societal-sunbird.stackroute.com',
-                        organization: 'Societal',
-                        creator: 'creator org'
-
-
-                    });
-                }
                 this.showLoader = false;
                 this.facetsList = this.searchService.processFilterData(_.get(data, 'result.facets'));
                 this.paginationDetails = this.paginationService.getPager(data.result.count, this.paginationDetails.currentPage,
                     this.configService.appConfig.SEARCH.PAGE_LIMIT);
                 const { constantData, metaData, dynamicFields } = this.configService.appConfig.LibrarySearch;
-                this.contentList = this.utilService.getDataForCard(mockData, constantData, dynamicFields, metaData);
+                this.contentList = this.utilService.getDataForCard(data.result.content, constantData, dynamicFields, metaData);
             }, err => {
                 this.showLoader = false;
                 this.contentList = [];
