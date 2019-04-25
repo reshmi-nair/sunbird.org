@@ -3,8 +3,9 @@
 }
 .color {
   color: #f0f0f0 !important;
-  font-family: "Roboto", Corbel, Avenir, "Lucida Grande", "Lucida Sans", sans-serif !important;
+  font-family: "Open Sans", Helvetica, Arial, sans-serif !important;
   font-size: 14px !important;
+  -webkit-font-smoothing: antialiased;
 }
 .color:hover {
   text-decoration: underline !important;
@@ -14,4 +15,17 @@
 }
 .ui.menu .item:active {
   text-decoration: underline !important;
+}
+.ui.sidebar.visible.uncover {
+  max-height: 12rem !important;
+  top: 6rem !important;
+}
+.ui.right.sidebar {
+  width: -webkit-fill-available !important;
+}
+.align {
+  text-align: right;
+}
+.searchColor {
+  background-color: #2a6fa8;
 }
