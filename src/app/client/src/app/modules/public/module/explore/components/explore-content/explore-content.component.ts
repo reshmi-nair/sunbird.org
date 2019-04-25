@@ -132,7 +132,7 @@ export class ExploreContentComponent implements OnInit, OnDestroy, AfterViewInit
                 this.paginationDetails = this.paginationService.getPager(data.result.count, this.paginationDetails.currentPage,
                     this.configService.appConfig.SEARCH.PAGE_LIMIT);
                 const { constantData, metaData, dynamicFields } = this.configService.appConfig.LibrarySearch;
-                this.contentList = this.utilService.getDataForCard(data.result.content, constantData, dynamicFields, metaData);
+                this.contentList = this.utilService.getDataForCard(data.result.Asset, constantData, dynamicFields, metaData);
             }, err => {
                 this.showLoader = false;
                 this.contentList = [];
