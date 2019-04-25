@@ -1,4 +1,4 @@
-<div class="ui card" *ngIf="data" (click)="onAction(data,data.action.onImage)"
+<div class="ui card" *ngIf="data"
 appTelemetryInteract
 [telemetryInteractObject]="{id:data.metaData.identifier,type:data.telemetryObjectType,ver:data.metaData.pkgVersion ? data.metaData.pkgVersion.toString():'1.0'}"
 [telemetryInteractEdata]="data.telemetryInteractEdata" [telemetryInteractCdata]="telemetryCdata"
