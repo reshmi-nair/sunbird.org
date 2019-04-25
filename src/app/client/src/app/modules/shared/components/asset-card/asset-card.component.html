@@ -5,7 +5,11 @@ appTelemetryInteract
 tabindex="0">
  <div class="content" id="contentBackground"  >
   <div class="thick-gray-border left floated">
-   <i class="database icon fs-2-57 text-gray"></i>
+   <i *ngIf="data?.assetType==='Data'" class="database icon fs-2-57 text-gray"></i>
+   <i *ngIf="data?.assetType==='Knowledge'" class="book icon fs-2-57 text-gray"></i>
+   <i *ngIf="data?.assetType==='Process'" class="cogs icon fs-2-57 text-gray"></i>
+   <i *ngIf="data?.assetType==='Software'" class="bullseye icon fs-2-57 text-gray"></i>
+   <i *ngIf="data?.assetType==='Hardware'" class="server icon fs-2-57 text-gray"></i>
   </div>
 
    <div class="header pt-5">{{data?.name | titlecase | slice:0:15}}<span *ngIf="data.name && data.name.length > 15">...</span>
