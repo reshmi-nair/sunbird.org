@@ -125,7 +125,7 @@ export class ExploreContentComponent implements OnInit, OnDestroy, AfterViewInit
                 option.params.framework = _.get(channelData, 'channelData.defaultFramework');
             }
         });
-        this.searchService.contentSearch(option, false)
+        this.searchService.compositeSearch(option)
             .subscribe(data => {
                 this.showLoader = false;
                 this.facetsList = this.searchService.processFilterData(_.get(data, 'result.facets'));
@@ -148,6 +148,11 @@ export class ExploreContentComponent implements OnInit, OnDestroy, AfterViewInit
         }
         const url = this.router.url.split('?')[0].replace(/[^\/]+$/, page.toString());
         this.router.navigate([url], { queryParams: this.queryParams });
+        window.scroll({
+            top: 100,
+            left: 100,
+            behavior: 'smooth'
+        });
     }
     private setTelemetryData() {
         this.inViewLogs = []; // set to empty every time filter or page changes
