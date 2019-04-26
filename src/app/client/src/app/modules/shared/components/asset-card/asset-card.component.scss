@@ -30,6 +30,14 @@
   color: #686F7A;
   padding-bottom: 6px;
 }
+#des {
+  display: block;
+  font-size: 15px;
+  color: #686F7A;
+  padding-bottom: 6px;
+  line-height: 1.8rem;
+    text-align: justify;
+}
 
 .ui.card {
   box-shadow: 0 9px 5px rgba(0,0,0,.25), 0 3px 10px rgba(0,0,0,.22);
@@ -41,10 +49,8 @@
 .extras {
   display: none;
 }
-#des:hover .extras {
+#des:hover .extras{
   display: inline-block;
 }
 
-#des:hover #desmore{
-  display: none;
-}
+
