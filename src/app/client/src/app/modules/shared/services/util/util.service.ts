@@ -38,7 +38,7 @@ export class UtilService {
       metaData: {},
       creator: data.creator,
       lastUpdatedOn: data.lastUpdatedOn,
-      link: data.link,
+      source: data.source,
       assetType: data.assetType,
       region: data.region,
       organization: data.organization

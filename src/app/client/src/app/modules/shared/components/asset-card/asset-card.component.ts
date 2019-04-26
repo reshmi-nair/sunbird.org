@@ -2,6 +2,7 @@ import { Component, OnInit, Input, EventEmitter, Output } from '@angular/core';
 import { ICard } from '../../interfaces';
 import { IImpressionEventInput, IInteractEventObject } from '@sunbird/telemetry';
 import { ResourceService } from '../../services/index';
+import * as _ from 'lodash-es';
 
 @Component({
   selector: 'app-asset-card',
@@ -21,5 +22,15 @@ export class AssetCardComponent {
     if (this.dialCode) {
       this.telemetryCdata = [{ 'type': 'dialCode', 'id': this.dialCode }];
     }
+  }
+
+  convertToString(data) {
+
+    if (_.isArray(data)) {
+      return data.join();
+    } else {
+      return data;
+    }
+
   }
 }
