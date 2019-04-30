@@ -72,13 +72,15 @@ $yellow: #ffc107;
 $teal: #20c997;
 $cyan: #17a2b8;
 $gray: #333333;
+$orgColor: #1185BF;
+
 // brand Colors
-$primary-color: $blue;
+$primary-color: $orgColor;
 $secondary-color: $green;
 $tertiary-color: $orange;
 // Nuetral Colors
 $white-color: $white;
-// gray colors shades 
+// gray colors shades
 $gray-0: lighten($gray, 75%); // place holder active bg #F2F2F2
 $gray-100: lighten($gray, 60%); // disable btn bg, icon color #CCCCCC
 $gray-200: lighten($gray, 40%); // disable text, place holder text #999999
@@ -86,12 +88,12 @@ $gray-300: lighten($gray, 39%); // sub heading 2 #969696
 $gray-400: lighten($gray, 20%); // sub heading #666666
 $gray-800: $gray; // text color #333333
 /*
-// primary colors shades 
+// primary colors shades
 $primary-0:   lighten($primary-color,65%); // bg
 $primary-100: lighten($primary-color,15%); // default button bg
 $primary-200: lighten($primary-color,10%); // divider
 $primary-300: lighten($primary-color,5%);  // outline, focus fields
-$primary-400: $primary-color; // button bg, heading, table titles, links, toggles 
+$primary-400: $primary-color; // button bg, heading, table titles, links, toggles
 $primary-600: darken($primary-color,15%);  // on press
 $primary-800: darken($primary-color,30%);  // hover
 */
@@ -100,7 +102,7 @@ $primary-0: #F3F7FA; // bg
 $primary-100: #EDF4F9; // default button bg
 $primary-200: #80A7CE; // divider
 $primary-300: #7AB4EE; // outline, focus fields
-$primary-400: $primary-color; // button bg, heading, table titles, links, toggles 
+$primary-400: $primary-color; // button bg, heading, table titles, links, toggles
 $primary-600: #005391; // on press
 $primary-800: #002E50; // hover
 /*
