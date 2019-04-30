@@ -25,12 +25,14 @@ export class AssetCardComponent {
   }
 
   convertToString(data) {
-
     if (_.isArray(data)) {
       return data.join();
     } else {
       return data;
     }
 
+  }
+  openLink(link) {
+    window.open(link, '_blank');
   }
 }
