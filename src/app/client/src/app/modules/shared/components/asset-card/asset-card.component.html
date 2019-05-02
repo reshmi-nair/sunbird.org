@@ -10,7 +10,7 @@
       <i *ngIf="data?.assetType==='Hardware'" class="server icon fs-2-57 text-gray"></i>
     </div>
 
-    <div class="header pt-5">{{data?.name | titlecase | slice:0:15}}<span
+    <div class="header pt-5">{{data?.name | slice:0:15}}<span
         *ngIf="data.name && data.name.length > 15">...</span>
       <p class="text-light pt-10" *ngIf="data?.assetType">{{data?.assetType | titlecase}}</p>
     </div>
