@@ -6,8 +6,8 @@
                 [isShowFilterLabel]=true [hashTagId]="hashTagId" [showSearchedParam]=true (dataDrivenFilter)="getFilters($event)"></app-data-driven-filter>
                 <app-sort-by [sortingOptions]="sortByOption" [url]="activatedRoute.snapshot.params.slug ? '/' + activatedRoute.snapshot.params.slug+ '/explore/1' : '/explore/1'"></app-sort-by>
         </div>
-        <div class="twelve wide column">
-            <div class="ui clearing segment content-player-header search-content-header" *ngIf="!showLoader && contentList.length && this.queryParams.key">
+        <div class="twelve wide column" *ngIf="!showLoader && contentList.length && this.queryParams.key">
+            <div class="ui clearing segment content-player-header search-content-header">
                 <div class="ui left floated header">
                     <p class="serch-allresult">{{resourceService.frmelmnts?.lbl?.showingResultsFor |
                         interpolate:'{searchString}':this.queryParams.key}}
