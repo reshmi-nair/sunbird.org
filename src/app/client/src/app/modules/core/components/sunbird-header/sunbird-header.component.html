@@ -8,15 +8,15 @@
                     <div class="ui container">
                         <div class="ui grid padded width-100">
 
-                          <div class="six wide computer eleven wide mobile column">
+                          <div class="three wide computer eleven wide mobile column">
                             <!--Logo-->
                             <a class="d-flex logo" tabindex="0" title="{{tenantInfo.titleName}}" role="banner" (click)="navigateToHome()">
                               <img class="cursor-pointer" alt={{tenantInfo.titleName}} src="{{tenantInfo.logo}}">
                             </a>
                             <!--/Logo-->
                           </div>
-
-                          <div class="column p-0 d-flex flex-jc-flex-end flex-ai-center">
+                        
+                          <div class="four wide column p-0 d-flex flex-jc-flex-end flex-ai-center">
                             <!--Hamburger Icon-->
                             <i class="large bars icon link  mobile only iconColor" (click)="showSideBar()" tabindex="0"></i>
                             <!--/Hamburger Icon-->
@@ -75,6 +75,7 @@
                               </a>
                               <!--/Avtar Dropdown-->
                             </div>
+                         
                           </div>
                       </div>
                 </div>
@@ -110,9 +111,9 @@
                     <!--/Search Box-->
 
                     <!--Language Dropdown-->
-                    <app-language-dropdown [languageRange]='languages' class="computer only"
+                    <!-- <app-language-dropdown [languageRange]='languages' class="computer only"
                       *ngIf="languages && !router.isActive('workspace', false)">
-                    </app-language-dropdown>
+                    </app-language-dropdown> -->
                     <!--/Language Dropdown-->
                     <button class="ui button qr-code-btn d-flex flex computer only mr-0" [routerLink]="['/import/content']"
                       *ngIf="isOffline">
@@ -123,17 +124,17 @@
                 <!--/Computer-->
 
                 <!--Mobile-->
-                <div class="p-10 mobile only" *ngIf="showExploreHeader || userService.loggedIn || isOffline">
-                  <div class="ui mobile-view container d-flex flex-jc-space-between mx-0">
+                <!-- <div class="p-10 mobile only" *ngIf="showExploreHeader || userService.loggedIn || isOffline">
+                  <div class="ui mobile-view container d-flex flex-jc-space-between mx-0"> -->
 
                     <!--Language Dropdown-->
-                    <app-language-dropdown [languageRange]='languages' class="mobile only"
+                    <!-- <app-language-dropdown [languageRange]='languages' class="mobile only"
                       *ngIf="languages && !router.isActive('workspace', false)">
-                    </app-language-dropdown>
+                    </app-language-dropdown> -->
                     <!--/Language Dropdown-->
 
-                  </div>
-                </div>
+                  <!-- </div>
+                </div> -->
                 <!--/Mobile-->
 
                 <!--/Header Blue Section-->
