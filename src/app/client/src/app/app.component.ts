@@ -296,8 +296,13 @@ export class AppComponent implements OnInit {
   changeLanguageAttribute() {
     this.resourceService.languageSelected$
       .subscribe(item => {
-        this._document.documentElement.lang = item.value;
-        this._document.documentElement.dir = item.dir;
+        if (item.value && item.dir) {
+          this._document.documentElement.lang = item.value;
+          this._document.documentElement.dir = item.dir;
+        } else {
+          this._document.documentElement.lang = 'en';
+          this._document.documentElement.dir = 'ltr';
+        }
       });
   }
 }
