@@ -1,16 +1,16 @@
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
-import { ExploreContentComponent, ExploreComponent } from './components';
+import { ExploreContentComponent, ExploreComponent} from './components';
 import {ViewAllComponent} from '@sunbird/shared-feature';
 const routes: Routes = [
-  // {
-  //   path: '', component: ExploreComponent, data: {
-  //     telemetry: {
-  //       env: 'explore', pageid: 'explore', type: 'view', subtype: 'paginate'
-  //     },
-  //     softConstraints: { badgeAssertions: 98, board: 99,  channel: 100 }
-  //   }
-  // },
+  {
+    path: '', component: ExploreComponent, data: {
+      telemetry: {
+        env: 'explore', pageid: 'explore', type: 'view', subtype: 'paginate'
+      },
+      softConstraints: { badgeAssertions: 98, board: 99,  channel: 100 }
+    }
+  },
   {
     path: '', redirectTo: '1'
   },
@@ -32,7 +32,15 @@ const routes: Routes = [
         },
         softConstraints: { badgeAssertions: 98, board: 99,  channel: 100 }
       }
-    }
+    },
+    // {
+    //   path: 'courses/:pageNumber', component: ExploreSbwbComponent, data: {
+    //     telemetry: {
+    //       env: 'explore', pageid: 'explore-search', type: 'view', subtype: 'paginate'
+    //     },
+    //     softConstraints: { badgeAssertions: 98, board: 99,  channel: 100 }
+    //   }
+    // }
   ];
   @NgModule({
     imports: [RouterModule.forChild(routes)],

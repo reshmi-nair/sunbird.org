@@ -57,10 +57,14 @@ export class ExploreCourseComponent implements OnInit, OnDestroy, AfterViewInit 
             this.getFrameWork()
         ).pipe(
             mergeMap((data: any) => {
-                this.hashTagId = data[0].hashTagId;
+                console.log('data org', data);
+                // this.hashTagId = data[0].hashTagId;
+                this.hashTagId = '012767990132867072110';
                 if (data[1]) {
                     this.initFilters = true;
-                    this.frameWorkName = data[1];
+                    // this.frameWorkName='NCF'
+
+                    // this.frameWorkName = data[1];
                     return of({});
                     // return this.dataDrivenFilterEvent;
                 } else {

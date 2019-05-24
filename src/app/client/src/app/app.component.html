@@ -3,13 +3,15 @@
     [buttonLabel]="resourceService.frmelmnts.btn.submit" (submit)="updateFrameWork($event)"></app-popup>
   <app-tnc-popup (close)="onAcceptTnc()" #termsAndCondPopUp *ngIf="showTermsAndCondPopUp && !isOffline">
   </app-tnc-popup>
-  <app-sunbird-header></app-sunbird-header>
+  <app-header></app-header> 
+  <!-- <app-sunbird-header></app-sunbird-header> -->
   <app-install-app (viewInBrowser)="viewInBrowser($event)" *ngIf="showAppPopUp && userService.loggedIn && !isOffline">
   </app-install-app>
-  <!--<app-breadcrumbs *ngIf="userService.loggedIn"></app-breadcrumbs>-->
+  <!-- <app-breadcrumbs *ngIf="userService.loggedIn"></app-breadcrumbs> -->
   <router-outlet *ngIf="initApp"></router-outlet>
 </div>
-<app-sunbird-footer></app-sunbird-footer>
+<!-- <app-sunbird-footer></app-sunbird-footer> -->
+<app-footer></app-footer>
 <sui-modal [mustScroll]="false" [isClosable]="false" [transitionDuration]="0" [size]="'small'" class="sb-modal"
   (dismissed)="showLoginModal = false" #modal *ngIf="sessionExpiryInterceptor.sessionExpired">
   <div class="sb-modal-header">

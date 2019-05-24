@@ -174,6 +174,7 @@ export class SearchService {
     if (requestParam['pageNumber'] && requestParam['limit']) {
       option.data.request['offset'] = (requestParam.pageNumber - 1) * requestParam.limit;
     }
+    const objectType = requestParam && requestParam.filters && requestParam.filters.objectType;
     return this.content.post(option);
   }
   /**
@@ -318,5 +319,4 @@ export class SearchService {
     return facetObj;
   }
 }
-
 

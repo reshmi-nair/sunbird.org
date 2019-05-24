@@ -2,7 +2,7 @@
 <div class="ui text menu m-0 d-flex flex-jc-center flex-ai-center computer only">
 
 	<!--Logged in user-->
-	<!-- <ng-container *ngIf="userService.loggedIn">
+	<ng-container *ngIf="userService.loggedIn">
 		<a class="item" [class.active]="router.isActive('/search/Library') || router.isActive('/resources')"
 			appTelemetryInteract [telemetryInteractEdata]="libraryMenuIntractEdata" routerLink="/resources">
 			{{resourceService?.frmelmnts?.tab?.resources}}
@@ -21,7 +21,7 @@
 			[permission]='workSpaceRole' href="/help/creator/content-lifecycle/index.html" target="_blank">
 			{{resourceService?.frmelmnts?.tab?.help}}
 		</a>
-	</ng-container> -->
+	</ng-container>
 	<!--/Logged in user-->
 
 	<!--Not Logged in user-->
@@ -36,17 +36,17 @@
 			[telemetryInteractEdata]="libraryMenuIntractEdata">
 			{{resourceService?.frmelmnts?.tab?.resources}}
 		</a>
-		<!-- <a class="item"
+		<a class="item"
 			[class.active]="router.isActive('/search/explore-course') || router.isActive(slug ? slug + '/explore-course' : '/explore-course')"
 			*ngIf="!router.isActive('', true)" [routerLink]="[slug ? slug + '/explore-course' : '/explore-course']"
 			appTelemetryInteract [telemetryInteractEdata]="learnMenuIntractEdata">
 			{{resourceService?.frmelmnts?.tab?.courses}}
-		</a> -->
-		<!-- <span class="item divider">|</span>
+		</a>
+		<span class="item divider">|</span>
 		<a class="item font-weight-bold primary-color" href="/resources" appTelemetryInteract
 			[telemetryInteractEdata]="signInIntractEdata">
 			{{resourceService.frmelmnts?.btn?.signin}}
-		</a> -->
+		</a>
 	</ng-container>
 	<!--/Not Logged in user-->
 
@@ -105,10 +105,10 @@
 			[routerLink]="[slug ? slug + '/explore/1' : '/explore/1']" (click)="showSideBar()" *ngIf="!router.isActive('', true)">
 				{{resourceService?.frmelmnts?.tab?.resources}}
 			</a>
-			<!-- <a class="item" [class.active]="router.isActive('/search/explore-course') || router.isActive(slug ? slug + '/explore-course' : '/explore-course')"
+			<a class="item" [class.active]="router.isActive('/search/explore-course') || router.isActive(slug ? slug + '/explore-course' : '/explore-course')"
 			[routerLink]="[slug ? slug + '/explore-course' : '/explore-course']" (click)="showSideBar()" *ngIf="!router.isActive('', true)">
 				{{resourceService?.frmelmnts?.tab?.courses}}
-			</a> -->
+			</a>
 		</ng-container>
 		<!--/Not Logged in user-->
 
