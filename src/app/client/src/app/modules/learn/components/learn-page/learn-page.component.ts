@@ -58,7 +58,7 @@ export class LearnPageComponent implements OnInit, OnDestroy, AfterViewInit {
     }
   }
   ngOnInit() {
-    combineLatest(this.fetchEnrolledCoursesSection(), this.getFrameWork()).pipe(first(),
+    combineLatest(this.fetchEnrolledCoursesSection()).pipe(first(),
       mergeMap((data: Array<any>) => {
         this.enrolledSection = data[0];
         if (data[1]) {
@@ -167,7 +167,7 @@ export class LearnPageComponent implements OnInit, OnDestroy, AfterViewInit {
         .pipe(map((data: ServerResponse) => {
             const frameWork = _.find(data, 'framework').framework;
             this.cacheService.set('framework' + 'search', frameWork, { maxAge: this.browserCacheTtlService.browserCacheTtl});
-            return frameWork;
+            return 'defaultFramework';
         }), catchError((error) => {
           return of(false);
         }));

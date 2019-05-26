@@ -37,8 +37,8 @@
 			{{resourceService?.frmelmnts?.tab?.resources}}
 		</a>
 		<a class="item"
-			[class.active]="router.isActive('/search/explore-course') || router.isActive(slug ? slug + '/explore-course' : '/explore-course')"
-			*ngIf="!router.isActive('', true)" [routerLink]="[slug ? slug + '/explore-course' : '/explore-course']"
+			[class.active]="router.isActive('/search/explore-courses') || router.isActive(slug ? slug + '/explore-courses' : '/explore-courses')"
+			*ngIf="!router.isActive('', true)" [routerLink]="[slug ? slug + '/explore-courses' : '/explore-courses']"
 			appTelemetryInteract [telemetryInteractEdata]="learnMenuIntractEdata">
 			{{resourceService?.frmelmnts?.tab?.courses}}
 		</a>
