@@ -1039,6 +1039,11 @@
     "inPageredirectUrl": "/explore",
     "searchPageredirectUrl": "/explore/1"
   },
+  "explorelibrary": {
+    "filterType": "explore-library",
+    "inPageredirectUrl": "/explore-library",
+    "searchPageredirectUrl": "/explore-library/1"
+  },
   "exploreCourse": {
     "filterType": "explore-course",
     "inPageredirectUrl": "/explore-course",
@@ -1066,7 +1071,8 @@
     "explore-course": "explore-course",
     "framework-code": "framework-code",
     "courses": "courses",
-    "organization": "organization"
+    "organization": "organization",
+    "explore-library": "explore-library"
   },
   "cacheServiceConfig": {
     "setTimeInMinutes": 10,

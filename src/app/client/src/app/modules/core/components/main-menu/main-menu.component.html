@@ -31,8 +31,8 @@
 			{{resourceService.frmelmnts?.lbl?.explore}} {{resourceService.instance}}
 		</button>
 		<a class="item"
-			[class.active]="(router.isActive('/search/explore/library') || router.isActive(slug ? slug + '/explore' : '/explore')) && !router.isActive('explore/1')"
-			*ngIf="!router.isActive('', true)" [routerLink]="[slug ? slug + '/explore' : '/explore']" appTelemetryInteract
+			[class.active]="router.isActive('/search/explore-library') || router.isActive(slug ? slug + '/explore-library' : '/explore-library')"
+			*ngIf="!router.isActive('', true)" [routerLink]="[slug ? slug + '/explore-library' : '/explore-library']" appTelemetryInteract
 			[telemetryInteractEdata]="libraryMenuIntractEdata">
 			{{resourceService?.frmelmnts?.tab?.resources}}
 		</a>

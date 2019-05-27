@@ -12,6 +12,13 @@ const routes: Routes = [
     path: 'explore', loadChildren: './module/explore/explore.module#ExploreModule'
   },
   {
+    path: 'explore-library', loadChildren: './module/library-content/library-content.module#LibraryContentModule'
+  },
+  {
+    path: ':slug/explore-library', loadChildren: './module/library-content/library-content.module#LibraryContentModule'
+
+  },
+  {
     path: ':slug/explore', loadChildren: './module/explore/explore.module#ExploreModule'
   },
   {

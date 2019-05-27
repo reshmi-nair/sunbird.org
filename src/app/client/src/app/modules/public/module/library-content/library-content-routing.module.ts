@@ -1,10 +1,12 @@
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
-import { ExploreContentComponent, ExploreComponent, ExploreSbwbComponent} from './components';
+import {LibraryComponent, ExploreLibraryComponent} from './components';
 import {ViewAllComponent} from '@sunbird/shared-feature';
+
+
 const routes: Routes = [
   {
-    path: '', component: ExploreComponent, data: {
+    path: '', component: LibraryComponent, data: {
       telemetry: {
         env: 'explore', pageid: 'explore', type: 'view', subtype: 'paginate'
       },
@@ -26,24 +28,17 @@ const routes: Routes = [
     }
   },
     {
-      path: ':pageNumber', component: ExploreContentComponent, data: {
+      path: ':pageNumber', component: ExploreLibraryComponent, data: {
         telemetry: {
           env: 'explore', pageid: 'explore-search', type: 'view', subtype: 'paginate'
         },
         softConstraints: { badgeAssertions: 98, board: 99,  channel: 100 }
       }
-    },
-    // {
-    //   path: 'library/:pageNumber', component: ExploreSbwbComponent, data: {
-    //     telemetry: {
-    //       env: 'explore', pageid: 'explore-search', type: 'view', subtype: 'paginate'
-    //     },
-    //     softConstraints: { badgeAssertions: 98, board: 99,  channel: 100 }
-    //   }
-    // }
+    }
   ];
-  @NgModule({
-    imports: [RouterModule.forChild(routes)],
-    exports: [RouterModule]
-  })
-  export class ExploreRoutingModule { }
+
+@NgModule({
+  imports: [RouterModule.forChild(routes)],
+  exports: [RouterModule]
+})
+export class LibraryContentRoutingModule { }

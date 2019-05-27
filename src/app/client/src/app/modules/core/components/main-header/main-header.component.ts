@@ -71,22 +71,22 @@ export class MainHeaderComponent implements OnInit {
     public permissionService: PermissionService, public userService: UserService, public tenantService: TenantService,
     public orgDetailsService: OrgDetailsService, private _cacheService: CacheService, public formService: FormService,
     public activatedRoute: ActivatedRoute, private cacheService: CacheService, private cdr: ChangeDetectorRef) {
-      try {
-        this.exploreButtonVisibility = (<HTMLInputElement>document.getElementById('exploreButtonVisibility')).value;
-      } catch (error) {
-        this.exploreButtonVisibility = 'false';
-      }
-      this.adminDashboard = this.config.rolesConfig.headerDropdownRoles.adminDashboard;
-      this.announcementRole = this.config.rolesConfig.headerDropdownRoles.announcementRole;
-      this.myActivityRole = this.config.rolesConfig.headerDropdownRoles.myActivityRole;
-      this.orgSetupRole = this.config.rolesConfig.headerDropdownRoles.orgSetupRole;
+    try {
+      this.exploreButtonVisibility = (<HTMLInputElement>document.getElementById('exploreButtonVisibility')).value;
+    } catch (error) {
+      this.exploreButtonVisibility = 'false';
+    }
+    this.adminDashboard = this.config.rolesConfig.headerDropdownRoles.adminDashboard;
+    this.announcementRole = this.config.rolesConfig.headerDropdownRoles.announcementRole;
+    this.myActivityRole = this.config.rolesConfig.headerDropdownRoles.myActivityRole;
+    this.orgSetupRole = this.config.rolesConfig.headerDropdownRoles.orgSetupRole;
   }
   ngOnInit() {
     if (this.userService.loggedIn) {
       this.userService.userData$.pipe(first()).subscribe((user: any) => {
         if (user && !user.err) {
           this.userProfile = user.userProfile;
-            this.getLanguage(this.userService.channel);
+          this.getLanguage(this.userService.channel);
         }
       });
     } else {
@@ -98,7 +98,7 @@ export class MainHeaderComponent implements OnInit {
     }
     this.getUrl();
     this.activatedRoute.queryParams.subscribe(queryParams => this.queryParam = { ...queryParams });
-    this.tenantService.tenantData$.subscribe(({tenantData}) => {
+    this.tenantService.tenantData$.subscribe(({ tenantData }) => {
       this.tenantInfo.logo = tenantData ? tenantData.logo : undefined;
       this.tenantInfo.titleName = tenantData ? tenantData.titleName.toUpperCase() : undefined;
     });
@@ -119,7 +119,7 @@ export class MainHeaderComponent implements OnInit {
       this.formService.getFormConfig(formServiceInputParams, channelId).subscribe((data: any) => {
         this.languages = data[0].range;
         this._cacheService.set(this.languageFormQuery.filterEnv + this.languageFormQuery.formAction, data,
-          { maxAge: this.config.appConfig.cacheServiceConfig.setTimeInMinutes * this.config.appConfig.cacheServiceConfig.setTimeInSeconds});
+    { maxAge: this.config.appConfig.cacheServiceConfig.setTimeInMinutes * this.config.appConfig.cacheServiceConfig.setTimeInSeconds });
       }, (err: any) => {
         this.languages = [{ 'value': 'en', 'label': 'English', 'dir': 'ltr' }];
       });
@@ -137,13 +137,13 @@ export class MainHeaderComponent implements OnInit {
     if (key && key.length) {
       this.queryParam.key = key;
     }
-if (this.exploreRoutingUrl === 'explore-courses/library') {
-  this.exploreRoutingUrl = 'explore-courses';
-} if (this.exploreRoutingUrl === 'explore/library') {
-  this.exploreRoutingUrl = 'explore/library';
-} if (this.router.url === '/explore/1') {
-  this.exploreRoutingUrl = 'explore';
-}
+    // if (this.exploreRoutingUrl === 'explore-courses/library') {
+    //   this.exploreRoutingUrl = 'explore-courses';
+    // } if (this.exploreRoutingUrl === 'explore/library') {
+    //   this.exploreRoutingUrl = 'explore/library';
+    // } if (this.router.url === '/explore/1') {
+    //   this.exploreRoutingUrl = 'explore';
+    // }
     this.router.navigate([this.exploreRoutingUrl, 1], { queryParams: this.queryParam });
   }
 
@@ -172,12 +172,20 @@ if (this.exploreRoutingUrl === 'explore-courses/library') {
         if (url.indexOf('explore') === 2) {
           this.exploreRoutingUrl = url[1] + '/' + url[2];
         } else {
-          this.exploreRoutingUrl = url[1] + '/library';
+          this.exploreRoutingUrl = url[1];
         }
       } else if (_.includes(urlAfterRedirects.url, '/explore-courses')) {
         this.showExploreHeader = true;
         const url = urlAfterRedirects.url.split('?')[0].split('/');
         if (url.indexOf('explore-courses') === 2) {
+          this.exploreRoutingUrl = url[1] + '/' + url[2];
+        } else {
+          this.exploreRoutingUrl = url[1];
+        }
+      } else  if (_.includes(urlAfterRedirects.url, '/explore-library')) {
+        this.showExploreHeader = true;
+        const url = urlAfterRedirects.url.split('?')[0].split('/');
+        if (url.indexOf('explore-library') === 2) {
           this.exploreRoutingUrl = url[1] + '/' + url[2];
         } else {
           this.exploreRoutingUrl = url[1];

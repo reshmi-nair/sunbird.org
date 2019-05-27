@@ -205,7 +205,8 @@ export class ProfileFrameworkPopupComponent implements OnInit, OnDestroy {
     return this.formService.getFormConfig(formServiceInputParams, this.userService.hashTagId);
   }
   onSubmitForm() {
-    const selectedOption = _.cloneDeep(this.selectedOption);
+    let selectedOption = _.cloneDeep(this.selectedOption);
+    selectedOption = _.omit(selectedOption, ['school']);
     selectedOption.board = [this.selectedOption.board];
     selectedOption.id = this.frameWorkId;
     this.submit.emit(selectedOption);
