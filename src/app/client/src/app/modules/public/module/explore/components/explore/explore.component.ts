@@ -96,7 +96,7 @@ export class ExploreComponent implements OnInit, OnDestroy, AfterViewInit {
     });
     const softConstraintData = {
       filters: {channel: this.hashTagId,
-      board: [this.dataDrivenFilters.board]},
+      board: ['CBSE']},
       softConstraints: _.get(this.activatedRoute.snapshot, 'data.softConstraints'),
       mode: 'soft'
     };
@@ -115,8 +115,10 @@ export class ExploreComponent implements OnInit, OnDestroy, AfterViewInit {
     }
     this.pageApiService.getPageData(option)
       .subscribe(data => {
+        console.log('data', data);
         this.showLoader = false;
-        this.carouselMasterData = this.prepareCarouselData(_.get(data, 'sections'));
+        this.carouselMasterData = this.prepareCarouselData(data.sections);
+        console.log('t', this.carouselMasterData);
         if (!this.carouselMasterData.length) {
           return; // no page section
         }
@@ -132,7 +134,7 @@ export class ExploreComponent implements OnInit, OnDestroy, AfterViewInit {
         this.toasterService.error(this.resourceService.messages.fmsg.m0004);
       });
   }
-  private prepareCarouselData(sections = []) {
+  private prepareCarouselData(sections) {
     const { constantData, metaData, dynamicFields, slickSize } = this.configService.appConfig.ExplorePage;
     const carouselData = _.reduce(sections, (collector, element) => {
       const contents = _.slice(_.get(element, 'contents'), 0, slickSize) || [];
@@ -170,7 +172,7 @@ export class ExploreComponent implements OnInit, OnDestroy, AfterViewInit {
   public viewAll(event) {
     const searchQuery = JSON.parse(event.searchQuery);
     const softConstraintsFilter = {
-      board : [this.dataDrivenFilters.board],
+      board : ['CBSE'],
       channel: this.hashTagId,
     };
     searchQuery.request.filters.defaultSortBy = JSON.stringify(searchQuery.request.sort_by);

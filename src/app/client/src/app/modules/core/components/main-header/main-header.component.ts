@@ -137,6 +137,13 @@ export class MainHeaderComponent implements OnInit {
     if (key && key.length) {
       this.queryParam.key = key;
     }
+if (this.exploreRoutingUrl === 'explore-courses/library') {
+  this.exploreRoutingUrl = 'explore-courses';
+} if (this.exploreRoutingUrl === 'explore/library') {
+  this.exploreRoutingUrl = 'explore/library';
+} if (this.router.url === '/explore/1') {
+  this.exploreRoutingUrl = 'explore';
+}
     this.router.navigate([this.exploreRoutingUrl, 1], { queryParams: this.queryParam });
   }
 
@@ -165,12 +172,12 @@ export class MainHeaderComponent implements OnInit {
         if (url.indexOf('explore') === 2) {
           this.exploreRoutingUrl = url[1] + '/' + url[2];
         } else {
-          this.exploreRoutingUrl = url[1];
+          this.exploreRoutingUrl = url[1] + '/library';
         }
-      } else if (_.includes(urlAfterRedirects.url, '/explore-course')) {
+      } else if (_.includes(urlAfterRedirects.url, '/explore-courses')) {
         this.showExploreHeader = true;
         const url = urlAfterRedirects.url.split('?')[0].split('/');
-        if (url.indexOf('explore-course') === 2) {
+        if (url.indexOf('explore-courses') === 2) {
           this.exploreRoutingUrl = url[1] + '/' + url[2];
         } else {
           this.exploreRoutingUrl = url[1];

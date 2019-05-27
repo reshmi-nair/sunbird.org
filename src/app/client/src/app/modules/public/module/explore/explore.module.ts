@@ -10,6 +10,7 @@ import { ExploreComponent } from './components/explore/explore.component';
 import {SharedFeatureModule} from '@sunbird/shared-feature';
 import { SuiSelectModule, SuiModalModule, SuiAccordionModule, SuiPopupModule, SuiDropdownModule, SuiProgressModule,
   SuiRatingModule, SuiCollapseModule } from 'ng2-semantic-ui';
+import { ExploreSbwbComponent } from './components/explore-sbwb/explore-sbwb.component';
 
 @NgModule({
   imports: [
@@ -23,6 +24,6 @@ import { SuiSelectModule, SuiModalModule, SuiAccordionModule, SuiPopupModule, Su
     SuiSelectModule, SuiModalModule, SuiAccordionModule, SuiPopupModule, SuiDropdownModule, SuiProgressModule,
     SuiRatingModule, SuiCollapseModule
   ],
-  declarations: [ ExploreContentComponent, ExploreComponent]
+  declarations: [ ExploreContentComponent, ExploreComponent, ExploreSbwbComponent]
 })
 export class ExploreModule { }

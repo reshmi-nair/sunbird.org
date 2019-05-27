@@ -125,7 +125,7 @@ export class PublicPlayerService {
       if (this.userService.loggedIn) {
         this.router.navigate(['learn/course', courseId]);
       } else {
-        this.router.navigate(['explore-course/course', courseId]);
+        this.router.navigate(['explore-courses/course', courseId]);
       }
     }, 0);
   }

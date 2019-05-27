@@ -139,6 +139,7 @@ export class MainMenuComponent implements OnInit {
     return this.slug ? this.slug + url : url;
   }
   getUrl() {
+
     this.router.events.pipe(filter(event => event instanceof NavigationEnd)).subscribe((urlAfterRedirects: NavigationEnd) => {
       this.slug = _.get(this.activatedRoute, 'snapshot.firstChild.firstChild.params.slug');
       if (_.includes(urlAfterRedirects.url, '/explore')) {
@@ -152,7 +153,7 @@ export class MainMenuComponent implements OnInit {
       } else if (_.includes(urlAfterRedirects.url, '/explore-course')) {
         this.showExploreHeader = true;
         const url = urlAfterRedirects.url.split('?')[0].split('/');
-        if (url.indexOf('explore-course') === 2) {
+        if (url.indexOf('explore-courses') === 2) {
           this.exploreRoutingUrl = url[1] + '/' + url[2];
         } else {
           this.exploreRoutingUrl = url[1];
