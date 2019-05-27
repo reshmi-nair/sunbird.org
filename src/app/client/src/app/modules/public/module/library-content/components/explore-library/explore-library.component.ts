@@ -15,7 +15,7 @@ import { CacheService } from 'ng2-cache-service';
 @Component({
   templateUrl: './explore-library.component.html'
 })
-export class ExploreLibraryComponent implements OnInit {
+export class ExploreLibraryComponent implements OnInit, OnDestroy, AfterViewInit {
 
   public showLoader = true;
   public showLoginModal = false;
