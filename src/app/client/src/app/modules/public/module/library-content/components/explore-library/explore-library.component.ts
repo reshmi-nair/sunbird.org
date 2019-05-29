@@ -117,6 +117,7 @@ export class ExploreLibraryComponent implements OnInit, OnDestroy, AfterViewInit
       };
       option.filters.contentType = filters.contentType ||
       ['Collection', 'TextBook', 'LessonPlan', 'Resource'];
+      option.filters.organization = 'sbwb';
       if (manipulatedData.filters) {
           option['softConstraints'] = _.get(manipulatedData, 'softConstraints');
         }

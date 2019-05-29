@@ -53,18 +53,17 @@ export class ExploreCourseComponent implements OnInit, OnDestroy, AfterViewInit 
     }
     ngOnInit() {
         combineLatest(
-            this.orgDetailsService.getOrgDetails(this.activatedRoute.snapshot.params.slug),
-            this.getFrameWork()
+            this.orgDetailsService.getOrgDetails(this.activatedRoute.snapshot.params.slug)
         ).pipe(
             mergeMap((data: any) => {
                 console.log('data org', data);
-                // this.hashTagId = data[0].hashTagId;
-                this.hashTagId = '012767990132867072110';
+                this.hashTagId = data[0].hashTagId;
+                // this.hashTagId = '012767990132867072110';
                 if (data[1]) {
                     this.initFilters = true;
                     // this.frameWorkName='NCF'
 
-                    // this.frameWorkName = data[1];
+                    this.frameWorkName = data[1];
                     return of({});
                     // return this.dataDrivenFilterEvent;
                 } else {
@@ -129,18 +128,19 @@ export class ExploreCourseComponent implements OnInit, OnDestroy, AfterViewInit 
     }
     private fetchContents() {
         let filters = _.pickBy(this.queryParams, (value: Array<string> | string) => value && value.length);
-        // filters.channel = this.hashTagId;
-        // filters.board = _.get(this.queryParams, 'board') || this.dataDrivenFilters.board;
+        filters.channel = this.hashTagId;
+        filters.board = _.get(this.queryParams, 'board') || this.dataDrivenFilters.board;
         filters = _.omit(filters, ['key', 'sort_by', 'sortType', 'appliedFilters']);
         const option = {
             filters: filters,
             limit: this.configService.appConfig.SEARCH.PAGE_LIMIT,
             pageNumber: this.paginationDetails.currentPage,
             query: this.queryParams.key,
-            // softConstraints: { badgeAssertions: 98, board: 99, channel: 100 },
+            softConstraints: { badgeAssertions: 98, board: 99, channel: 100 },
             facets: this.facets,
             params: this.configService.appConfig.ExplorePage.contentApiQueryParams
         };
+        option.filters.organization = 'sbwb';
         if (this.frameWorkName) {
             option.params.framework = this.frameWorkName;
         }

@@ -98,7 +98,7 @@ export class LibraryComponent implements OnInit, OnDestroy, AfterViewInit {
     });
     const softConstraintData = {
       filters: {channel: this.hashTagId,
-      board: ['CBSE']},
+      board: [this.dataDrivenFilters.board]},
       softConstraints: _.get(this.activatedRoute.snapshot, 'data.softConstraints'),
       mode: 'soft'
     };
@@ -174,7 +174,7 @@ export class LibraryComponent implements OnInit, OnDestroy, AfterViewInit {
   public viewAll(event) {
     const searchQuery = JSON.parse(event.searchQuery);
     const softConstraintsFilter = {
-      board : ['CBSE'],
+      board : [this.dataDrivenFilters.board],
       channel: this.hashTagId,
     };
     searchQuery.request.filters.defaultSortBy = JSON.stringify(searchQuery.request.sort_by);
