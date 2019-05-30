@@ -61,8 +61,7 @@ export class PublicCourseComponent implements OnInit, OnDestroy, AfterViewInit {
     ).pipe(
       mergeMap((data: any) => {
         // this.hashTagId = data[0].hashTagId;
-        this.hashTagId = '012767990132867072110';
-
+        this.hashTagId = data[0].hashTagId;
         if (data[1]) {
           this.initFilters = true;
           // this.frameWorkName = data[1];

@@ -101,12 +101,12 @@
 			<a class="item" (click)="showSideBar()" *ngIf="router.isActive('', true)" routerLink="/explore/1">
 				{{resourceService.frmelmnts?.lbl?.explore}} {{resourceService.instance}}
 			</a>
-			<a class="item" [class.active]="router.isActive('/search/explore') || router.isActive(slug ? slug + '/explore' : '/explore')"
-			[routerLink]="[slug ? slug + '/explore/1' : '/explore/1']" (click)="showSideBar()" *ngIf="!router.isActive('', true)">
+			<a class="item" [class.active]="router.isActive('/search/explore-library') || router.isActive(slug ? slug + '/explore-library' : '/explore-library')"
+			[routerLink]="[slug ? slug + '/explore-library' : '/explore-library']" (click)="showSideBar()" *ngIf="!router.isActive('', true)">
 				{{resourceService?.frmelmnts?.tab?.resources}}
 			</a>
-			<a class="item" [class.active]="router.isActive('/search/explore-course') || router.isActive(slug ? slug + '/explore-course' : '/explore-course')"
-			[routerLink]="[slug ? slug + '/explore-course' : '/explore-course']" (click)="showSideBar()" *ngIf="!router.isActive('', true)">
+			<a class="item" [class.active]="router.isActive('/search/explore-courses') || router.isActive(slug ? slug + '/explore-courses' : '/explore-courses')"
+			[routerLink]="[slug ? slug + '/explore-courses' : '/explore-courses']" (click)="showSideBar()" *ngIf="!router.isActive('', true)">
 				{{resourceService?.frmelmnts?.tab?.courses}}
 			</a>
 		</ng-container>

@@ -1046,8 +1046,8 @@
   },
   "exploreCourse": {
     "filterType": "explore-course",
-    "inPageredirectUrl": "/explore-course",
-    "searchPageredirectUrl": "/explore-course/1"
+    "inPageredirectUrl": "/explore-courses",
+    "searchPageredirectUrl": "/explore-courses/1"
   },
   "courses": {
     "filterType": "courses",
