@@ -1,11 +1,13 @@
-import { Component, Input, OnInit, AfterViewInit, Output, EventEmitter } from '@angular/core';
+import { Component, Input, OnInit, AfterViewInit, Output, EventEmitter, OnDestroy } from '@angular/core';
 import { FormGroup, FormControl } from '@angular/forms';
-import { ResourceService, ConfigService, ToasterService, ServerResponse, IUserData, IUserProfile, Framework } from '@sunbird/shared';
+import { ResourceService, ConfigService, ToasterService, ServerResponse, IUserData, IUserProfile, Framework,
+   UtilService } from '@sunbird/shared';
 import { FormService, FrameworkService, UserService } from '@sunbird/core';
 import * as _ from 'lodash-es';
 import { CacheService } from 'ng2-cache-service';
 import { Router } from '@angular/router';
 import { EditorService } from './../../services';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-content-creation-default-template',
@@ -24,7 +26,7 @@ import { EditorService } from './../../services';
       }
     `]
 })
-export class DefaultTemplateComponent implements OnInit {
+export class DefaultTemplateComponent implements OnInit, OnDestroy {
   @Input() formFieldProperties: any;
   @Input() categoryMasterList: any;
 
@@ -92,11 +94,15 @@ export class DefaultTemplateComponent implements OnInit {
    * years is used to get years from getYearsForCreateTextBook
    */
   public years: any;
+  private selectedLanguage: string;
+
   /**
  * To make content editor service API calls
  */
   private editorService: EditorService;
+  resourceDataSubscription: Subscription;
 
+  public filtersDetails: Array<any>;
 
 
 
@@ -109,7 +115,8 @@ export class DefaultTemplateComponent implements OnInit {
     toasterService: ToasterService,
     userService: UserService,
     configService: ConfigService,
-    editorService: EditorService
+    editorService: EditorService,
+  private utilService: UtilService
   ) {
     this.formService = formService;
     this.resourceService = resourceService;
@@ -138,6 +145,20 @@ export class DefaultTemplateComponent implements OnInit {
     /***
  * Call User service to get user data
  */
+this.resourceDataSubscription = this.resourceService.languageSelected$
+      .subscribe(item => {
+        this.selectedLanguage = item.value;
+        if (this.formFieldProperties && this.formFieldProperties.length > 0) {
+          _.forEach(this.formFieldProperties, (data, index) => {
+            this.formFieldProperties[index] = this.utilService.translateLabel(data, this.selectedLanguage);
+            this.formFieldProperties[index].range = this.utilService.translateValues(data.range, this.selectedLanguage);
+          });
+          this.filtersDetails = _.cloneDeep(this.formFieldProperties);
+          this.filtersDetails = this.utilService.convertSelectedOption(this.formFieldProperties,
+            this.formFieldProperties, 'en', this.selectedLanguage);
+        }
+      }
+      );
     this.setFormConfig();
     this.userService.userData$.subscribe(
       (user: IUserData) => {
@@ -291,6 +312,12 @@ export class DefaultTemplateComponent implements OnInit {
       years.push(i);
     }
     return years;
+  }
+
+  ngOnDestroy() {
+    if (this.resourceDataSubscription) {
+      this.resourceDataSubscription.unsubscribe();
+    }
   }
 }
 
