@@ -133,11 +133,12 @@ export class MainHeaderComponent implements OnInit {
     }
   }
   onEnter(key) {
+    console.log('key', key);
     this.queryParam = {};
     if (key && key.length) {
       this.queryParam.key = key;
     }
-    this.router.navigate([this.exploreRoutingUrl, 1], { queryParams: this.queryParam });
+    this.router.navigate([this.exploreRoutingUrl + '/explore-courses', 1], { queryParams: this.queryParam });
   }
 
   getUrl() {
@@ -162,18 +163,31 @@ export class MainHeaderComponent implements OnInit {
       if (_.includes(urlAfterRedirects.url, '/explore')) {
         this.showExploreHeader = true;
         const url = urlAfterRedirects.url.split('?')[0].split('/');
-        if (url.indexOf('explore') === 2) {
+        console.log('url', url);
+        if (url.indexOf('explore-library') === 2) {
           this.exploreRoutingUrl = url[1] + '/' + url[2];
+          console.log('else', this.exploreRoutingUrl);
+        } if (url.indexOf('explore-courses') === 2) {
+          this.exploreRoutingUrl = url[1] + '/' + url[2];
+          console.log('else', this.exploreRoutingUrl);
+        }
+         if (url.indexOf('explore') === 2) {
+
+          this.exploreRoutingUrl = url[1] + '/' + url[2];
+          console.log('iif', this.exploreRoutingUrl);
         } else {
           this.exploreRoutingUrl = url[1];
+          console.log('else', this.exploreRoutingUrl);
         }
       } else if (_.includes(urlAfterRedirects.url, '/explore-courses')) {
         this.showExploreHeader = true;
         const url = urlAfterRedirects.url.split('?')[0].split('/');
         if (url.indexOf('explore-courses') === 2) {
           this.exploreRoutingUrl = url[1] + '/' + url[2];
+          console.log(' else iif', this.exploreRoutingUrl);
         } else {
           this.exploreRoutingUrl = url[1];
+          console.log(' else iif else', this.exploreRoutingUrl);
         }
       } else if (_.includes(urlAfterRedirects.url, '/explore-library')) {
         this.showExploreHeader = true;

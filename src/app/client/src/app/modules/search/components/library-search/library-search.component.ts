@@ -120,6 +120,7 @@ export class LibrarySearchComponent implements OnInit, OnDestroy, AfterViewInit 
         if (_.get(manipulatedData, 'filters')) {
             option['softConstraints'] = _.get(manipulatedData, 'softConstraints');
           }
+          option.filters.channel = this.userService.hashTagId;
         this.frameworkService.channelData$.subscribe((channelData) => {
             if (!channelData.err) {
                option.params.framework = _.get(channelData, 'channelData.defaultFramework');

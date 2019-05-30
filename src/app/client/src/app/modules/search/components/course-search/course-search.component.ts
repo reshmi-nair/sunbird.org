@@ -107,6 +107,8 @@ export class CourseSearchComponent implements OnInit, OnDestroy, AfterViewInit {
         facets: this.facets,
         params: this.configService.appConfig.Course.contentApiQueryParams
     };
+    option.filters.channel = this.userService.hashTagId;
+
     if (this.frameWorkName) {
       option.params.framework = this.frameWorkName;
     }

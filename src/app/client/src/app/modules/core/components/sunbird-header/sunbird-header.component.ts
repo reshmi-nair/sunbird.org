@@ -139,7 +139,8 @@ export class SunbirdHeaderComponent implements OnInit {
     if (key && key.length) {
       this.queryParam.key = key;
     }
-    this.router.navigate([this.exploreRoutingUrl, 1], { queryParams: this.queryParam });
+
+    this.router.navigate(['/explore', 1], { queryParams: this.queryParam });
   }
 
   getUrl() {
@@ -169,15 +170,7 @@ export class SunbirdHeaderComponent implements OnInit {
         } else {
           this.exploreRoutingUrl = url[1];
         }
-      } else if (_.includes(urlAfterRedirects.url, '/explore-course')) {
-        this.showExploreHeader = true;
-        const url = urlAfterRedirects.url.split('?')[0].split('/');
-        if (url.indexOf('explore-course') === 2) {
-          this.exploreRoutingUrl = url[1] + '/' + url[2];
-        } else {
-          this.exploreRoutingUrl = url[1];
-        }
-      } else {
+      }  else {
         this.showExploreHeader = false;
       }
     });

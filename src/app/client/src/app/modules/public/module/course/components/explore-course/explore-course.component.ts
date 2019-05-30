@@ -125,7 +125,7 @@ export class ExploreCourseComponent implements OnInit, OnDestroy, AfterViewInit 
     }
     private fetchContents() {
         let filters = _.pickBy(this.queryParams, (value: Array<string> | string) => value && value.length);
-        // filters.channel = this.hashTagId;
+        filters.channel = this.hashTagId;
         // filters.board = _.get(this.queryParams, 'board') || this.dataDrivenFilters.board;
         filters = _.omit(filters, ['key', 'sort_by', 'sortType', 'appliedFilters']);
         const option = {
@@ -137,6 +137,7 @@ export class ExploreCourseComponent implements OnInit, OnDestroy, AfterViewInit 
             facets: this.facets,
             params: this.configService.appConfig.ExplorePage.contentApiQueryParams
         };
+
         if (this.frameWorkName) {
             option.params.framework = this.frameWorkName;
         }
