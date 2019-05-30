@@ -68,7 +68,7 @@ export class AppComponent implements OnInit {
   viewinBrowser = false;
   isOffline: boolean = environment.isOffline;
   sessionExpired = false;
-
+  orgName = '';
   constructor(private cacheService: CacheService, private browserCacheTtlService: BrowserCacheTtlService,
     public userService: UserService, private navigationHelperService: NavigationHelperService,
     private permissionService: PermissionService, public resourceService: ResourceService,
@@ -191,9 +191,12 @@ export class AppComponent implements OnInit {
    * set org Details for Anonymous user.
    */
   private setOrgDetails(): Observable<any> {
+    console.log('hii');
     return this.orgDetailsService.getOrgDetails(this.slug).pipe(
       tap(data => {
+        console.log('data', data);
         this.orgDetails = data;
+        this.orgName = data.slug;
         this.channel = this.orgDetails.hashTagId;
       })
     );

@@ -57,11 +57,10 @@ export class ExploreCourseComponent implements OnInit, OnDestroy, AfterViewInit 
             this.getFrameWork()
         ).pipe(
             mergeMap((data: any) => {
-                console.log('data org', data);
                 this.hashTagId = data[0].hashTagId;
                 if (data[1]) {
                     this.initFilters = true;
-                    this.frameWorkName = 'NCERT';
+                    this.frameWorkName = data[1];
                     return of({});
                     // return this.dataDrivenFilterEvent;
                 } else {
@@ -138,7 +137,6 @@ export class ExploreCourseComponent implements OnInit, OnDestroy, AfterViewInit 
             facets: this.facets,
             params: this.configService.appConfig.ExplorePage.contentApiQueryParams
         };
-        option.filters.organization = 'sbwb';
         if (this.frameWorkName) {
             option.params.framework = this.frameWorkName;
         }

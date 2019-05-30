@@ -82,6 +82,7 @@ export class SunbirdHeaderComponent implements OnInit {
       this.orgSetupRole = this.config.rolesConfig.headerDropdownRoles.orgSetupRole;
   }
   ngOnInit() {
+    this.showExploreHeader = true;
     if (this.userService.loggedIn) {
       this.userService.userData$.pipe(first()).subscribe((user: any) => {
         if (user && !user.err) {

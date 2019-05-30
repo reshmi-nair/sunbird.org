@@ -1,4 +1,3 @@
-
 import {combineLatest, of, Subject } from 'rxjs';
 import { PageApiService, CoursesService, ISort, PlayerService, FormService } from '@sunbird/core';
 import { Component, OnInit, OnDestroy, EventEmitter, AfterViewInit, HostListener } from '@angular/core';
@@ -58,7 +57,7 @@ export class LearnPageComponent implements OnInit, OnDestroy, AfterViewInit {
     }
   }
   ngOnInit() {
-    combineLatest(this.fetchEnrolledCoursesSection()).pipe(first(),
+    combineLatest(this.fetchEnrolledCoursesSection(), this.getFrameWork()).pipe(first(),
       mergeMap((data: Array<any>) => {
         this.enrolledSection = data[0];
         if (data[1]) {
@@ -167,7 +166,7 @@ export class LearnPageComponent implements OnInit, OnDestroy, AfterViewInit {
         .pipe(map((data: ServerResponse) => {
             const frameWork = _.find(data, 'framework').framework;
             this.cacheService.set('framework' + 'search', frameWork, { maxAge: this.browserCacheTtlService.browserCacheTtl});
-            return 'defaultFramework';
+            return frameWork;
         }), catchError((error) => {
           return of(false);
         }));

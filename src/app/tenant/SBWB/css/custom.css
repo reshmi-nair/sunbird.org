@@ -10,8 +10,11 @@ html, body{width: 100%; overflow-x: hidden;}
 }
 
 .Main_Header nav .navbar-header a img {
-    width: 52px;
+    width: 138px;
     margin-left: 15px;
+}
+.navbar-brand {
+    padding-top: 9px;
 }
 
 .Main_Header nav .MainRightNav ul li a {
