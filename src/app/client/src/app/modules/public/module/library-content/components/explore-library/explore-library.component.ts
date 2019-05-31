@@ -96,7 +96,7 @@ export class ExploreLibraryComponent implements OnInit, OnDestroy, AfterViewInit
       filters = _.omit(filters, ['key', 'sort_by', 'sortType', 'appliedFilters']);
         const softConstraintData: any = {
           filters: {
-              channel: this.hashTagId,
+              channel: this.hashTagId
           },
           softConstraints: _.get(this.activatedRoute.snapshot, 'data.softConstraints'),
           mode: 'soft'
@@ -115,6 +115,7 @@ export class ExploreLibraryComponent implements OnInit, OnDestroy, AfterViewInit
           facets: this.facets,
           params: this.configService.appConfig.ExplorePage.contentApiQueryParams
       };
+
       option.filters.contentType = filters.contentType ||
       ['Collection', 'TextBook', 'LessonPlan', 'Resource'];
       option.filters.organization = 'sbwb';
