@@ -1,9 +1,5 @@
 import {combineLatest, of, Subject } from 'rxjs';
-<<<<<<< HEAD
-import { PageApiService, CoursesService, ISort, PlayerService, UserService, FormService } from '@sunbird/core';
-=======
 import { PageApiService, CoursesService, ISort, PlayerService, FormService, UserService} from '@sunbird/core';
->>>>>>> 9655ee2d97a2ebe7b792b2ffd2def86fa055f05b
 import { Component, OnInit, OnDestroy, EventEmitter, AfterViewInit, HostListener } from '@angular/core';
 import {
   ResourceService, ServerResponse, ToasterService, ICaraouselData, ConfigService, UtilService, INoResultMessage,
@@ -49,12 +45,7 @@ export class LearnPageComponent implements OnInit, OnDestroy, AfterViewInit {
     public router: Router, private utilService: UtilService, public coursesService: CoursesService,
     private playerService: PlayerService, private cacheService: CacheService,
     private browserCacheTtlService: BrowserCacheTtlService, public formService: FormService,
-<<<<<<< HEAD
-    public navigationhelperService: NavigationHelperService,
-    public userService: UserService) {
-=======
     public navigationhelperService: NavigationHelperService, private userService: UserService) {
->>>>>>> 9655ee2d97a2ebe7b792b2ffd2def86fa055f05b
     window.scroll(0, 0);
     this.redirectUrl = this.configService.appConfig.courses.inPageredirectUrl;
     this.filterType = this.configService.appConfig.courses.filterType;
