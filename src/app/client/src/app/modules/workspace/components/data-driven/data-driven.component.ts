@@ -149,19 +149,19 @@ export class DataDrivenComponent extends WorkSpace implements OnInit, OnDestroy,
   ngOnInit() {
 
     this.checkForPreviousRouteForRedirect();
-    if (_.lowerCase(this.contentType) === 'course') {
-      this.getCourseFrameworkId().pipe(takeUntil(this.unsubscribe)).subscribe(data => {
-        this.framework = data;
-        this.fetchFrameworkMetaData();
-      }, err => {
-        this.toasterService.error(this.resourceService.messages.emsg.m0005);
-       });
-    } else {
+    // if (_.lowerCase(this.contentType) === 'course') {
+    //   this.getCourseFrameworkId().pipe(takeUntil(this.unsubscribe)).subscribe(data => {
+        this.framework = 'NCERT';
+    //     this.fetchFrameworkMetaData();
+    //   }, err => {
+    //     this.toasterService.error(this.resourceService.messages.emsg.m0005);
+    //    });
+    // } else {
       /**
      * fetchFrameworkMetaData is called to config the form data and framework data
      */
       this.fetchFrameworkMetaData();
-    }
+    // }
     /***
  * Call User service to get user data
  */
