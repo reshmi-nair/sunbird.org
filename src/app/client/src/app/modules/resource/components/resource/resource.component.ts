@@ -118,12 +118,16 @@ export class ResourceComponent implements OnInit, OnDestroy, AfterViewInit {
       exists: [],
       params : this.configService.appConfig.Library.contentApiQueryParams
     };
+    option.filters.channel = this.hashTagId;
+
     if (_.get(manipulatedData, 'filters')) {
       option.softConstraints = _.get(manipulatedData, 'softConstraints');
     }
     if (this.queryParams.sort_by) {
       option.sort_by = {[this.queryParams.sort_by]: this.queryParams.sortType  };
     }
+    option.filters.channel = this.userService.hashTagId;
+    option.filters.organasation = this.userService.rootOrgName;
     this.pageApiService.getPageData(option)
       .subscribe(data => {
         this.showLoader = false;

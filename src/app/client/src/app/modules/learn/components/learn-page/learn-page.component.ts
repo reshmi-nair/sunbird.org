@@ -1,5 +1,5 @@
 import {combineLatest, of, Subject } from 'rxjs';
-import { PageApiService, CoursesService, ISort, PlayerService, FormService } from '@sunbird/core';
+import { PageApiService, CoursesService, ISort, PlayerService, FormService, UserService} from '@sunbird/core';
 import { Component, OnInit, OnDestroy, EventEmitter, AfterViewInit, HostListener } from '@angular/core';
 import {
   ResourceService, ServerResponse, ToasterService, ICaraouselData, ConfigService, UtilService, INoResultMessage,
@@ -39,12 +39,13 @@ export class LearnPageComponent implements OnInit, OnDestroy, AfterViewInit {
   public selectedCourseBatches: any;
   public pageSections: Array<ICaraouselData> = [];
 
+
   constructor(private pageApiService: PageApiService, private toasterService: ToasterService,
     public resourceService: ResourceService, private configService: ConfigService, private activatedRoute: ActivatedRoute,
     public router: Router, private utilService: UtilService, public coursesService: CoursesService,
     private playerService: PlayerService, private cacheService: CacheService,
     private browserCacheTtlService: BrowserCacheTtlService, public formService: FormService,
-    public navigationhelperService: NavigationHelperService) {
+    public navigationhelperService: NavigationHelperService, private userService: UserService) {
     window.scroll(0, 0);
     this.redirectUrl = this.configService.appConfig.courses.inPageredirectUrl;
     this.filterType = this.configService.appConfig.courses.filterType;
@@ -57,6 +58,7 @@ export class LearnPageComponent implements OnInit, OnDestroy, AfterViewInit {
     }
   }
   ngOnInit() {
+    this.hashTagId = this.userService.hashTagId;
     combineLatest(this.fetchEnrolledCoursesSection(), this.getFrameWork()).pipe(first(),
       mergeMap((data: Array<any>) => {
         this.enrolledSection = data[0];
@@ -101,17 +103,22 @@ export class LearnPageComponent implements OnInit, OnDestroy, AfterViewInit {
       }
       return value.length;
     });
+    console.log('query params', this.queryParams, filters);
     const option: any = {
       source: 'web',
       name: 'Course',
       filters: filters,
       params : this.configService.appConfig.CoursePageSection.contentApiQueryParams
     };
+    console.log('userser', this.userService, option.filters);
+    option.filters.channel = this.userService.hashTagId;
+    option.filters.organisation = this.userService.rootOrgName;
     if (this.queryParams.sort_by) {
       option.sort_by = {[this.queryParams.sort_by]: this.queryParams.sortType  };
     }
     this.pageApiService.getPageData(option).pipe(takeUntil(this.unsubscribe$))
       .subscribe(data => {
+        console.log('data', data);
         this.showLoader = false;
         this.carouselMasterData = this.prepareCarouselData(_.get(data, 'sections'));
         if (!this.carouselMasterData.length) {
