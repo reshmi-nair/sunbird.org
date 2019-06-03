@@ -82,6 +82,7 @@ export class MainHeaderComponent implements OnInit {
     this.orgSetupRole = this.config.rolesConfig.headerDropdownRoles.orgSetupRole;
   }
   ngOnInit() {
+
     if (this.userService.loggedIn) {
       this.userService.userData$.pipe(first()).subscribe((user: any) => {
         if (user && !user.err) {
@@ -95,8 +96,10 @@ export class MainHeaderComponent implements OnInit {
           this.getLanguage(data.orgDetails.hashTagId);
         }
       });
+     this.showExploreHeader = true;
     }
     this.getUrl();
+
     this.activatedRoute.queryParams.subscribe(queryParams => this.queryParam = { ...queryParams });
     this.tenantService.tenantData$.subscribe(({ tenantData }) => {
       this.tenantInfo.logo = tenantData ? tenantData.logo : undefined;

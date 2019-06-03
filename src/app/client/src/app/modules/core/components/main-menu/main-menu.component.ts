@@ -73,6 +73,9 @@ export class MainMenuComponent implements OnInit {
 
   ngOnInit() {
     this.slug = this.activatedRoute.snapshot.params.slug;
+
+    this.slug = _.get(this.activatedRoute, 'snapshot.firstChild.firstChild.params.slug');
+
     try {
       this.helpLinkVisibility = (<HTMLInputElement>document.getElementById('helpLinkVisibility')).value;
     } catch (error) {

@@ -320,4 +320,3 @@ this.resourceDataSubscription = this.resourceService.languageSelected$
     }
   }
 }
-

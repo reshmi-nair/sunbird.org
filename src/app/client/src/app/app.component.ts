@@ -68,7 +68,8 @@ export class AppComponent implements OnInit {
   viewinBrowser = false;
   isOffline: boolean = environment.isOffline;
   sessionExpired = false;
-  orgName = '';
+  orgName: string;
+  enableTenantHeader: string;
   constructor(private cacheService: CacheService, private browserCacheTtlService: BrowserCacheTtlService,
     public userService: UserService, private navigationHelperService: NavigationHelperService,
     private permissionService: PermissionService, public resourceService: ResourceService,
@@ -183,6 +184,7 @@ export class AppComponent implements OnInit {
         }
         this.userProfile = user.userProfile;
         this.slug = _.get(this.userProfile, 'rootOrg.slug');
+        this.enableTenantHeader = _.get(this.userProfile, 'rootOrg.slug');
         this.channel = this.userService.hashTagId;
         return of(user.userProfile);
       }));
@@ -197,6 +199,7 @@ export class AppComponent implements OnInit {
         console.log('data', data);
         this.orgDetails = data;
         this.orgName = data.slug;
+        this.enableTenantHeader = data.slug;
         this.channel = this.orgDetails.hashTagId;
       })
     );
