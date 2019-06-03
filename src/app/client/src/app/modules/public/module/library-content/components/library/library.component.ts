@@ -56,7 +56,6 @@ export class LibraryComponent implements OnInit, OnDestroy, AfterViewInit {
   ngOnInit() {
     this.orgDetailsService.getOrgDetails(this.activatedRoute.snapshot.params.slug).pipe(
       mergeMap((orgDetails: any) => {
-        console.log('org', orgDetails);
         this.hashTagId = orgDetails.hashTagId;
         this.channel = orgDetails.orgName;
         this.initFilters = true;

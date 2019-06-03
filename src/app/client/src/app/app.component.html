@@ -3,12 +3,21 @@
     [buttonLabel]="resourceService.frmelmnts.btn.submit" (submit)="updateFrameWork($event)"></app-popup>
   <app-tnc-popup (close)="onAcceptTnc()" #termsAndCondPopUp *ngIf="showTermsAndCondPopUp && !isOffline">
   </app-tnc-popup>
-  <app-sunbird-header *ngIf="orgName==='sunbirdorg' else otherHeader"></app-sunbird-header>
   <app-install-app (viewInBrowser)="viewInBrowser($event)" *ngIf="showAppPopUp && userService.loggedIn && !isOffline">
   </app-install-app>
+ 
+  <div *ngIf="orgName && orgName==='sunbirdorg'">
+    <app-sunbird-header></app-sunbird-header>
+
+ </div>
+ <div *ngIf="enableTenantHeader  && enableTenantHeader!=='sunbirdorg'">
+  <app-header ></app-header> 
+</div>
+
   <!-- <app-breadcrumbs *ngIf="userService.loggedIn"></app-breadcrumbs> -->
   <router-outlet *ngIf="initApp"></router-outlet>
 </div>
+
 <app-sunbird-footer  *ngIf="orgName==='sunbirdorg' else otherfooter"></app-sunbird-footer>
 
 <sui-modal [mustScroll]="false" [isClosable]="false" [transitionDuration]="0" [size]="'small'" class="sb-modal"
@@ -27,9 +36,7 @@
     </a>
   </div>
 </sui-modal>
-<ng-template #otherHeader>
-  <app-header></app-header> 
-</ng-template>
+
 <ng-template #otherfooter>
     <app-footer></app-footer>
 

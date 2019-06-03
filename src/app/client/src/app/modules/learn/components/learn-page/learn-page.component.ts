@@ -103,14 +103,13 @@ export class LearnPageComponent implements OnInit, OnDestroy, AfterViewInit {
       }
       return value.length;
     });
-    console.log('query params', this.queryParams, filters);
+
     const option: any = {
       source: 'web',
       name: 'Course',
       filters: filters,
       params : this.configService.appConfig.CoursePageSection.contentApiQueryParams
     };
-    console.log('userser', this.userService, option.filters);
     option.filters.channel = this.userService.hashTagId;
     option.filters.organisation = this.userService.rootOrgName;
     if (this.queryParams.sort_by) {
