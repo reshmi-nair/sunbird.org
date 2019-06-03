@@ -103,19 +103,21 @@ export class LearnPageComponent implements OnInit, OnDestroy, AfterViewInit {
       }
       return value.length;
     });
+
     const option: any = {
       source: 'web',
       name: 'Course',
       filters: filters,
       params : this.configService.appConfig.CoursePageSection.contentApiQueryParams
     };
-    option.filters.channel = this.hashTagId;
-
+    option.filters.channel = this.userService.hashTagId;
+    option.filters.organisation = this.userService.rootOrgName;
     if (this.queryParams.sort_by) {
       option.sort_by = {[this.queryParams.sort_by]: this.queryParams.sortType  };
     }
     this.pageApiService.getPageData(option).pipe(takeUntil(this.unsubscribe$))
       .subscribe(data => {
+        console.log('data', data);
         this.showLoader = false;
         this.carouselMasterData = this.prepareCarouselData(_.get(data, 'sections'));
         if (!this.carouselMasterData.length) {
