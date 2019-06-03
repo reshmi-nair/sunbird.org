@@ -151,7 +151,7 @@ export class DataDrivenComponent extends WorkSpace implements OnInit, OnDestroy,
     this.checkForPreviousRouteForRedirect();
     // if (_.lowerCase(this.contentType) === 'course') {
     //   this.getCourseFrameworkId().pipe(takeUntil(this.unsubscribe)).subscribe(data => {
-        this.framework = 'NCERT';
+    //     this.framework = data;
     //     this.fetchFrameworkMetaData();
     //   }, err => {
     //     this.toasterService.error(this.resourceService.messages.emsg.m0005);
@@ -185,9 +185,9 @@ export class DataDrivenComponent extends WorkSpace implements OnInit, OnDestroy,
     this.frameworkService.frameworkData$.subscribe((frameworkData: Framework) => {
       if (!frameworkData.err) {
         this.categoryMasterList = _.cloneDeep(frameworkData.frameworkdata['defaultFramework'].categories);
-        if (_.lowerCase(this.contentType) !== 'course') {
+        // if (_.lowerCase(this.contentType) !== 'course') {
           this.framework = frameworkData.frameworkdata['defaultFramework'].code;
-        }
+        // }
         /**
         * isCachedDataExists will check data is exists in cache or not. If exists should not call
         * form api otherwise call form api and get form data
