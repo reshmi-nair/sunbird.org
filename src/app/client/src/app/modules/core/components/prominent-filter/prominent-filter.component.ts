@@ -114,6 +114,7 @@ export class ProminentFilterComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+
     this.resourceDataSubscription = this.resourceService.languageSelected$
       .subscribe(item => {
         this.selectedLanguage = item.value;
