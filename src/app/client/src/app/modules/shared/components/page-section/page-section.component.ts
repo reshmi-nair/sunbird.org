@@ -1,21 +1,29 @@
-import { ActivatedRoute } from '@angular/router';
-import { ResourceService, ConfigService } from '../../services';
-import { Component, Input, EventEmitter, Output, OnDestroy, Inject, ViewChild, ChangeDetectorRef } from '@angular/core';
-import { ICaraouselData } from '../../interfaces';
-import { OnInit } from '@angular/core/src/metadata/lifecycle_hooks';
-import * as _ from 'lodash-es';
-import { IInteractEventEdata } from '@sunbird/telemetry';
-import { Subscription } from 'rxjs';
-import { DOCUMENT } from '@angular/platform-browser';
+import { ActivatedRoute } from "@angular/router";
+import { ResourceService, ConfigService } from "../../services";
+import {
+  Component,
+  Input,
+  EventEmitter,
+  Output,
+  OnDestroy,
+  Inject,
+  ViewChild,
+  ChangeDetectorRef
+} from "@angular/core";
+import { ICaraouselData } from "../../interfaces";
+import { OnInit } from "@angular/core/src/metadata/lifecycle_hooks";
+import * as _ from "lodash-es";
+import { IInteractEventEdata } from "@sunbird/telemetry";
+import { Subscription } from "rxjs";
+import { DOCUMENT } from "@angular/platform-browser";
 /**
  * This display a a section
  */
 @Component({
-  selector: 'app-page-section',
-  templateUrl: './page-section.component.html'
+  selector: "app-page-section",
+  templateUrl: "./page-section.component.html"
 })
 export class PageSectionComponent implements OnInit, OnDestroy {
-
   cardInteractEdata: IInteractEventEdata;
 
   refresh = true;
@@ -40,60 +48,93 @@ export class PageSectionComponent implements OnInit, OnDestroy {
 
   maxSlide = 0;
 
-  constructor(public config: ConfigService, public activatedRoute: ActivatedRoute, public resourceService: ResourceService,
-    private cdr: ChangeDetectorRef) {
-      this.pageid = _.get(this.activatedRoute, 'snapshot.data.telemetry.pageid');
-    }
+  constructor(
+    public config: ConfigService,
+    public activatedRoute: ActivatedRoute,
+    public resourceService: ResourceService,
+    private cdr: ChangeDetectorRef
+  ) {
+    this.pageid = _.get(this.activatedRoute, "snapshot.data.telemetry.pageid");
+  }
   playContent(event) {
     event.section = this.section.name;
     this.playEvent.emit(event);
   }
   ngOnInit() {
     this.updateSlick();
-    this.slideConfig = this.cardType === 'batch'
-      ? _.cloneDeep(this.config.appConfig.CourseBatchPageSection.slideConfig)
-      : _.cloneDeep(this.config.appConfig.CoursePageSection.slideConfig);
-    this.resourceDataSubscription = this.resourceService.languageSelected$.subscribe(item => {
-      this.selectedLanguageTranslation(item.value);
-    });
+    this.slideConfig =
+      this.cardType === "batch"
+        ? _.cloneDeep(this.config.appConfig.CourseBatchPageSection.slideConfig)
+        : _.cloneDeep(this.config.appConfig.CoursePageSection.slideConfig);
+    this.resourceDataSubscription = this.resourceService.languageSelected$.subscribe(
+      item => {
+        this.selectedLanguageTranslation(item.value);
+      }
+    );
     if (this.pageid) {
       this.cardInteractEdata = {
-        id: this.cardType === 'batch' ? 'batch-card' : 'content-card',
-        type: 'click',
+        id: this.cardType === "batch" ? "batch-card" : "content-card",
+        type: "click",
         pageid: this.pageid
       };
     }
   }
   updateSlick() {
-    if (this.contentList.length && this.contentList.length < this.section.contents.length) {
-      const upperLimit = _.get(this.config, 'appConfig.CoursePageSection.slideConfig.slidesToScroll') || 4;
-      this.contentList.push(...this.section.contents.slice(this.contentList.length, this.contentList.length + upperLimit));
+    if (
+      this.contentList.length &&
+      this.contentList.length < this.section.contents.length
+    ) {
+      const upperLimit =
+        _.get(
+          this.config,
+          "appConfig.CoursePageSection.slideConfig.slidesToScroll"
+        ) || 4;
+      this.contentList.push(
+        ...this.section.contents.slice(
+          this.contentList.length,
+          this.contentList.length + upperLimit
+        )
+      );
     } else if (this.contentList.length === 0) {
-      const upperLimit = (_.get(this.config, 'appConfig.CoursePageSection.slideConfig.slidesToScroll') || 4) * 2 - 1;
+      const upperLimit =
+        (_.get(
+          this.config,
+          "appConfig.CoursePageSection.slideConfig.slidesToScroll"
+        ) || 4) *
+          2 -
+        1;
       this.contentList.push(...this.section.contents.slice(0, upperLimit));
     }
   }
   selectedLanguageTranslation(data) {
-    if (data === 'ur' && !this.slideConfig['rtl']) { // other language to urdu
-      this.slideConfig['rtl'] = true;
+    if (data === "ur" && !this.slideConfig["rtl"]) {
+      // other language to urdu
+      this.slideConfig["rtl"] = true;
       this.reInitSlick();
-    } else if (data !== 'ur' && this.slideConfig['rtl']) { // urdu to other language
-      this.slideConfig['rtl'] = false;
+    } else if (data !== "ur" && this.slideConfig["rtl"]) {
+      // urdu to other language
+      this.slideConfig["rtl"] = false;
       this.reInitSlick();
-    } else { // other language to other language
-      this.slideConfig['rtl'] = false;
+    } else {
+      // other language to other language
+      this.slideConfig["rtl"] = false;
     }
     try {
-      if (this.section.name !== 'My Courses') {
-        const display = JSON.parse(this.section['display']);
-        if (_.has(display.name, data) && !_.isEmpty(display.name[data])) {
-          this.section.name = display.name[data];
+      if (this.section.name !== "My Courses") {
+        if (!!this.section.hasOwnProperty("display")) {
+          const display = JSON.parse(this.section["display"]);
+          if (_.has(display.name, data) && !_.isEmpty(display.name[data])) {
+            this.section.name = display.name[data];
+          } else {
+            this.section.name = display.name["en"];
+          }
         } else {
-          this.section.name = display.name['en'];
+          this.section.name = this.resourceService.frmelmnts.lbl.mycourse;
         }
+      } else {
+        this.section.name = this.resourceService.frmelmnts.lbl.mycourse;
       }
-    } catch (err) {
-    }
+    } catch (err) {}
   }
   reInitSlick() {
     this.contentList = [];
