@@ -1,10 +1,10 @@
-import { ContentService, PublicDataService, UserService } from "@sunbird/core";
-import { Injectable } from "@angular/core";
-import { Observable, of } from "rxjs";
-import { ConfigService, ServerResponse } from "@sunbird/shared";
-import { map, switchMap, catchError } from "rxjs/operators";
-import * as _ from "lodash-es";
-import { WorkSpaceService } from "./../work-space/workspace.service";
+import { ContentService, PublicDataService, UserService } from '@sunbird/core';
+import { Injectable } from '@angular/core';
+import { Observable, of } from 'rxjs';
+import { ConfigService, ServerResponse } from '@sunbird/shared';
+import { map, switchMap, catchError } from 'rxjs/operators';
+import * as _ from 'lodash-es';
+import { WorkSpaceService } from './../work-space/workspace.service';
 
 /**
  * Service to provides CRUD methods to make content api request by extending DataService.
@@ -90,19 +90,19 @@ export class EditorService {
 
   getOwnershipType() {
     const formServiceInputParams = {
-      formType: "content",
-      subType: "all",
-      formAction: "ownership",
+      formType: 'content',
+      subType: 'all',
+      formAction: 'ownership',
       rootOrgId: this.userService.userProfile.rootOrgId
     };
     return this.workspaceService.getFormData(formServiceInputParams).pipe(
       map(data => {
-        return _.get(data, "result.form.data.fields[0].ownershipType")
+        return _.get(data, 'result.form.data.fields[0].ownershipType')
           ? data.result.form.data.fields[0].ownershipType
-          : ["createdBy"];
+          : ['createdBy'];
       }),
       catchError(error => {
-        return of(["createdBy"]);
+        return of(['createdBy']);
       })
     );
   }

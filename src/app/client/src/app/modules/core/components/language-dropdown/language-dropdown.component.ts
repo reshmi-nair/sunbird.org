@@ -1,13 +1,13 @@
-import { Router } from "@angular/router";
-import { IInteractEventEdata } from "@sunbird/telemetry";
-import { Component, OnInit, Input } from "@angular/core";
-import { ResourceService } from "@sunbird/shared";
-import { CacheService } from "ng2-cache-service";
-import * as _ from "lodash-es";
+import { Router } from '@angular/router';
+import { IInteractEventEdata } from '@sunbird/telemetry';
+import { Component, OnInit, Input } from '@angular/core';
+import { ResourceService } from '@sunbird/shared';
+import { CacheService } from 'ng2-cache-service';
+import * as _ from 'lodash-es';
 
 @Component({
-  selector: "app-language-dropdown",
-  templateUrl: "./language-dropdown.component.html"
+  selector: 'app-language-dropdown',
+  templateUrl: './language-dropdown.component.html'
 })
 export class LanguageDropdownComponent implements OnInit {
   @Input() redirectUrl: string;
@@ -21,23 +21,23 @@ export class LanguageDropdownComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.selectedLanguage = this._cacheService.get("portalLanguage") || "es";
+    this.selectedLanguage = this._cacheService.get('portalLanguage') || 'es';
     this.resourceService.getLanguageChange(
-      _.find(this.languageRange, ["value", this.selectedLanguage])
+      _.find(this.languageRange, ['value', this.selectedLanguage])
     );
   }
 
   onLanguageChange(event) {
-    this._cacheService.set("portalLanguage", event);
+    this._cacheService.set('portalLanguage', event);
     this.resourceService.getResource(event);
-    const language = _.find(this.languageRange, ["value", event]);
+    const language = _.find(this.languageRange, ['value', event]);
     this.resourceService.getLanguageChange(language);
   }
   getTelemetryInteractEdata(language): IInteractEventEdata {
     return {
       id: `${language}-lang`,
-      type: "click",
-      pageid: this.router.url.split("/")[1]
+      type: 'click',
+      pageid: this.router.url.split('/')[1]
     };
   }
 }

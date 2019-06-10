@@ -9,7 +9,7 @@ import {
   UtilService,
   BrowserCacheTtlService,
   NavigationHelperService
-} from "@sunbird/shared";
+} from '@sunbird/shared';
 import {
   SearchService,
   PlayerService,
@@ -17,9 +17,9 @@ import {
   UserService,
   FormService,
   ISort
-} from "@sunbird/core";
-import { IPagination } from "@sunbird/announcement";
-import { combineLatest, Subject, of } from "rxjs";
+} from '@sunbird/core';
+import { IPagination } from '@sunbird/announcement';
+import { combineLatest, Subject, of } from 'rxjs';
 import {
   Component,
   OnInit,
@@ -27,10 +27,10 @@ import {
   EventEmitter,
   ChangeDetectorRef,
   AfterViewInit
-} from "@angular/core";
-import { Router, ActivatedRoute } from "@angular/router";
-import * as _ from "lodash-es";
-import { IInteractEventEdata, IImpressionEventInput } from "@sunbird/telemetry";
+} from '@angular/core';
+import { Router, ActivatedRoute } from '@angular/router';
+import * as _ from 'lodash-es';
+import { IInteractEventEdata, IImpressionEventInput } from '@sunbird/telemetry';
 import {
   takeUntil,
   map,
@@ -40,11 +40,11 @@ import {
   debounceTime,
   catchError,
   delay
-} from "rxjs/operators";
-import { CacheService } from "ng2-cache-service";
+} from 'rxjs/operators';
+import { CacheService } from 'ng2-cache-service';
 
 @Component({
-  templateUrl: "./course-search.component.html"
+  templateUrl: './course-search.component.html'
 })
 export class CourseSearchComponent implements OnInit, OnDestroy, AfterViewInit {
   public showLoader = true;
@@ -156,7 +156,7 @@ export class CourseSearchComponent implements OnInit, OnDestroy, AfterViewInit {
       this.queryParams,
       (value: Array<string> | string) => value && value.length
     );
-    filters = _.omit(filters, ["key", "sort_by", "sortType", "appliedFilters"]);
+    filters = _.omit(filters, ['key', 'sort_by', 'sortType', 'appliedFilters']);
     const option = {
       filters: filters,
       limit: this.configService.appConfig.SEARCH.PAGE_LIMIT,
@@ -175,7 +175,7 @@ export class CourseSearchComponent implements OnInit, OnDestroy, AfterViewInit {
       data => {
         this.showLoader = false;
         this.facetsList = this.searchService.processFilterData(
-          _.get(data, "result.facets")
+          _.get(data, 'result.facets')
         );
         this.paginationDetails = this.paginationService.getPager(
           data.result.count,
@@ -214,10 +214,10 @@ export class CourseSearchComponent implements OnInit, OnDestroy, AfterViewInit {
     const defaultFilters = _.reduce(
       filters,
       (collector: any, element) => {
-        if (element.code === "board") {
+        if (element.code === 'board') {
           collector.board =
-            _.get(_.orderBy(element.range, ["index"], ["asc"]), "[0].name") ||
-            "";
+            _.get(_.orderBy(element.range, ['index'], ['asc']), '[0].name') ||
+            '';
         }
         return collector;
       },
@@ -226,19 +226,19 @@ export class CourseSearchComponent implements OnInit, OnDestroy, AfterViewInit {
     this.dataDrivenFilterEvent.emit(defaultFilters);
   }
   private getFrameWork() {
-    const framework = this.cacheService.get("framework" + "search");
+    const framework = this.cacheService.get('framework' + 'search');
     if (framework) {
       return of(framework);
     } else {
       const formServiceInputParams = {
-        formType: "framework",
-        formAction: "search",
-        contentType: "framework-code"
+        formType: 'framework',
+        formAction: 'search',
+        contentType: 'framework-code'
       };
       return this.formService.getFormConfig(formServiceInputParams).pipe(
         map(data => {
-          const frameWork = _.find(data, "framework").framework;
-          this.cacheService.set("framework" + "search", frameWork, {
+          const frameWork = _.find(data, 'framework').framework;
+          this.cacheService.set('framework' + 'search', frameWork, {
             maxAge: this.browserCacheTtlService.browserCacheTtl
           });
           return frameWork;
@@ -282,13 +282,13 @@ export class CourseSearchComponent implements OnInit, OnDestroy, AfterViewInit {
       return;
     }
     const url = this.router.url
-      .split("?")[0]
+      .split('?')[0]
       .replace(/[^\/]+$/, page.toString());
     this.router.navigate([url], { queryParams: this.queryParams });
     window.scroll({
       top: 100,
       left: 100,
-      behavior: "smooth"
+      behavior: 'smooth'
     });
   }
   public playContent({ data }) {
@@ -330,33 +330,33 @@ export class CourseSearchComponent implements OnInit, OnDestroy, AfterViewInit {
       if (!obj) {
         this.inViewLogs.push({
           objid: elem.data.metaData.identifier,
-          objtype: elem.data.metaData.contentType || "content",
+          objtype: elem.data.metaData.contentType || 'content',
           index: elem.id
         });
       }
     });
     if (this.telemetryImpression) {
       this.telemetryImpression.edata.visits = this.inViewLogs;
-      this.telemetryImpression.edata.subtype = "pageexit";
+      this.telemetryImpression.edata.subtype = 'pageexit';
       this.telemetryImpression = Object.assign({}, this.telemetryImpression);
     }
   }
   private setTelemetryData() {
     this.inViewLogs = []; // set to empty every time filter or page changes
     this.closeIntractEdata = {
-      id: "search-close",
-      type: "click",
-      pageid: "course-search"
+      id: 'search-close',
+      type: 'click',
+      pageid: 'course-search'
     };
     this.cardIntractEdata = {
-      id: "course-card",
-      type: "click",
-      pageid: "course-search"
+      id: 'course-card',
+      type: 'click',
+      pageid: 'course-search'
     };
     this.sortIntractEdata = {
-      id: "sort",
-      type: "click",
-      pageid: "course-search"
+      id: 'sort',
+      type: 'click',
+      pageid: 'course-search'
     };
   }
 
@@ -383,8 +383,8 @@ export class CourseSearchComponent implements OnInit, OnDestroy, AfterViewInit {
   }
   private setNoResultMessage() {
     this.noResultMessage = {
-      message: "messages.stmsg.m0007",
-      messageText: "messages.stmsg.m0006"
+      message: 'messages.stmsg.m0007',
+      messageText: 'messages.stmsg.m0006'
     };
   }
 }

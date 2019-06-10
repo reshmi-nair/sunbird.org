@@ -9,7 +9,7 @@ import {
   UtilService,
   BrowserCacheTtlService,
   NavigationHelperService
-} from "@sunbird/shared";
+} from '@sunbird/shared';
 import {
   SearchService,
   PlayerService,
@@ -17,9 +17,9 @@ import {
   UserService,
   FormService,
   ISort
-} from "@sunbird/core";
-import { IPagination } from "@sunbird/announcement";
-import { combineLatest, Subject } from "rxjs";
+} from '@sunbird/core';
+import { IPagination } from '@sunbird/announcement';
+import { combineLatest, Subject } from 'rxjs';
 import {
   Component,
   OnInit,
@@ -27,10 +27,10 @@ import {
   EventEmitter,
   ChangeDetectorRef,
   AfterViewInit
-} from "@angular/core";
-import { Router, ActivatedRoute } from "@angular/router";
-import * as _ from "lodash-es";
-import { IInteractEventEdata, IImpressionEventInput } from "@sunbird/telemetry";
+} from '@angular/core';
+import { Router, ActivatedRoute } from '@angular/router';
+import * as _ from 'lodash-es';
+import { IInteractEventEdata, IImpressionEventInput } from '@sunbird/telemetry';
 import {
   takeUntil,
   map,
@@ -38,11 +38,11 @@ import {
   first,
   debounceTime,
   tap
-} from "rxjs/operators";
-import { CacheService } from "ng2-cache-service";
+} from 'rxjs/operators';
+import { CacheService } from 'ng2-cache-service';
 
 @Component({
-  templateUrl: "./home-search.component.html"
+  templateUrl: './home-search.component.html'
 })
 export class HomeSearchComponent implements OnInit, OnDestroy, AfterViewInit {
   public showLoader = true;
@@ -146,13 +146,13 @@ export class HomeSearchComponent implements OnInit, OnDestroy, AfterViewInit {
       this.queryParams,
       (value: Array<string> | string) => value && value.length
     );
-    filters = _.omit(filters, ["key", "sort_by", "sortType"]);
+    filters = _.omit(filters, ['key', 'sort_by', 'sortType']);
     filters.contentType = filters.contentType || [
-      "Collection",
-      "TextBook",
-      "LessonPlan",
-      "Resource",
-      "Course"
+      'Collection',
+      'TextBook',
+      'LessonPlan',
+      'Resource',
+      'Course'
     ];
     const option = {
       filters: filters,
@@ -169,7 +169,7 @@ export class HomeSearchComponent implements OnInit, OnDestroy, AfterViewInit {
       data => {
         this.showLoader = false;
         this.facetsList = this.searchService.processFilterData(
-          _.get(data, "result.facets")
+          _.get(data, 'result.facets')
         );
         this.paginationDetails = this.paginationService.getPager(
           data.result.count,
@@ -208,10 +208,10 @@ export class HomeSearchComponent implements OnInit, OnDestroy, AfterViewInit {
     const defaultFilters = _.reduce(
       filters,
       (collector: any, element) => {
-        if (element.code === "board") {
+        if (element.code === 'board') {
           collector.board =
-            _.get(_.orderBy(element.range, ["index"], ["asc"]), "[0].name") ||
-            "";
+            _.get(_.orderBy(element.range, ['index'], ['asc']), '[0].name') ||
+            '';
         }
         return collector;
       },
@@ -252,13 +252,13 @@ export class HomeSearchComponent implements OnInit, OnDestroy, AfterViewInit {
       return;
     }
     const url = this.router.url
-      .split("?")[0]
+      .split('?')[0]
       .replace(/[^\/]+$/, page.toString());
     this.router.navigate([url], { queryParams: this.queryParams });
     window.scroll({
       top: 100,
       left: 100,
-      behavior: "smooth"
+      behavior: 'smooth'
     });
   }
   public playContent({ data }) {
@@ -300,33 +300,33 @@ export class HomeSearchComponent implements OnInit, OnDestroy, AfterViewInit {
       if (!obj) {
         this.inViewLogs.push({
           objid: elem.data.metaData.identifier,
-          objtype: elem.data.metaData.contentType || "content",
+          objtype: elem.data.metaData.contentType || 'content',
           index: elem.id
         });
       }
     });
     if (this.telemetryImpression) {
       this.telemetryImpression.edata.visits = this.inViewLogs;
-      this.telemetryImpression.edata.subtype = "pageexit";
+      this.telemetryImpression.edata.subtype = 'pageexit';
       this.telemetryImpression = Object.assign({}, this.telemetryImpression);
     }
   }
   private setTelemetryData() {
     this.inViewLogs = []; // set to empty every time filter or page changes
     this.closeIntractEdata = {
-      id: "search-close",
-      type: "click",
-      pageid: "home-search"
+      id: 'search-close',
+      type: 'click',
+      pageid: 'home-search'
     };
     this.cardIntractEdata = {
-      id: "content-card",
-      type: "click",
-      pageid: "home-search"
+      id: 'content-card',
+      type: 'click',
+      pageid: 'home-search'
     };
     this.filterIntractEdata = {
-      id: "filter",
-      type: "click",
-      pageid: "home-search"
+      id: 'filter',
+      type: 'click',
+      pageid: 'home-search'
     };
   }
   ngAfterViewInit() {
@@ -351,8 +351,8 @@ export class HomeSearchComponent implements OnInit, OnDestroy, AfterViewInit {
   }
   private setNoResultMessage() {
     this.noResultMessage = {
-      message: "messages.stmsg.m0007",
-      messageText: "messages.stmsg.m0006"
+      message: 'messages.stmsg.m0007',
+      messageText: 'messages.stmsg.m0006'
     };
   }
 }

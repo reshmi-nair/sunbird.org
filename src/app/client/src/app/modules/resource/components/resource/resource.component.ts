@@ -1,10 +1,10 @@
-import { combineLatest, Subject } from "rxjs";
+import { combineLatest, Subject } from 'rxjs';
 import {
   PageApiService,
   PlayerService,
   UserService,
   ISort
-} from "@sunbird/core";
+} from '@sunbird/core';
 import {
   Component,
   OnInit,
@@ -13,7 +13,7 @@ import {
   ChangeDetectorRef,
   AfterViewInit,
   HostListener
-} from "@angular/core";
+} from '@angular/core';
 import {
   ResourceService,
   ToasterService,
@@ -23,10 +23,10 @@ import {
   ICaraouselData,
   BrowserCacheTtlService,
   NavigationHelperService
-} from "@sunbird/shared";
-import { Router, ActivatedRoute } from "@angular/router";
-import * as _ from "lodash-es";
-import { IInteractEventEdata, IImpressionEventInput } from "@sunbird/telemetry";
+} from '@sunbird/shared';
+import { Router, ActivatedRoute } from '@angular/router';
+import * as _ from 'lodash-es';
+import { IInteractEventEdata, IImpressionEventInput } from '@sunbird/telemetry';
 import {
   takeUntil,
   map,
@@ -35,10 +35,10 @@ import {
   filter,
   delay,
   tap
-} from "rxjs/operators";
-import { CacheService } from "ng2-cache-service";
+} from 'rxjs/operators';
+import { CacheService } from 'ng2-cache-service';
 @Component({
-  templateUrl: "./resource.component.html"
+  templateUrl: './resource.component.html'
 })
 export class ResourceComponent implements OnInit, OnDestroy, AfterViewInit {
   public showLoader = true;
@@ -61,7 +61,7 @@ export class ResourceComponent implements OnInit, OnDestroy, AfterViewInit {
   public redirectUrl;
   public pageSections: Array<ICaraouselData> = [];
 
-  @HostListener("window:scroll", []) onScroll(): void {
+  @HostListener('window:scroll', []) onScroll(): void {
     if (
       window.innerHeight + window.scrollY >=
         (document.body.offsetHeight * 2) / 3 &&
@@ -87,7 +87,7 @@ export class ResourceComponent implements OnInit, OnDestroy, AfterViewInit {
   ) {
     window.scroll(0, 0);
     this.sortingOptions = this.configService.dropDownConfig.FILTER.RESOURCES.sortingOptions;
-    this.router.onSameUrlNavigation = "reload";
+    this.router.onSameUrlNavigation = 'reload';
     this.filterType = this.configService.appConfig.library.filterType;
     this.redirectUrl = this.configService.appConfig.library.inPageredirectUrl;
   }
@@ -95,7 +95,7 @@ export class ResourceComponent implements OnInit, OnDestroy, AfterViewInit {
   ngOnInit() {
     this.userService.userData$.subscribe(userData => {
       if (userData && !userData.err) {
-        this.frameworkData = _.get(userData.userProfile, "framework");
+        this.frameworkData = _.get(userData.userProfile, 'framework');
       }
     });
     this.initFilters = true;
@@ -110,10 +110,10 @@ export class ResourceComponent implements OnInit, OnDestroy, AfterViewInit {
     const defaultFilters = _.reduce(
       filters,
       (collector: any, element) => {
-        if (element.code === "board") {
+        if (element.code === 'board') {
           collector.board =
-            _.get(_.orderBy(element.range, ["index"], ["asc"]), "[0].name") ||
-            "";
+            _.get(_.orderBy(element.range, ['index'], ['asc']), '[0].name') ||
+            '';
         }
         return collector;
       },
@@ -143,7 +143,7 @@ export class ResourceComponent implements OnInit, OnDestroy, AfterViewInit {
     const filters = _.pickBy(
       this.queryParams,
       (value: Array<string> | string, key) => {
-        if (_.includes(["sort_by", "sortType", "appliedFilters"], key)) {
+        if (_.includes(['sort_by', 'sortType', 'appliedFilters'], key)) {
           return false;
         }
         return value.length;
@@ -156,29 +156,29 @@ export class ResourceComponent implements OnInit, OnDestroy, AfterViewInit {
       },
       softConstraints: _.get(
         this.activatedRoute.snapshot,
-        "data.softConstraints"
+        'data.softConstraints'
       ),
-      mode: "soft"
+      mode: 'soft'
     };
     const manipulatedData = this.utilService.manipulateSoftConstraint(
-      _.get(this.queryParams, "appliedFilters"),
+      _.get(this.queryParams, 'appliedFilters'),
       softConstraintData,
       this.frameworkData
     );
     const option: any = {
-      source: "web",
-      name: "Resource",
-      filters: _.get(this.queryParams, "appliedFilters")
+      source: 'web',
+      name: 'Resource',
+      filters: _.get(this.queryParams, 'appliedFilters')
         ? filters
-        : _.get(manipulatedData, "filters"),
-      mode: _.get(manipulatedData, "mode"),
+        : _.get(manipulatedData, 'filters'),
+      mode: _.get(manipulatedData, 'mode'),
       exists: [],
       params: this.configService.appConfig.Library.contentApiQueryParams
     };
     option.filters.channel = this.hashTagId;
 
-    if (_.get(manipulatedData, "filters")) {
-      option.softConstraints = _.get(manipulatedData, "softConstraints");
+    if (_.get(manipulatedData, 'filters')) {
+      option.softConstraints = _.get(manipulatedData, 'softConstraints');
     }
     if (this.queryParams.sort_by) {
       option.sort_by = {
@@ -191,7 +191,7 @@ export class ResourceComponent implements OnInit, OnDestroy, AfterViewInit {
       data => {
         this.showLoader = false;
         this.carouselMasterData = this.prepareCarouselData(
-          _.get(data, "sections")
+          _.get(data, 'sections')
         );
         if (!this.carouselMasterData.length) {
           return; // no page section
@@ -225,7 +225,7 @@ export class ResourceComponent implements OnInit, OnDestroy, AfterViewInit {
       sections,
       (collector, element) => {
         const contents =
-          _.slice(_.get(element, "contents"), 0, slickSize) || [];
+          _.slice(_.get(element, 'contents'), 0, slickSize) || [];
         element.contents = this.utilService.getDataForCard(
           contents,
           constantData,
@@ -254,7 +254,7 @@ export class ResourceComponent implements OnInit, OnDestroy, AfterViewInit {
     });
     if (this.telemetryImpression) {
       this.telemetryImpression.edata.visits = this.inViewLogs;
-      this.telemetryImpression.edata.subtype = "pageexit";
+      this.telemetryImpression.edata.subtype = 'pageexit';
       this.telemetryImpression = Object.assign({}, this.telemetryImpression);
     }
   }
@@ -274,12 +274,12 @@ export class ResourceComponent implements OnInit, OnDestroy, AfterViewInit {
       searchQuery.request.sort_by
     );
     searchQuery.request.filters.exists = searchQuery.request.exists;
-    this.cacheService.set("viewAllQuery", searchQuery.request.filters);
-    this.cacheService.set("pageSection", event, {
+    this.cacheService.set('viewAllQuery', searchQuery.request.filters);
+    this.cacheService.set('pageSection', event, {
       maxAge: this.browserCacheTtlService.browserCacheTtl
     });
     const queryParams = { ...searchQuery.request.filters, ...this.queryParams }; // , ...this.queryParams
-    const sectionUrl = "resources/view-all/" + event.name.replace(/\s/g, "-");
+    const sectionUrl = 'resources/view-all/' + event.name.replace(/\s/g, '-');
     this.router.navigate([sectionUrl, 1], { queryParams: queryParams });
   }
   ngOnDestroy() {
@@ -309,8 +309,8 @@ export class ResourceComponent implements OnInit, OnDestroy, AfterViewInit {
 
   private setNoResultMessage() {
     this.noResultMessage = {
-      message: "messages.stmsg.m0007",
-      messageText: "messages.stmsg.m0006"
+      message: 'messages.stmsg.m0007',
+      messageText: 'messages.stmsg.m0006'
     };
   }
 }

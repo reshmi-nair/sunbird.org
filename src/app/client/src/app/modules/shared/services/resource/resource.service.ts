@@ -3,18 +3,18 @@ import {
   throwError as observableThrowError,
   Observable,
   BehaviorSubject
-} from "rxjs";
+} from 'rxjs';
 
-import { mergeMap } from "rxjs/operators";
-import { BrowserCacheTtlService } from "./../browser-cache-ttl/browser-cache-ttl.service";
-import { HttpOptions, RequestParam, ServerResponse } from "./../../interfaces";
-import { ConfigService } from "./../config/config.service";
-import { Injectable, EventEmitter } from "@angular/core";
-import { HttpClient } from "@angular/common/http";
-import { UUID } from "angular2-uuid";
-import * as moment from "moment";
-import { CacheService } from "ng2-cache-service";
-import * as _ from "lodash-es";
+import { mergeMap } from 'rxjs/operators';
+import { BrowserCacheTtlService } from './../browser-cache-ttl/browser-cache-ttl.service';
+import { HttpOptions, RequestParam, ServerResponse } from './../../interfaces';
+import { ConfigService } from './../config/config.service';
+import { Injectable, EventEmitter } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { UUID } from 'angular2-uuid';
+import * as moment from 'moment';
+import { CacheService } from 'ng2-cache-service';
+import * as _ from 'lodash-es';
 /**
  * Service to fetch resource bundle
  */
@@ -65,7 +65,7 @@ export class ResourceService {
       this.baseUrl = this.config.urlConFig.URLS.RESOURCEBUNDLES_PREFIX;
       try {
         this._instance = (<HTMLInputElement>(
-          document.getElementById("instance")
+          document.getElementById('instance')
         )).value;
       } catch (error) {}
       ResourceService.singletonInstance = this;
@@ -73,21 +73,21 @@ export class ResourceService {
     return ResourceService.singletonInstance;
   }
   public initialize() {
-    this.getResource(this._cacheService.get("portalLanguage") || "es");
+    this.getResource(this._cacheService.get('portalLanguage') || 'es');
   }
   /**
    * method to fetch resource bundle
    */
-  public getResource(language = "es"): void {
+  public getResource(language = 'es'): void {
     const resourcebundles: any | null = this.cacheService.get(
-      "resourcebundles" + language
+      'resourcebundles' + language
     );
     if (resourcebundles) {
       this.messages = resourcebundles.messages;
       this.frmelmnts = resourcebundles.frmelmnts;
     } else {
       const option = {
-        url: this.config.urlConFig.URLS.RESOURCEBUNDLES.ENG + "/" + language
+        url: this.config.urlConFig.URLS.RESOURCEBUNDLES.ENG + '/' + language
       };
       this.get(option).subscribe(
         (data: ServerResponse) => {
@@ -102,7 +102,7 @@ export class ResourceService {
             data.result.consumption.frmelmnts
           );
           this.cacheService.set(
-            "resourcebundles" + language,
+            'resourcebundles' + language,
             {
               messages: this.messages,
               frmelmnts: this.frmelmnts
@@ -123,23 +123,23 @@ export class ResourceService {
     };
     return this.http.get(this.baseUrl + requestParam.url, httpOptions).pipe(
       mergeMap((data: ServerResponse) => {
-        if (data.responseCode !== "OK") {
+        if (data.responseCode !== 'OK') {
           return observableThrowError(data);
         }
         return observableOf(data);
       })
     );
   }
-  private getHeader(): HttpOptions["headers"] {
+  private getHeader(): HttpOptions['headers'] {
     return {
-      "Content-Type": "application/json",
-      Accept: "application/json",
-      "X-Consumer-ID": "X-Consumer-ID",
-      "X-Device-ID": "X-Device-ID",
-      "X-Org-code": "",
-      "X-Source": "web",
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+      'X-Consumer-ID': 'X-Consumer-ID',
+      'X-Device-ID': 'X-Device-ID',
+      'X-Org-code': '',
+      'X-Source': 'web',
       ts: moment().format(),
-      "X-msgid": UUID.UUID()
+      'X-msgid': UUID.UUID()
     };
   }
   /**
