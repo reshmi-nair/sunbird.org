@@ -73,12 +73,12 @@ export class ResourceService {
     return ResourceService.singletonInstance;
   }
   public initialize() {
-    this.getResource(this._cacheService.get('portalLanguage') || 'es');
+    this.getResource(this._cacheService.get('portalLanguage') || 'en');
   }
   /**
    * method to fetch resource bundle
    */
-  public getResource(language = 'es'): void {
+  public getResource(language = 'en'): void {
     const resourcebundles: any | null = this.cacheService.get(
       'resourcebundles' + language
     );
