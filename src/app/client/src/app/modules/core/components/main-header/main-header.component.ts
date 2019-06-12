@@ -1,34 +1,34 @@
-import { filter, first } from "rxjs/operators";
+import { filter, first } from 'rxjs/operators';
 import {
   UserService,
   PermissionService,
   TenantService,
   OrgDetailsService,
   FormService
-} from "./../../services";
-import { Component, OnInit, ChangeDetectorRef } from "@angular/core";
+} from './../../services';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import {
   ConfigService,
   ResourceService,
   IUserProfile,
   IUserData
-} from "@sunbird/shared";
-import { Router, ActivatedRoute, NavigationEnd } from "@angular/router";
-import * as _ from "lodash-es";
-import { IInteractEventObject, IInteractEventEdata } from "@sunbird/telemetry";
-import { CacheService } from "ng2-cache-service";
-import { environment } from "@sunbird/environment";
+} from '@sunbird/shared';
+import { Router, ActivatedRoute, NavigationEnd } from '@angular/router';
+import * as _ from 'lodash-es';
+import { IInteractEventObject, IInteractEventEdata } from '@sunbird/telemetry';
+import { CacheService } from 'ng2-cache-service';
+import { environment } from '@sunbird/environment';
 declare var jQuery: any;
 
 @Component({
-  selector: "app-header",
-  templateUrl: "./main-header.component.html"
+  selector: 'app-header',
+  templateUrl: './main-header.component.html'
 })
 export class MainHeaderComponent implements OnInit {
   languageFormQuery = {
-    formType: "content",
-    formAction: "search",
-    filterEnv: "resourcebundle"
+    formType: 'content',
+    formAction: 'search',
+    filterEnv: 'resourcebundle'
   };
   exploreButtonVisibility: string;
   queryParam: any = {};
@@ -41,26 +41,26 @@ export class MainHeaderComponent implements OnInit {
   myActivityRole: Array<string>;
   orgSetupRole: Array<string>;
   avtarMobileStyle = {
-    backgroundColor: "transparent",
-    color: "#AAAAAA",
-    fontFamily: "inherit",
-    fontSize: "17px",
-    lineHeight: "38px",
-    border: "1px solid #e8e8e8",
-    borderRadius: "50%",
-    height: "38px",
-    width: "38px"
+    backgroundColor: 'transparent',
+    color: '#AAAAAA',
+    fontFamily: 'inherit',
+    fontSize: '17px',
+    lineHeight: '38px',
+    border: '1px solid #e8e8e8',
+    borderRadius: '50%',
+    height: '38px',
+    width: '38px'
   };
   avtarDesktopStyle = {
-    backgroundColor: "transparent",
-    color: "#AAAAAA",
-    fontFamily: "inherit",
-    fontSize: "17px",
-    lineHeight: "38px",
-    border: "1px solid #e8e8e8",
-    borderRadius: "50%",
-    height: "38px",
-    width: "38px"
+    backgroundColor: 'transparent',
+    color: '#AAAAAA',
+    fontFamily: 'inherit',
+    fontSize: '17px',
+    lineHeight: '38px',
+    border: '1px solid #e8e8e8',
+    borderRadius: '50%',
+    height: '38px',
+    width: '38px'
   };
   public signUpInteractEdata: IInteractEventEdata;
   public enterDialCodeInteractEdata: IInteractEventEdata;
@@ -93,10 +93,10 @@ export class MainHeaderComponent implements OnInit {
   ) {
     try {
       this.exploreButtonVisibility = (<HTMLInputElement>(
-        document.getElementById("exploreButtonVisibility")
+        document.getElementById('exploreButtonVisibility')
       )).value;
     } catch (error) {
-      this.exploreButtonVisibility = "false";
+      this.exploreButtonVisibility = 'false';
     }
     this.adminDashboard = this.config.rolesConfig.headerDropdownRoles.adminDashboard;
     this.announcementRole = this.config.rolesConfig.headerDropdownRoles.announcementRole;
@@ -163,34 +163,33 @@ export class MainHeaderComponent implements OnInit {
             );
           },
           (err: any) => {
-            this.languages = [{ value: "en", label: "English", dir: "ltr" }];
+            this.languages = [{ value: 'en', label: 'English', dir: 'ltr' }];
           }
         );
     }
   }
   navigateToHome() {
     if (this.userService.loggedIn) {
-      this.router.navigate(["resources"]);
+      this.router.navigate(['resources']);
     } else {
-      window.location.href = this.slug ? this.slug : "";
+      window.location.href = this.slug ? this.slug : '';
     }
   }
   onEnter(key) {
-    debugger;
-    console.log("key", key);
+    console.log('key', key);
     this.queryParam = {};
     if (key && key.length) {
       this.queryParam.key = key;
     }
     this.slug = _.get(
       this.activatedRoute,
-      "snapshot.firstChild.firstChild.params.slug"
+      'snapshot.firstChild.firstChild.params.slug'
     );
     let searchroute;
     if (this.slug) {
-      searchroute = this.slug + "/explore-courses";
+      searchroute = this.slug + '/explore-courses';
     } else {
-      searchroute = "/explore-courses";
+      searchroute = '/explore-courses';
     }
 
     this.router.navigate([searchroute, 1], {
@@ -220,42 +219,42 @@ export class MainHeaderComponent implements OnInit {
         }
         this.slug = _.get(
           this.activatedRoute,
-          "snapshot.firstChild.firstChild.params.slug"
+          'snapshot.firstChild.firstChild.params.slug'
         );
-        if (_.includes(urlAfterRedirects.url, "/explore")) {
+        if (_.includes(urlAfterRedirects.url, '/explore')) {
           this.showExploreHeader = true;
-          const url = urlAfterRedirects.url.split("?")[0].split("/");
-          console.log("url", url);
-          if (url.indexOf("explore-library") === 2) {
-            this.exploreRoutingUrl = url[1] + "/" + url[2];
-            console.log("else", this.exploreRoutingUrl);
+          const url = urlAfterRedirects.url.split('?')[0].split('/');
+          console.log('url', url);
+          if (url.indexOf('explore-library') === 2) {
+            this.exploreRoutingUrl = url[1] + '/' + url[2];
+            console.log('else', this.exploreRoutingUrl);
           }
-          if (url.indexOf("explore-courses") === 2) {
-            this.exploreRoutingUrl = url[1] + "/" + url[2];
-            console.log("else", this.exploreRoutingUrl);
+          if (url.indexOf('explore-courses') === 2) {
+            this.exploreRoutingUrl = url[1] + '/' + url[2];
+            console.log('else', this.exploreRoutingUrl);
           }
-          if (url.indexOf("explore") === 2) {
-            this.exploreRoutingUrl = url[1] + "/" + url[2];
-            console.log("iif", this.exploreRoutingUrl);
+          if (url.indexOf('explore') === 2) {
+            this.exploreRoutingUrl = url[1] + '/' + url[2];
+            console.log('iif', this.exploreRoutingUrl);
           } else {
             this.exploreRoutingUrl = url[1];
-            console.log("else", this.exploreRoutingUrl);
+            console.log('else', this.exploreRoutingUrl);
           }
-        } else if (_.includes(urlAfterRedirects.url, "/explore-courses")) {
+        } else if (_.includes(urlAfterRedirects.url, '/explore-courses')) {
           this.showExploreHeader = true;
-          const url = urlAfterRedirects.url.split("?")[0].split("/");
-          if (url.indexOf("explore-courses") === 2) {
-            this.exploreRoutingUrl = url[1] + "/" + url[2];
-            console.log(" else iif", this.exploreRoutingUrl);
+          const url = urlAfterRedirects.url.split('?')[0].split('/');
+          if (url.indexOf('explore-courses') === 2) {
+            this.exploreRoutingUrl = url[1] + '/' + url[2];
+            console.log(' else iif', this.exploreRoutingUrl);
           } else {
             this.exploreRoutingUrl = url[1];
-            console.log(" else iif else", this.exploreRoutingUrl);
+            console.log(' else iif else', this.exploreRoutingUrl);
           }
-        } else if (_.includes(urlAfterRedirects.url, "/explore-library")) {
+        } else if (_.includes(urlAfterRedirects.url, '/explore-library')) {
           this.showExploreHeader = true;
-          const url = urlAfterRedirects.url.split("?")[0].split("/");
-          if (url.indexOf("explore-courses") === 2) {
-            this.exploreRoutingUrl = url[1] + "/" + url[2];
+          const url = urlAfterRedirects.url.split('?')[0].split('/');
+          if (url.indexOf('explore-courses') === 2) {
+            this.exploreRoutingUrl = url[1] + '/' + url[2];
           } else {
             this.exploreRoutingUrl = url[1];
           }
@@ -267,32 +266,32 @@ export class MainHeaderComponent implements OnInit {
 
   setInteractEventData() {
     this.signUpInteractEdata = {
-      id: "signup",
-      type: "click",
-      pageid: "public"
+      id: 'signup',
+      type: 'click',
+      pageid: 'public'
     };
     this.telemetryInteractObject = {
-      id: "",
-      type: "signup",
-      ver: "1.0"
+      id: '',
+      type: 'signup',
+      ver: '1.0'
     };
     this.enterDialCodeInteractEdata = {
-      id: "click-dial-code",
-      type: "click",
-      pageid: "explore"
+      id: 'click-dial-code',
+      type: 'click',
+      pageid: 'explore'
     };
   }
 
   getLogoutInteractEdata() {
     return {
-      id: "logout",
-      type: "click",
-      pageid: this.router.url.split("/")[1]
+      id: 'logout',
+      type: 'click',
+      pageid: this.router.url.split('/')[1]
     };
   }
 
   logout() {
-    window.location.replace("/logoff");
+    window.location.replace('/logoff');
     this.cacheService.removeAll();
   }
   setWindowConfig() {
@@ -330,8 +329,8 @@ export class MainHeaderComponent implements OnInit {
     };
   }
   showSideBar() {
-    jQuery(".ui.sidebar")
-      .sidebar("setting", "transition", "overlay")
-      .sidebar("toggle");
+    jQuery('.ui.sidebar')
+      .sidebar('setting', 'transition', 'overlay')
+      .sidebar('toggle');
   }
 }
