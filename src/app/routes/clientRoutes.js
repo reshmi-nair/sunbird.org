@@ -1,36 +1,36 @@
 const express = require('express'),
-fs = require('fs'),
-request = require('request'),
-compression = require('compression'),
-MobileDetect = require('mobile-detect'),
-_ = require('lodash'),
-path = require('path'),
-envHelper = require('../helpers/environmentVariablesHelper.js'),
-tenantHelper = require('../helpers/tenantHelper.js'),
-defaultTenantIndexStatus = tenantHelper.getDefaultTenantIndexState(),
-oneDayMS = 86400000,
-pathMap = {}
+  fs = require('fs'),
+  request = require('request'),
+  compression = require('compression'),
+  MobileDetect = require('mobile-detect'),
+  _ = require('lodash'),
+  path = require('path'),
+  envHelper = require('../helpers/environmentVariablesHelper.js'),
+  tenantHelper = require('../helpers/tenantHelper.js'),
+  defaultTenantIndexStatus = tenantHelper.getDefaultTenantIndexState(),
+  oneDayMS = 86400000,
+  pathMap = {}
 
 const setZipConfig = (req, res, type, encoding, dist = '../') => {
-    if (pathMap[req.path + type] && pathMap[req.path + type] === 'notExist') {
-      return false;
+  if (pathMap[req.path + type] && pathMap[req.path + type] === 'notExist') {
+    return false;
+  }
+  if (pathMap[req.path + '.' + type] === 'exist' ||
+    fs.existsSync(path.join(__dirname, dist) + req.path + '.' + type)) {
+    if (req.path.endsWith('.css')) {
+      res.set('Content-Type', 'text/css');
+    } else if (req.path.endsWith('.js')) {
+      res.set('Content-Type', 'text/javascript');
     }
-    if(pathMap[req.path + '.'+ type] === 'exist' ||
-      fs.existsSync(path.join(__dirname, dist) + req.path + '.' + type)){
-        if (req.path.endsWith('.css')) {
-          res.set('Content-Type', 'text/css');
-        } else if (req.path.endsWith('.js')) {
-          res.set('Content-Type', 'text/javascript');
-        }
-        req.url = req.url + '.' + type;
-        res.set('Content-Encoding', encoding);
-        pathMap[req.path + type] = 'exist';
-        return true
-    } else {
-      pathMap[req.path + type] = 'notExist';
-      console.log('zip file not exist for: ', req.url, type)
-      return false;
-    }
+    req.url = req.url + '.' + type;
+    res.set('Content-Encoding', encoding);
+    pathMap[req.path + type] = 'exist';
+    return true
+  } else {
+    pathMap[req.path + type] = 'notExist';
+    console.log('zip file not exist for: ', req.url, type)
+    return false;
+  }
 }
 module.exports = (app, keycloak) => {
   app.set('view engine', 'ejs')
@@ -38,33 +38,44 @@ module.exports = (app, keycloak) => {
   app.get(['*.js', '*.css'], (req, res, next) => {
     res.setHeader('Cache-Control', 'public, max-age=' + oneDayMS * 30)
     res.setHeader('Expires', new Date(Date.now() + oneDayMS * 30).toUTCString())
-    if(req.get('Accept-Encoding').includes('br')){ // send br files
-      if(!setZipConfig(req, res, 'br', 'br') && req.get('Accept-Encoding').includes('gzip')){
+    if (req.get('Accept-Encoding').includes('br')) { // send br files
+      if (!setZipConfig(req, res, 'br', 'br') && req.get('Accept-Encoding').includes('gzip')) {
         setZipConfig(req, res, 'gz', 'gzip') // send gzip if br file not found
       }
-    } else if(req.get('Accept-Encoding').includes('gzip')){
+    } else if (req.get('Accept-Encoding').includes('gzip')) {
       setZipConfig(req, res, 'gz', 'gzip')
     }
     next();
   });
 
   app.get(['/dist/*.ttf', '/dist/*.woff2', '/dist/*.woff', '/dist/*.eot', '/dist/*.svg',
-    '/*.ttf', '/*.woff2', '/*.woff', '/*.eot', '/*.svg', '/*.html'], compression(),
+      '/*.ttf', '/*.woff2', '/*.woff', '/*.eot', '/*.svg', '/*.html'
+    ], compression(),
     (req, res, next) => {
       res.setHeader('Cache-Control', 'public, max-age=' + oneDayMS * 30)
       res.setHeader('Expires', new Date(Date.now() + oneDayMS * 30).toUTCString())
       next()
-  })
+    })
 
-  app.use(express.static(path.join(__dirname, '../dist'), { extensions: ['ejs'], index: false }))
+  app.use(express.static(path.join(__dirname, '../dist'), {
+    extensions: ['ejs'],
+    index: false
+  }))
 
-  app.use('/dist', express.static(path.join(__dirname, '../dist'), { extensions: ['ejs'], index: false }))
+  app.use('/dist', express.static(path.join(__dirname, '../dist'), {
+    extensions: ['ejs'],
+    index: false
+  }))
 
-  app.use(express.static(path.join(__dirname, '../tenant'), { index: false }))
+  app.use(express.static(path.join(__dirname, '../tenant'), {
+    index: false
+  }))
 
   app.use('/sunbird-plugins', express.static(path.join(__dirname, '../sunbird-plugins')))
 
-  app.use('/tenant', express.static(path.join(__dirname, '../tenant'), { index: false }))
+  app.use('/tenant', express.static(path.join(__dirname, '../tenant'), {
+    index: false
+  }))
 
   if (envHelper.DEFAULT_CHANNEL) {
     app.use(express.static(path.join(__dirname, '../tenant', envHelper.DEFAULT_CHANNEL)))
@@ -77,9 +88,10 @@ module.exports = (app, keycloak) => {
   })
 
   app.all(['/', '/get', '/get/dial/:dialCode', '/explore',
-    '/explore/*', '/:slug/explore', '/:slug/explore/*', '/play/*', '/:slug/explore-courses', '/:slug/explore-courses/*',
-     '/:slug/explore-library', '/:slug/explore-library/*',
-    '/:slug/signup', '/signup', '/:slug/sign-in/*', '/sign-in/*'], indexPage(false))
+    '/explore/*', '/play/*', '/:slug/explore-courses', '/:slug/explore-courses/*',
+    '/:slug/explore-library', '/:slug/explore-library/*',
+    '/:slug/signup', '/signup', '/:slug/sign-in/*', '/sign-in/*'
+  ], indexPage(false))
 
   app.all('/:slug/get', (req, res) => res.redirect('/get'))
 
@@ -93,14 +105,15 @@ module.exports = (app, keycloak) => {
   app.all(['/home', '/home/*', '/announcement', '/announcement/*', '/search', '/search/*',
     '/orgType', '/orgType/*', '/dashBoard', '/dashBoard/*',
     '/workspace', '/workspace/*', '/profile', '/profile/*', '/learn', '/learn/*', '/resources',
-    '/resources/*', '/myActivity', '/myActivity/*'], keycloak.protect(), indexPage(true))
+    '/resources/*', '/myActivity', '/myActivity/*'
+  ], keycloak.protect(), indexPage(true))
 
   app.all('/:tenantName', renderTenantPage)
 }
 
 function getLocals(req) {
   var locals = {}
-  if(req.loggedInRoute){
+  if (req.loggedInRoute) {
     locals.userId = _.get(req, 'session.userId') ? req.session.userId : null
     locals.sessionId = _.get(req, 'sessionID') && _.get(req, 'session.userId') ? req.sessionID : null
   } else {
@@ -129,7 +142,7 @@ function getLocals(req) {
 }
 
 const indexPage = (loggedInRoute) => {
-  return function(req, res){
+  return function (req, res) {
     if (envHelper.DEFAULT_CHANNEL && req.path === '/') {
       renderTenantPage(req, res)
     } else {
