@@ -195,6 +195,9 @@ export class ViewAllComponent implements OnInit, OnDestroy, AfterViewInit {
     });
   }
   getContents(data) {
+    const x = data.queryParams;
+   data.queryParams = _.omit(x, ['slug']);
+   data.queryParams['organisation'] = data.params['slug'];
     this.getContentList(data).subscribe((response: any) => {
       this.showLoader = false;
       if (response.contentData.result.count && response.contentData.result.content) {
@@ -253,8 +256,9 @@ export class ViewAllComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   private getContentList(request) {
+     const omitteddata = _.omit(request.queryParams, ['slug']);
     const softConstraintData = {
-      filters: _.get(request.queryParams, 'softConstraintsFilter') ? JSON.parse(request.queryParams.softConstraintsFilter) : {},
+      filters: _.get(omitteddata, 'softConstraintsFilter') ? JSON.parse(omitteddata.softConstraintsFilter) : {},
       softConstraints: _.get(this.activatedRoute.snapshot, 'data.softConstraints'),
       mode: 'soft'
     };
@@ -263,13 +267,15 @@ export class ViewAllComponent implements OnInit, OnDestroy, AfterViewInit {
       manipulatedData = this.utilService.manipulateSoftConstraint(_.get(this.queryParams, 'appliedFilters'),
         softConstraintData, this.frameworkData);
     }
+    this.filters = _.omit(this.filters, ['slug']);
+   this.filters['organisation'] = request.params['slug'];
     const requestParams = {
       filters: _.get(this.queryParams, 'appliedFilters') ? this.filters : { ..._.get(manipulatedData, 'filters'), ...this.filters },
       limit: this.pageLimit,
       pageNumber: Number(request.params.pageNumber),
-      exists: request.queryParams.exists,
-      sort_by: request.queryParams.sortType ?
-        { [request.queryParams.sort_by]: request.queryParams.sortType } : JSON.parse(request.queryParams.defaultSortBy),
+      exists: omitteddata.exists,
+      sort_by: omitteddata.sortType ?
+        { [omitteddata.sort_by]: omitteddata.sortType } : JSON.parse(omitteddata.defaultSortBy),
       mode: _.get(manipulatedData, 'mode'),
       params: this.configService.appConfig.ViewAll.contentApiQueryParams
     };
