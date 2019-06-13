@@ -36,6 +36,7 @@ export class UtilService {
       subTopic: this.getTopicSubTopic('subTopic', data.topic),
       metaData: {},
       creator: data.creator,
+      createdOn: data.createdOn || undefined,
       lastUpdatedOn: data.lastUpdatedOn,
       source: data.source,
       assetType: data.assetType,

@@ -133,6 +133,7 @@ export class ExploreContentComponent implements OnInit, OnDestroy, AfterViewInit
                     this.configService.appConfig.SEARCH.PAGE_LIMIT);
                 const { constantData, metaData, dynamicFields } = this.configService.appConfig.LibrarySearch;
                 this.contentList = this.utilService.getDataForCard(data.result.Asset, constantData, dynamicFields, metaData);
+                this.sortContentList();
             }, err => {
                 this.showLoader = false;
                 this.contentList = [];
@@ -214,5 +215,13 @@ export class ExploreContentComponent implements OnInit, OnDestroy, AfterViewInit
             'message': 'messages.stmsg.m0007',
             'messageText': 'messages.stmsg.m0006'
         };
+    }
+
+
+    sortContentList() {
+        if (this.queryParams) {
+            this.contentList = _.sortBy(this.contentList, (content) => new Date(content[this.queryParams.sort_by]).getTime()).reverse();
+         }
+
     }
 }
