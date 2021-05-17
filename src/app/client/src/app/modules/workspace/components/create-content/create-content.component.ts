@@ -1,26 +1,20 @@
 import { Router, ActivatedRoute } from '@angular/router';
-import { Component, OnInit } from '@angular/core';
-import { ResourceService, ConfigService } from '@sunbird/shared';
-import { SuiModule } from 'ng2-semantic-ui/dist';
-import { SuiModalService, TemplateModalConfig, ModalTemplate } from 'ng2-semantic-ui';
-import { FrameworkService, PermissionService } from '@sunbird/core';
+import { Component, OnInit, AfterViewInit } from '@angular/core';
+import { ResourceService, ConfigService, NavigationHelperService } from '@sunbird/shared';
+import { FrameworkService, PermissionService, UserService } from '@sunbird/core';
 import { IInteractEventInput, IImpressionEventInput } from '@sunbird/telemetry';
-import { ConceptPickerService } from '@sunbird/core';
+import { WorkSpaceService } from './../../services';
+import * as _ from 'lodash-es';
 @Component({
   selector: 'app-create-content',
-  templateUrl: './create-content.component.html',
-  styleUrls: ['./create-content.component.css']
+  templateUrl: './create-content.component.html'
 })
-export class CreateContentComponent implements OnInit {
+export class CreateContentComponent implements OnInit, AfterViewInit {
 
   /*
  roles allowed to create textBookRole
  */
   textBookRole: Array<string>;
-  /**
-   * courseRole  access roles
-  */
-  courseRole: Array<string>;
   /**
     * lessonRole   access roles
   */
@@ -37,6 +31,14 @@ export class CreateContentComponent implements OnInit {
   *  lessonplanRole access roles
   */
   contentUploadRole: Array<string>;
+  /**
+   * courseRole  access roles
+  */
+  courseRole: Array<string>;
+ /**
+   * assesment access role
+   */
+  assessmentRole: Array<string>;
   /**
    * To call resource service which helps to use language constant
    */
@@ -58,6 +60,7 @@ export class CreateContentComponent implements OnInit {
 	 * telemetryImpression
 	*/
   telemetryImpression: IImpressionEventInput;
+  public enableQuestionSetCreation;
   /**
   * Constructor to create injected service(s) object
   *
@@ -65,8 +68,11 @@ export class CreateContentComponent implements OnInit {
 
   * @param {ResourceService} resourceService Reference of ResourceService
  */
-  constructor(configService: ConfigService, resourceService: ResourceService, private conceptPickerService: ConceptPickerService,
-    frameworkService: FrameworkService, permissionService: PermissionService, private activatedRoute: ActivatedRoute) {
+  constructor(configService: ConfigService, resourceService: ResourceService,
+    frameworkService: FrameworkService, permissionService: PermissionService,
+    private activatedRoute: ActivatedRoute, public userService: UserService,
+    public navigationhelperService: NavigationHelperService,
+    public workSpaceService: WorkSpaceService) {
     this.resourceService = resourceService;
     this.frameworkService = frameworkService;
     this.permissionService = permissionService;
@@ -75,22 +81,35 @@ export class CreateContentComponent implements OnInit {
 
   ngOnInit() {
     this.frameworkService.initialize();
-    this.conceptPickerService.initialize();
     this.textBookRole = this.configService.rolesConfig.workSpaceRole.textBookRole;
-    this.courseRole = this.configService.rolesConfig.workSpaceRole.courseRole;
     this.lessonRole = this.configService.rolesConfig.workSpaceRole.lessonRole;
     this.collectionRole = this.configService.rolesConfig.workSpaceRole.collectionRole;
     this.lessonplanRole = this.configService.rolesConfig.workSpaceRole.lessonplanRole;
     this.contentUploadRole = this.configService.rolesConfig.workSpaceRole.contentUploadRole;
-    this.telemetryImpression = {
-      context: {
-        env: this.activatedRoute.snapshot.data.telemetry.env
-      },
-      edata: {
-        type: this.activatedRoute.snapshot.data.telemetry.type,
-        pageid: this.activatedRoute.snapshot.data.telemetry.pageid,
-        uri: this.activatedRoute.snapshot.data.telemetry.uri
+    this.assessmentRole = this.configService.rolesConfig.workSpaceRole.assessmentRole;
+    this.courseRole = this.configService.rolesConfig.workSpaceRole.courseRole;
+    this.workSpaceService.questionSetEnabled$.subscribe(
+      (response: any) => {
+        this.enableQuestionSetCreation = response.questionSetEnablement;
       }
-    };
+    );
+  }
+
+
+
+  ngAfterViewInit () {
+    setTimeout(() => {
+      this.telemetryImpression = {
+        context: {
+          env: this.activatedRoute.snapshot.data.telemetry.env
+        },
+        edata: {
+          type: this.activatedRoute.snapshot.data.telemetry.type,
+          pageid: this.activatedRoute.snapshot.data.telemetry.pageid,
+          uri: this.activatedRoute.snapshot.data.telemetry.uri,
+          duration: this.navigationhelperService.getPageLoadTime()
+        }
+      };
+    });
   }
 }

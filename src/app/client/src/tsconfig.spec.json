@@ -16,11 +16,8 @@
       "@sunbird/dashboard": [
         "app/modules/dashboard"
       ],
-      "@sunbird/announcement": [
-        "app/modules/announcement"
-      ],
-      "@sunbird/notes": [
-        "app/modules/notes"
+      "@sunbird/admin": [
+        "app/modules/admin"
       ],
       "@sunbird/resource": [
         "app/modules/resource"
@@ -34,6 +31,9 @@
       "@sunbird/org-management": [
         "app/modules/org-management"
       ],
+      "@sunbird/public": [
+        "app/modules/public"
+      ],
       "@sunbird/profile": [
         "app/plugins/profile"
       ],
@@ -46,9 +46,6 @@
       "@sunbird/badge": [
         "app/modules/badging"
       ],
-      "@sunbird/public": [
-        "app/modules/public"
-      ],
       "@sunbird/shared-feature": [
         "app/modules/shared-feature"
       ],
@@ -57,9 +54,30 @@
       ],
       "@sunbird/course-batch": [
         "app/modules/course-batch"
+      ],
+      "moment": [
+        "../node_modules/moment/min/moment.min.js"
+      ],
+      "@sunbird/player-helper": [
+        "app/modules/player-helper"
+      ],
+      "@sunbird/content-search": [
+        "app/modules/content-search"
+      ],
+      "CsLibInitializer": [
+        "app/service/CsLibInitializer/cs-lib-initializer.service.ts"
+      ],
+      "LazzyLoadScriptService": [
+        "app/service/LazzyLoadScript/lazzy-load-script.service.ts"
+      ],
+      "@sunbird/test-util": [
+        "app/testUtil/"
+      ],
+      "@sunbird/groups": [
+        "app/modules/groups"
       ]
     },
-    "module": "commonjs",
+    "module": "es2015",
     "types": [
       "jasmine",
       "node"

@@ -18,6 +18,10 @@ const packageObj = JSON.parse(fs.readFileSync('package.json', 'utf8'));
 
 telemtryEventConfig['pdata']['id'] = appId
 telemtryEventConfig['pdata']['ver'] = packageObj.version
+telemtryEventConfig['pdata']['pid'] = appId
+// TODO: handle telemetry event config
+const pdata = {id: envHelper.APPID, ver: packageObj.version, pid: 'sunbird-portal-backend'};
+
 module.exports = {
   /**
    * This function helps to get user spec
@@ -36,20 +40,21 @@ module.exports = {
   /**
    * this function helps to generate session start event
    */
-  logSessionStart: function (req) {
-    req.session.orgs = _.compact(req.session.orgs)
-    req.session.save()
+  logSessionStart: function (req, cdata) {
     var channel = req.session.rootOrghashTagId || _.get(req, 'headers.X-Channel-Id')
     var dims = _.clone(req.session.orgs || [])
     dims = dims ? _.concat(dims, channel) : channel
-
     const edata = telemetry.startEventData('session')
     edata.uaspec = this.getUserSpec(req)
-    const context = telemetry.getContextData({ channel: channel, env: 'user' })
+    const context = telemetry.getContextData({
+      channel: channel, env: 'user', cdata: this.getTelemetryCdata(req, cdata),
+      pdata: pdata
+    });
     context.sid = req.sessionID
     context.did = req.session.deviceId
     context.rollup = telemetry.getRollUpData(dims)
-    const actor = telemetry.getActorData(req.kauth.grant.access_token.content.sub, 'user')
+    const actor = telemetry.getActorData(req.session.userId, 'user')
+   console.log('logging session start event', context.did);
     telemetry.start({
       edata: edata,
       context: context,
@@ -61,15 +66,19 @@ module.exports = {
   /**
    * this function helps to generate session end event
    */
-  logSessionEnd: function (req) {
-    const edata = telemetry.endEventData('session')
-    const actor = telemetry.getActorData(req.kauth.grant.access_token.content.sub, 'user')
-    var dims = _.clone(req.session.orgs || [])
-    var channel = req.session.rootOrghashTagId || _.get(req, 'headers.X-Channel-Id')
-    const context = telemetry.getContextData({ channel: channel, env: 'user' })
-    context.sid = req.sessionID
-    context.did = req.session.deviceId
-    context.rollup = telemetry.getRollUpData(dims)
+  logSessionEnd: function (req, cdata) {
+    const edata = telemetry.endEventData('session');
+    const actor = telemetry.getActorData(req.session.userId, 'user');
+    var dims = _.clone(req.session.orgs || []);
+    var channel = req.session.rootOrghashTagId || _.get(req, 'headers.X-Channel-Id');
+    const context = telemetry.getContextData({
+      channel: channel, env: 'user', cdata: this.getTelemetryCdata(req, cdata),
+      pdata: pdata
+    });
+    context.sid = req.sessionID;
+    context.did = req.session.deviceId;
+    console.log('logging session end event', context.did);
+    context.rollup = telemetry.getRollUpData(dims);
     telemetry.end({
       edata: edata,
       context: context,
@@ -155,7 +164,6 @@ module.exports = {
     if (req.id && req.type) {
       object = telemetry.getObjectData({ id: req.id, type: req.type, ver: req.version, rollup: req.rollup })
     }
-
     req.reqObj.session.orgs = _.compact(req.reqObj.session.orgs)
     var channel = req.reqObj.session.rootOrghashTagId || _.get(req, 'headers.X-Channel-Id')
     if (channel) {
@@ -167,7 +175,6 @@ module.exports = {
       }
       context.rollup = telemetry.getRollUpData(dims)
       const actor = telemetry.getActorData(req.userId, 'user')
-      console.log('logAPICallEvent')
       telemetry.log({
         edata: edata,
         context: context,
@@ -198,7 +205,6 @@ module.exports = {
     context.rollup = telemetry.getRollUpData(dims)
     const object = telemetry.getObjectData({ id: req.userId, type: 'user' })
     const actor = telemetry.getActorData(req.userId, 'user')
-    console.log('logAPICallEvent')
     telemetry.log({
       edata: edata,
       context: context,
@@ -227,7 +233,7 @@ module.exports = {
     var channel = (req.reqObj && req.reqObj.session && req.reqObj.session.rootOrghashTagId) ||
       req.channel || _.get(req, 'headers.X-Channel-Id')
     if (channel) {
-      var dims = _.clone(req.reqObj.session.orgs || [])
+      var dims = _.clone(_.get(req, 'reqObj.session.orgs') || [])
       dims = dims ? _.concat(dims, channel) : channel
       const context = telemetry.getContextData({ channel: channel, env: apiConfig.env })
       if (req && req.reqObj && req.reqObj.sessionID) {
@@ -258,7 +264,6 @@ module.exports = {
     if (req.id && req.type) {
       object = telemetry.getObjectData({ id: req.id, type: req.type, ver: req.version, rollup: req.rollup })
     }
-
     req.reqObj.session.orgs = _.compact(req.reqObj.session.orgs)
     var channel = req.reqObj.session.rootOrghashTagId || _.get(req, 'headers.X-Channel-Id')
 
@@ -280,12 +285,122 @@ module.exports = {
       })
     }
   },
+  logApiErrorEventV2: function (req, options) {
+    const apiConfig = telemtryEventConfig.URL[req.uri] || {}
+    let object = options.obj || {}
+    const edata = {
+      err: options.edata.err || 'API_CALL_ERROR',
+      errtype: options.edata.type || 'SERVER_ERROR',
+      stacktrace: options.edata.stacktrace || 'unhandled error',
+      requestid: options.edata.msgid || 'null',
+      errmsg: options.edata.errmsg || 'null'
+    }
 
+    let channel = req.session.rootOrghashTagId || req.get('x-channel-id') || envHelper.defaultChannelId
+   
+    let dims = _.compact(_.concat(req.session.orgs, channel))
+    const context = {
+      channel: options.context.channel || channel,
+      env: options.context.env || apiConfig.env,
+      cdata: options.context.cdata,
+      rollup: options.context.rollup || telemetry.getRollUpData(dims),
+      did: options.context.did || req.context.did,
+      sid: req.sessionID || uuidv1()
+    }
+    const actor = {
+      id: req.userId ? req.userId.toString() : 'anonymous',
+      type: 'user'
+    }
+    /* istanbul ignore if  */
+    if(!channel){
+      console.log('logApiErrorEventV2 failed due to no channel')
+      return;
+    }
+    telemetry.error({
+      edata: edata,
+      context: _.pickBy(context, value => !_.isEmpty(value)),
+      object: _.pickBy(object, value => !_.isEmpty(value)),
+      actor: _.pickBy(actor, value => !_.isEmpty(value)),
+      tags: _.concat([], dims)
+    })
+  },
+  logAuditEvent: function (req, options) {
+    const apiConfig = telemtryEventConfig.URL[req.uri] || {}
+    let object = options.obj || {}
+    const edata =  {
+      props: options.edata.props,
+      state: options.edata.state,
+      prevstate: options.edata.prevstate
+    }
+    let channel = req.session.rootOrghashTagId || req.get('x-channel-id') || envHelper.defaultChannelId
+    let dims = _.compact(_.concat(req.session.orgs, channel))
+    const context = {
+      channel: options.context.channel || channel,
+      env: options.context.env || apiConfig.env,
+      cdata: options.context.cdata,
+      rollup: options.context.rollup || telemetry.getRollUpData(dims),
+      did: options.context.did,
+      sid: req.sessionID || uuidv1()
+    }
+    const actor = {
+      id: req.userId ? req.userId.toString() : 'anonymous',
+      type: 'user'
+    }
+    /* istanbul ignore if  */
+    if(!channel){
+      console.log('logAuditEvent failed due to no channel')
+      return;
+    }
+    telemetry.audit({
+      edata: _.pickBy(edata, value => !_.isEmpty(value)),
+      context: _.pickBy(context, value => !_.isEmpty(value)),
+      object: _.pickBy(object, value => !_.isEmpty(value)),
+      actor: _.pickBy(actor, value => !_.isEmpty(value)),
+      tags: _.concat([], dims)
+    })
+  },
+  logImpressionEvent: function (req, options) {
+    const apiConfig = telemtryEventConfig.URL[req.uri] || {}
+    let object = options.obj || {}
+    const edata =  {
+      type: options.edata.type,
+      subtype: options.edata.subtype,
+      pageid: options.edata.pageid,
+      uri: options.edata.uri,
+      visits: options.edata.visits
+    }
+    let channel = req.session.rootOrghashTagId || req.get('x-channel-id') || envHelper.defaultChannelId
+    let dims = _.compact(_.concat(req.session.orgs, channel))
+    const context = {
+      channel: options.context.channel || channel,
+      env: options.context.env || apiConfig.env,
+      cdata: options.context.cdata,
+      rollup: options.context.rollup || telemetry.getRollUpData(dims),
+      did: options.context.did,
+      sid: req.sessionID || uuidv1()
+    }
+    const actor = {
+      id: req.userId ? req.userId.toString() : 'anonymous',
+      type: 'user'
+    }
+    if(!channel){
+      console.log('logAuditEvent failed due to no channel')
+      return;
+    }
+    telemetry.impression({
+      edata: _.pickBy(edata, value => !_.isEmpty(value)),
+      context: _.pickBy(context, value => !_.isEmpty(value)),
+      object: _.pickBy(object, value => !_.isEmpty(value)),
+      actor: _.pickBy(actor, value => !_.isEmpty(value)),
+      tags: _.concat([], dims)
+    })
+  },
   logSessionEvents: function (req, res) {
     if (req.body && req.body.event) {
       req.session['sessionEvents'] = req.session['sessionEvents'] || []
       req.session['sessionEvents'].push(JSON.parse(req.body.event))
       if (req.session['sessionEvents'].length >= parseInt(telemetryPacketSize, 10)) {
+        /* istanbul ignore next  */
         module.exports.sendTelemetry(req, req.session['sessionEvents'], function (err, status) {
           if (err) {
             console.log('telemetry sync error from  portal', err)
@@ -303,7 +418,7 @@ module.exports = {
       'ver': '3.0',
       'ts': dateFormat(new Date(), 'yyyy-mm-dd HH:MM:ss:lo'),
       'params': {
-        'requesterId': req.kauth.grant.access_token.content.sub,
+        'requesterId': req.session.userId,
         'did': telemtryEventConfig.default_did,
         'msgid': uuidv1()
       },
@@ -312,6 +427,7 @@ module.exports = {
     return data
   },
   sendTelemetry: function (req, eventsData, callback) {
+    /* istanbul ignore if  */
     if (!eventsData || eventsData.length === 0) {
       if (_.isFunction(callback)) {
         callback(null, true)
@@ -328,13 +444,17 @@ module.exports = {
       body: data,
       json: true
     }
+    /* istanbul ignore next  */
     request(options, function (error, response, body) {
       if (_.isFunction(callback)) {
+        /* istanbul ignore if  */
         if (error) {
           console.log('telemetry sync error while syncing  portal', error)
           callback(error, false)
         } else if (body && body.params && body.params.err) {
+          /* istanbul ignore next  */
           console.log('telemetry sync error while syncing  portal', body.params.err)
+          /* istanbul ignore next  */
           callback(body, false)
         } else {
           callback(null, true)
@@ -401,5 +521,13 @@ module.exports = {
     }
 
     next()
+  },
+
+  getTelemetryCdata: function (req, cdata = []) {
+    cdata.push({
+      id: req.session.userSid,
+      type: 'UserSession'
+    });
+    return cdata;
   }
 }

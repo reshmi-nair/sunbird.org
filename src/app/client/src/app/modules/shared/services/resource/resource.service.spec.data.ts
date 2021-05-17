@@ -350,7 +350,7 @@ export const mockRes = {
                         'coursecreatedon': 'Course created on',
                         'updatedon': 'Updated on',
                         'selectorganization': 'Select Organization',
-                        'mycourses': 'My Courses',
+                        'mycourses': 'My Trainings',
                         'lastlogin': 'Last login',
                         'lastlogintime': 'Last login time',
                         'showingresults': 'Showing results',
@@ -742,7 +742,8 @@ export const mockRes = {
                         'm0079': 'Assigning badge failed, please try again later...',
                         'm0080': 'Fetching badge failed, please try again later...',
                         'm0081': 'Fetching all content failed, please try again later...',
-                        'm0082': 'This course is not opened for enrolling'
+                        'm0082': 'This course is not opened for enrolling',
+                        'm0083': 'Updating content failed, please try again later...',
                     },
                     'smsg': {
                         'm0001': 'success',
@@ -788,7 +789,8 @@ export const mockRes = {
                         'moo41': 'Announcement cancelled successfully...',
                         'm0042': 'Content successfully copied',
                         'm0043': 'Endorsement successfull',
-                        'm0044': 'Badge assigned successfully...'
+                        'm0044': 'Badge assigned successfully...',
+                        'm0045': 'Content Updated Successfully...'
                     },
                     'emsg': {
                         'm0001': 'Cannot enroll now.Try again later',
@@ -1176,7 +1178,7 @@ export const mockRes = {
                         'coursecreatedon': 'Course created on',
                         'updatedon': 'Updated on',
                         'selectorganization': 'Select Organization',
-                        'mycourses': 'My Courses',
+                        'mycourses': 'My Trainings',
                         'lastlogin': 'Last login',
                         'lastlogintime': 'Last login time',
                         'showingresults': 'Showing results',
@@ -1614,7 +1616,8 @@ export const mockRes = {
                         'moo41': 'Announcement cancelled successfully...',
                         'm0042': 'Content successfully copied',
                         'm0043': 'Endorsement successfull',
-                        'm0044': 'Badge assigned successfully...'
+                        'm0044': 'Badge assigned successfully...',
+                        'm0045': 'Content updated successfully...',
                     },
                     'emsg': {
                         'm0001': 'Cannot enroll now.Try again later',
@@ -2300,7 +2303,7 @@ export const mockRes = {
                     'coursecreatedon': 'Course created on',
                     'updatedon': 'Updated on',
                     'selectorganization': 'Select Organization',
-                    'mycourses': 'My Courses',
+                    'mycourses': 'My Trainings',
                     'lastlogin': 'Last login',
                     'lastlogintime': 'Last login time',
                     'showingresults': 'Showing results',
@@ -2498,5 +2501,53 @@ export const mockRes = {
             'expires': 1530167319922,
             'maxAge': 600
         }
-    }
+    },
+    cachedResourcebundleSearch: {
+        'value': [
+         {
+          'code': 'portalLanguage',
+          'dataType': 'text',
+          'name': 'Portal Language',
+          'label': 'Portal Language',
+          'description': 'Language that should be displayed on portal (Like English, Hindi etc)',
+          'editable': true,
+          'inputType': 'select',
+          'required': false,
+          'displayProperty': 'Editable',
+          'visible': true,
+          'renderingHints': {
+           'semanticColumnWidth': 'four'
+          },
+          'range': [
+           {
+            'value': 'en',
+            'name': 'English',
+            'dir': 'ltr'
+           },
+           {
+            'value': 'hi',
+            'name': 'हिंदी',
+            'dir': 'ltr'
+           },
+           {
+            'value': 'ur',
+            'name': 'Urdu',
+            'dir': 'rtl'
+           }
+          ],
+          'index': 1
+         }
+        ],
+        'options': {
+         'expires': 1547624219448,
+         'maxAge': 600
+        }
+    },
+    cachedPortalLanguage: {
+        'value': 'ur',
+        'options': {
+         'expires': 1547624226995,
+         'maxAge': 600
+        }
+       }
 };

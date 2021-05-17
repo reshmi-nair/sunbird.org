@@ -5,15 +5,19 @@ import { ServerResponse, RequestParam, HttpOptions } from '@sunbird/shared';
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { UUID } from 'angular2-uuid';
-import * as moment from 'moment';
-import * as _ from 'lodash';
+import * as _ from 'lodash-es';
+import dayjs from 'dayjs';
 
 /**
  * Service to provide base CRUD methods to make api request.
  *
  */
-@Injectable()
+@Injectable({
+  providedIn: 'root'
+})
 export class DataService {
+  static userId: string;
+  static sessionId: string;
   /**
    * Contains rootOrg Id
    */
@@ -42,8 +46,33 @@ export class DataService {
    * Constructor
    * @param {HttpClient} http HttpClient reference
    */
+  appVersion: string;
   constructor(http: HttpClient) {
     this.http = http;
+    const buildNumber = (<HTMLInputElement>document.getElementById('buildNumber'));
+    this.appVersion = buildNumber && buildNumber.value ? buildNumber.value.slice(0, buildNumber.value.lastIndexOf('.')) : '1.0';
+  }
+
+  /**
+   * for making get api calls which needs headers in response
+   *  headers are fetched to get server time using Date attribute in header
+   * @param requestParam interface
+   */
+  getWithHeaders(requestParam: RequestParam): Observable<ServerResponse> {
+    const httpOptions: HttpOptions = {
+      headers: requestParam.header ? requestParam.header : this.getHeader(),
+      params: requestParam.param,
+      observe: 'response'
+    };
+    return this.http.get(this.baseUrl + requestParam.url, httpOptions).pipe(
+      mergeMap(({body, headers}: any) => {
+        // replace ts time with header date , this value is used in telemetry
+        body.ts =  this.getDateDiff((headers.get('Date')));
+        if (body.responseCode !== 'OK') {
+          return observableThrowError(body);
+        }
+        return observableOf(body);
+      }));
   }
 
   /**
@@ -66,11 +95,32 @@ export class DataService {
   }
 
   /**
-   * for making post api calls
+   * for making post api calls with headers in response object
    *
    * @param {RequestParam} requestParam interface
    *
    */
+  postWithHeaders(requestParam: RequestParam): Observable<any> {
+    const httpOptions: HttpOptions = {
+      headers: requestParam.header ? this.getHeader(requestParam.header) : this.getHeader(),
+      params: requestParam.param,
+      observe: 'response'
+    };
+    return this.http.post(this.baseUrl + requestParam.url, requestParam.data, httpOptions).pipe(
+      mergeMap(({body, headers}: any) => {
+        // replace ts time with header date , this value is used in telemetry
+        body.ts =  this.getDateDiff((headers.get('Date')));
+        if (body.responseCode !== 'OK') {
+          return observableThrowError(body);
+        }
+        return observableOf(body);
+      }));
+  }
+
+  /**
+   * for making post api calls
+   * @param {RequestParam} requestParam interface
+  */
   post(requestParam: RequestParam): Observable<ServerResponse> {
     const httpOptions: HttpOptions = {
       headers: requestParam.header ? this.getHeader(requestParam.header) : this.getHeader(),
@@ -128,12 +178,16 @@ export class DataService {
    * for preparing headers
    */
   private getHeader(headers?: HttpOptions['headers']): HttpOptions['headers'] {
+    const _uuid = UUID.UUID();
     const default_headers = {
       'Accept': 'application/json',
       // 'X-Consumer-ID': 'X-Consumer-ID',
       'X-Source': 'web',
-      'ts': moment().format(),
-      'X-msgid': UUID.UUID()
+      'ts': dayjs().format(),
+      'X-msgid': _uuid,
+      'X-Request-ID': _uuid,
+      'X-App-Version': this.appVersion,
+      'X-Session-ID': DataService.sessionId
     };
     try {
       this.deviceId = (<HTMLInputElement>document.getElementById('deviceId')).value;
@@ -151,10 +205,23 @@ export class DataService {
     if (this.appId) {
       default_headers['X-App-Id'] = this.appId;
     }
+    if (DataService.userId) {
+      default_headers['X-User-ID'] = DataService.userId;
+    }
     if (headers) {
       return { ...default_headers, ...headers };
     } else {
       return { ...default_headers };
+    }
+  }
+
+  private getDateDiff (serverdate): number {
+    const currentdate: any = new Date();
+    const serverDate: any = new Date(serverdate);
+    if (serverdate) {
+      return ( serverDate - currentdate ) / 1000;
+    } else {
+      return 0;
     }
   }
 }

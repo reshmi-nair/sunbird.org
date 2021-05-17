@@ -1,6 +1,5 @@
 import { Pipe, PipeTransform } from '@angular/core';
-import * as moment from 'moment';
-const momentConstructor: (value?: any) => moment.Moment = (<any>moment).default || moment;
+import dayjs from 'dayjs';
 
 /**
  * Pipe for date format
@@ -17,12 +16,11 @@ export class DateFormatPipe implements PipeTransform {
    * @param {string} format format of Date
    *
    */
-  transform(value: Date | moment.Moment | string | number, format: string): string {
+  transform(value: Date | string | number, format: string): string {
     if (value) {
-      const date = new Date(value.toString()).setHours(0, 0, 0, 0);
-      return momentConstructor(value).format(format || 'Do MMMM YYYY');
+      return dayjs(value).format(format || 'DD MMMM YYYY'); // TODO: NEED to be tested
     } else {
-      return momentConstructor(value).format(format || 'Do MMMM YYYY');
+      return '-';
     }
   }
 

@@ -1,24 +1,22 @@
 import {combineLatest as observableCombineLatest,  Observable } from 'rxjs';
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild, AfterViewInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { WorkSpace } from '../../classes/workspace';
 import { SearchService, UserService, ISort } from '@sunbird/core';
 import {
-  ServerResponse, PaginationService, ConfigService, ToasterService,
-  ResourceService, ILoaderMessage, INoResultMessage, IContents
+  ServerResponse, PaginationService, ConfigService, ToasterService, IPagination,
+  ResourceService, ILoaderMessage, INoResultMessage, IContents, NavigationHelperService
 } from '@sunbird/shared';
 import { Ibatch, IStatusOption } from './../../interfaces/';
 import { WorkSpaceService } from '../../services';
-import { IPagination } from '@sunbird/announcement';
-import * as _ from 'lodash';
+import * as _ from 'lodash-es';
 import { IImpressionEventInput } from '@sunbird/telemetry';
 import { SuiModalService } from 'ng2-semantic-ui';
 @Component({
   selector: 'app-collaborating-on',
-  templateUrl: './collaborating-on.component.html',
-  styleUrls: ['./collaborating-on.component.scss']
+  templateUrl: './collaborating-on.component.html'
 })
-export class CollaboratingOnComponent extends WorkSpace implements OnInit {
+export class CollaboratingOnComponent extends WorkSpace implements OnInit, AfterViewInit {
   /**
   * state for content editor
   */
@@ -49,6 +47,15 @@ export class CollaboratingOnComponent extends WorkSpace implements OnInit {
   */
   noResult = false;
   /**
+     * To show content locked modal
+    */
+  showLockedContentModal = false;
+  /**
+     * lock popup data for locked contents
+    */
+    lockPopupData: object;
+
+  /**
    * To show / hide error
   */
   showError = false;
@@ -60,10 +67,6 @@ export class CollaboratingOnComponent extends WorkSpace implements OnInit {
   * For showing pagination on draft list
   */
   private paginationService: PaginationService;
-  /**
-  * Refrence of UserService
-  */
-  private userService: UserService;
   /**
   * To get url, app configs
   */
@@ -153,12 +156,12 @@ export class CollaboratingOnComponent extends WorkSpace implements OnInit {
     activatedRoute: ActivatedRoute,
     route: Router, userService: UserService,
     toasterService: ToasterService, resourceService: ResourceService,
-    config: ConfigService, public modalService: SuiModalService) {
-    super(searchService, workSpaceService);
+    config: ConfigService, public modalService: SuiModalService,
+    public navigationhelperService: NavigationHelperService) {
+    super(searchService, workSpaceService, userService);
     this.paginationService = paginationService;
     this.route = route;
     this.activatedRoute = activatedRoute;
-    this.userService = userService;
     this.toasterService = toasterService;
     this.resourceService = resourceService;
     this.config = config;
@@ -167,7 +170,7 @@ export class CollaboratingOnComponent extends WorkSpace implements OnInit {
       'loaderMessage': this.resourceService.messages.stmsg.m0124,
     };
     this.noResultMessage = {
-      'messageText': this.resourceService.messages.stmsg.m0123
+      'messageText': 'messages.stmsg.m0123'
     };
     this.sortingOptions = this.config.dropDownConfig.FILTER.RESOURCES.collaboratingOnSortingOptions;
   }
@@ -190,18 +193,6 @@ export class CollaboratingOnComponent extends WorkSpace implements OnInit {
         this.query = this.queryParams['query'];
         this.fecthAllContent(this.config.appConfig.WORKSPACE.PAGE_LIMIT, this.pageNumber, bothParams);
       });
-    this.telemetryImpression = {
-      context: {
-        env: this.activatedRoute.snapshot.data.telemetry.env
-      },
-      edata: {
-        type: this.activatedRoute.snapshot.data.telemetry.type,
-        pageid: this.activatedRoute.snapshot.data.telemetry.pageid,
-        subtype: this.activatedRoute.snapshot.data.telemetry.subtype,
-        uri: this.activatedRoute.snapshot.data.telemetry.uri + '/' + this.activatedRoute.snapshot.params.pageNumber,
-        visits: this.inviewLogs
-      }
-    };
   }
   /**
   * This method sets the make an api call to get all collaborating with page No and offset
@@ -222,20 +213,19 @@ export class CollaboratingOnComponent extends WorkSpace implements OnInit {
       filters: {
         status: bothParams.queryParams.status ? bothParams.queryParams.status : preStatus,
         collaborators: [this.userService.userid],
-        contentType: this.config.appConfig.WORKSPACE.contentType,
+        primaryCategory: _.get(bothParams, 'queryParams.primaryCategory') || this.config.appConfig.WORKSPACE.primaryCategory,
         objectType: this.config.appConfig.WORKSPACE.objectType,
         board: bothParams.queryParams.board,
         subject: bothParams.queryParams.subject,
         medium: bothParams.queryParams.medium,
-        gradeLevel: bothParams.queryParams.gradeLevel,
-        resourceType: bothParams.queryParams.resourceType
+        gradeLevel: bothParams.queryParams.gradeLevel
       },
       limit: limit,
       offset: (pageNumber - 1) * (limit),
       query: _.toString(bothParams.queryParams.query),
       sort_by: this.sort
     };
-    this.search(searchParams).subscribe(
+    this.searchContentWithLockStatus(searchParams).subscribe(
       (data: ServerResponse) => {
         if (data.result.count && data.result.content &&
           data.result.content.length > 0) {
@@ -274,10 +264,20 @@ export class CollaboratingOnComponent extends WorkSpace implements OnInit {
     this.pageNumber = page;
     this.route.navigate(['workspace/content/collaborating-on', this.pageNumber], { queryParams: this.queryParams });
   }
+
   contentClick(content) {
-    if (content.status.toLowerCase() !== 'processing') {
-      this.workSpaceService.navigateToContent(content, this.state);
+    if (_.size(content.lockInfo) && this.userService.userid !== content.lockInfo.createdBy) {
+        this.lockPopupData = content;
+        this.showLockedContentModal = true;
+    } else {
+      if (content.status.toLowerCase() === 'draft') {  // only draft state contents need to be locked
+        this.workSpaceService.navigateToContent(content, this.state);
+      }
     }
+  }
+
+  public onCloseLockInfoPopup () {
+    this.showLockedContentModal = false;
   }
 
   inview(event) {
@@ -301,6 +301,24 @@ export class CollaboratingOnComponent extends WorkSpace implements OnInit {
     this.column = column;
     this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
     this.reverse = !this.reverse;
+  }
+
+  ngAfterViewInit () {
+    setTimeout(() => {
+      this.telemetryImpression = {
+        context: {
+          env: this.activatedRoute.snapshot.data.telemetry.env
+        },
+        edata: {
+          type: this.activatedRoute.snapshot.data.telemetry.type,
+          pageid: this.activatedRoute.snapshot.data.telemetry.pageid,
+          subtype: this.activatedRoute.snapshot.data.telemetry.subtype,
+          uri: this.activatedRoute.snapshot.data.telemetry.uri + '/' + this.activatedRoute.snapshot.params.pageNumber,
+          visits: this.inviewLogs,
+          duration: this.navigationhelperService.getPageLoadTime()
+        }
+      };
+    });
   }
   /**
    * Used to dispaly content

@@ -1,6 +1,7 @@
 export interface ICard {
     name: string;
     image?: string;
+    downloadStatus?: string;
     imageVisibility?: boolean;
     description?: string;
     subject?: string;
@@ -11,6 +12,8 @@ export interface ICard {
     resourceType?: string;
     maxCount?: number;
     progress?: number;
+    contentType?: string;
+    hoverData?: object;
     ribbon?: {
         right?: { class: string, name: string }
         left?: { class: string, name: string , image: string }
@@ -34,4 +37,5 @@ export interface ICard {
             eventName: string
         };
     };
+  completionPercentage?: number;
 }

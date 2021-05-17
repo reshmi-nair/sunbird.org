@@ -6,8 +6,9 @@ import { TestBed } from '@angular/core/testing';
 import { ConfigService, ToasterService, ResourceService, BrowserCacheTtlService } from '@sunbird/shared';
 import { PermissionService } from './permission.service';
 import { LearnerService, UserService, CoreModule } from '@sunbird/core';
-import { Ng2IziToastModule } from 'ng2-izitoast';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { configureTestSuite } from '@sunbird/test-util';
+import { TranslateModule, TranslateLoader, TranslateFakeLoader } from '@ngx-translate/core';
 const mockUserRoles = {
   userRoles: ['PUBLIC']
 };
@@ -17,14 +18,20 @@ const mockResource = {
  }
 };
 describe('PermissionService', () => {
+  configureTestSuite();
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule, Ng2IziToastModule, CoreModule.forRoot()],
+      imports: [HttpClientTestingModule, CoreModule, TranslateModule.forRoot({
+                  loader: {
+                    provide: TranslateLoader,
+                    useClass: TranslateFakeLoader
+                  }
+                })],
       providers: [ResourceService, ToasterService, PermissionService, ConfigService, LearnerService, UserService,
         BrowserCacheTtlService]
     });
   });
-  it('should fetch permission', () => {
+  xit('should fetch permission', () => { // removed role read api call
     const permissionService = TestBed.get(PermissionService);
     const learnerService = TestBed.get(LearnerService);
     spyOn(learnerService, 'get').and.returnValue(observableOf(mockPermissionRes.success));
@@ -53,7 +60,7 @@ describe('PermissionService', () => {
   });
 
 
-  it('should throw toaster error message when permission api fails', () => {
+  xit('should throw toaster error message when permission api fails', () => { // removed role read api
     const permissionService = TestBed.get(PermissionService);
     const userService = TestBed.get(UserService);
     const toasterService = TestBed.get(ToasterService);

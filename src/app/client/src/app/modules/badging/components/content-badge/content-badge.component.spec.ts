@@ -9,7 +9,9 @@ import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { SharedModule} from '@sunbird/shared';
 import { mockResponse } from './content-badge.component.spec.data';
 import { ContentBadgeService } from './../../services';
-import * as _ from 'lodash';
+import * as _ from 'lodash-es';
+import { configureTestSuite } from '@sunbird/test-util';
+
 describe('ContentBadgeComponent', () => {
   let component: ContentBadgeComponent;
   let fixture: ComponentFixture<ContentBadgeComponent>;
@@ -19,10 +21,11 @@ describe('ContentBadgeComponent', () => {
   const fakeActivatedRoute = {
     'params': observableOf({ collectionId: 'Test_Textbook2_8907797' })
   };
+  configureTestSuite();
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       declarations: [ContentBadgeComponent],
-      imports: [SuiModule, CoreModule.forRoot(), SharedModule.forRoot(), HttpClientTestingModule],
+      imports: [SuiModule, CoreModule, SharedModule.forRoot(), HttpClientTestingModule],
       providers: [ContentBadgeService,
         { provide: ActivatedRoute, useValue: fakeActivatedRoute },
         { provide: Router, useClass: RouterStub }]

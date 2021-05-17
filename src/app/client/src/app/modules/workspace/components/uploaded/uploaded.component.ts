@@ -1,14 +1,13 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild, AfterViewInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { WorkSpace } from '../../classes/workspace';
 import { SearchService, UserService } from '@sunbird/core';
 import {
-  ServerResponse, PaginationService, ConfigService, ToasterService,
-  ResourceService, IContents, ILoaderMessage, INoResultMessage
+  ServerResponse, PaginationService, ConfigService, ToasterService, IPagination,
+  ResourceService, IContents, ILoaderMessage, INoResultMessage, NavigationHelperService
 } from '@sunbird/shared';
 import { WorkSpaceService } from '../../services';
-import { IPagination } from '@sunbird/announcement';
-import * as _ from 'lodash';
+import * as _ from 'lodash-es';
 import { SuiModalService, TemplateModalConfig, ModalTemplate } from 'ng2-semantic-ui';
 import { IInteractEventInput, IImpressionEventInput } from '@sunbird/telemetry';
 
@@ -17,11 +16,10 @@ import { IInteractEventInput, IImpressionEventInput } from '@sunbird/telemetry';
 */
 @Component({
   selector: 'app-uploaded',
-  templateUrl: './uploaded.component.html',
-  styleUrls: ['./uploaded.component.css']
+  templateUrl: './uploaded.component.html'
 })
-export class UploadedComponent extends WorkSpace implements OnInit {
-  @ViewChild('modalTemplate')
+export class UploadedComponent extends WorkSpace implements OnInit, AfterViewInit {
+  @ViewChild('modalTemplate', {static: false})
   public modalTemplate: ModalTemplate<{ data: string }, string, string>;
   /**
   * state for content editior
@@ -78,11 +76,6 @@ export class UploadedComponent extends WorkSpace implements OnInit {
   private paginationService: PaginationService;
 
   /**
-    * Refrence of UserService
-  */
-  private userService: UserService;
-
-  /**
   * To get url, app configs
   */
   public config: ConfigService;
@@ -125,6 +118,14 @@ export class UploadedComponent extends WorkSpace implements OnInit {
  * telemetryImpression
 */
   telemetryImpression: IImpressionEventInput;
+  /**
+     * lock popup data for locked contents
+    */
+   lockPopupData: object;
+   /**
+     * To show content locked modal
+    */
+   showLockedContentModal = false;
 
   /**
     * Constructor to create injected service(s) object
@@ -142,12 +143,11 @@ export class UploadedComponent extends WorkSpace implements OnInit {
     activatedRoute: ActivatedRoute,
     route: Router, userService: UserService,
     toasterService: ToasterService, resourceService: ResourceService,
-    config: ConfigService) {
-    super(searchService, workSpaceService);
+    config: ConfigService, public navigationhelperService: NavigationHelperService) {
+    super(searchService, workSpaceService, userService);
     this.paginationService = paginationService;
     this.route = route;
     this.activatedRoute = activatedRoute;
-    this.userService = userService;
     this.toasterService = toasterService;
     this.resourceService = resourceService;
     this.config = config;
@@ -158,18 +158,6 @@ export class UploadedComponent extends WorkSpace implements OnInit {
       this.pageNumber = Number(params.pageNumber);
       this.fetchUploaded(this.config.appConfig.WORKSPACE.PAGE_LIMIT, this.pageNumber);
     });
-    this.telemetryImpression = {
-      context: {
-        env: this.activatedRoute.snapshot.data.telemetry.env
-      },
-      edata: {
-        type: this.activatedRoute.snapshot.data.telemetry.type,
-        pageid: this.activatedRoute.snapshot.data.telemetry.pageid,
-        subtype: this.activatedRoute.snapshot.data.telemetry.subtype,
-        uri: this.activatedRoute.snapshot.data.telemetry.uri + '/' + this.activatedRoute.snapshot.params.pageNumber,
-        visits: this.inviewLogs
-      }
-    };
   }
   /**
      * This method sets the make an api call to get all uploaded content with page No and offset
@@ -193,7 +181,7 @@ export class UploadedComponent extends WorkSpace implements OnInit {
     this.loaderMessage = {
       'loaderMessage': this.resourceService.messages.stmsg.m0023,
     };
-    this.search(searchParams).subscribe(
+    this.searchContentWithLockStatus(searchParams).subscribe(
       (data: ServerResponse) => {
         if (data.result.count && data.result.content.length > 0) {
           this.totalCount = data.result.count;
@@ -208,8 +196,8 @@ export class UploadedComponent extends WorkSpace implements OnInit {
           this.noResult = true;
           this.showLoader = false;
           this.noResultMessage = {
-            'message': this.resourceService.messages.stmsg.m0008,
-            'messageText': this.resourceService.messages.stmsg.m0024
+            'message': 'messages.stmsg.m0008',
+            'messageText': 'messages.stmsg.m0024'
           };
         }
       },
@@ -225,18 +213,25 @@ export class UploadedComponent extends WorkSpace implements OnInit {
     * This method launch the content editior
   */
   contentClick(param) {
-    if (param.action.eventName === 'delete') {
-      this.deleteConfirmModal(param.data.metaData.identifier);
+    if (_.size(param.data.lockInfo) && this.userService.userid !== param.data.lockInfo.createdBy) {
+      this.lockPopupData = param.data;
+      this.showLockedContentModal = true;
     } else {
-      this.workSpaceService.navigateToContent(param.data.metaData, this.state);
+      if (param.action.eventName === 'delete') {
+        this.deleteConfirmModal(param.data.metaData.identifier);
+      } else {
+        this.workSpaceService.navigateToContent(param.data.metaData, this.state);
+      }
     }
   }
 
 
   public deleteConfirmModal(contentIds) {
     const config = new TemplateModalConfig<{ data: string }, string, string>(this.modalTemplate);
-    config.isClosable = true;
-    config.size = 'mini';
+    config.isClosable = false;
+    config.size = 'small';
+    config.transitionDuration = 0;
+    config.mustScroll = true;
     this.modalService
       .open(config)
       .onApprove(result => {
@@ -248,6 +243,9 @@ export class UploadedComponent extends WorkSpace implements OnInit {
           (data: ServerResponse) => {
             this.showLoader = false;
             this.uploaded = this.removeContent(this.uploaded, contentIds);
+            if (this.uploaded.length === 0) {
+              this.fetchUploaded(this.config.appConfig.WORKSPACE.PAGE_LIMIT, this.pageNumber);
+            }
             this.toasterService.success(this.resourceService.messages.smsg.m0006);
           },
           (err: ServerResponse) => {
@@ -275,6 +273,25 @@ export class UploadedComponent extends WorkSpace implements OnInit {
     this.pageNumber = page;
     this.route.navigate(['workspace/content/uploaded', this.pageNumber]);
   }
+
+  ngAfterViewInit () {
+    setTimeout(() => {
+      this.telemetryImpression = {
+        context: {
+          env: this.activatedRoute.snapshot.data.telemetry.env
+        },
+        edata: {
+          type: this.activatedRoute.snapshot.data.telemetry.type,
+          pageid: this.activatedRoute.snapshot.data.telemetry.pageid,
+          subtype: this.activatedRoute.snapshot.data.telemetry.subtype,
+          uri: this.activatedRoute.snapshot.data.telemetry.uri + '/' + this.activatedRoute.snapshot.params.pageNumber,
+          visits: this.inviewLogs,
+          duration: this.navigationhelperService.getPageLoadTime()
+        }
+      };
+    });
+  }
+
   /**
   * get inview  Data
   */

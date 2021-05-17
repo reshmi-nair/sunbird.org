@@ -1,20 +1,31 @@
 import { Injectable } from '@angular/core';
 import { PublicDataService } from './../public-data/public-data.service';
-import { ConfigService, RequestParam,  HttpOptions} from '@sunbird/shared';
-import * as moment from 'moment';
+import { ConfigService,  HttpOptions} from '@sunbird/shared';
+import dayjs from 'dayjs';
 import { UUID } from 'angular2-uuid';
 import { HttpClient } from '@angular/common/http';
+import {Observable, timer, Subscription, of} from 'rxjs';
+import * as _ from 'lodash-es';
+import {map} from 'rxjs/operators';
+import {DeviceService} from '../device/device.service';
 
 @Injectable({
   providedIn: 'root'
 })
-export class DeviceRegisterService {
+export class DeviceRegisterService  {
   private portalVersion: string;
   private appId: string;
   private deviceId: string;
   private deviceRegisterApi: string;
+  private deviceProfileApi: string;
+  private deviceAPIBaseURL: string;
+  private timer$: Observable<any>;
+  private timerSubscription: Subscription;
+  deviceProfile: any;
+
   constructor(public publicDataService: PublicDataService,
-    private configService: ConfigService, private http: HttpClient) {
+              private deviceService: DeviceService,
+              private configService: ConfigService, private http: HttpClient) {
 
     const buildNumber = (<HTMLInputElement>document.getElementById('buildNumber'));
 
@@ -24,32 +35,63 @@ export class DeviceRegisterService {
     && (<HTMLInputElement>document.getElementById('appId')).value;
 
     this.deviceRegisterApi = (<HTMLInputElement>document.getElementById('deviceRegisterApi'))
-    && (<HTMLInputElement>document.getElementById('deviceRegisterApi')).value;
+      && (<HTMLInputElement>document.getElementById('deviceRegisterApi')).value;
+
+    this.deviceProfileApi = (<HTMLInputElement>document.getElementById('deviceProfileApi'))
+      && (<HTMLInputElement>document.getElementById('deviceProfileApi')).value;
+
+    this.deviceAPIBaseURL = (<HTMLInputElement>document.getElementById('deviceApi'))
+      && (<HTMLInputElement>document.getElementById('deviceApi')).value;
   }
-  registerDevice(channel: string, deviceId?: string) {
-    console.log('calling registerDevice');
+
+  setDeviceId() {
     this.deviceId = (<HTMLInputElement>document.getElementById('deviceId'))
-    && (<HTMLInputElement>document.getElementById('deviceId')).value;
+      && (<HTMLInputElement>document.getElementById('deviceId')).value;
+  }
+
+  fetchDeviceProfile() {
+    const options = {
+      url: this.configService.urlConFig.URLS.DEVICE.PROFILE + this.deviceId
+    };
+    return this.deviceService.get(options);
+  }
+
+  getDeviceProfile() {
+    if (this.deviceProfile) {
+      return of(this.deviceProfile);
+    }
+    return this.fetchDeviceProfile().pipe(map(deviceProfile => {
+      this.deviceProfile = _.get(deviceProfile, 'result');
+      return this.deviceProfile;
+    }));
+  }
+
+  updateDeviceProfile(userDeclaredLocation) {
+    this.deviceId = (<HTMLInputElement>document.getElementById('deviceId'))
+      && (<HTMLInputElement>document.getElementById('deviceId')).value;
     const data = {
       id: this.appId,
       ver: this.portalVersion,
-      ts: moment().format(),
+      ts: dayjs().format(),
       params: {
         msgid: UUID.UUID()
       },
       request: {
-        channel: channel
+        did: this.deviceId,
+        producer: this.appId,
+        userDeclaredLocation: {
+          state: userDeclaredLocation.state || '',
+          district: userDeclaredLocation.district || ''
+        }
       }
     };
-    const httpOptions: HttpOptions = {
-      headers: {
-        'Content-Type': 'application/json'
-      }
+    const options = {
+      url: this.configService.urlConFig.URLS.DEVICE.REGISTER + this.deviceId,
+      data: data
     };
-    this.http.post(this.deviceRegisterApi + this.deviceId, data, httpOptions)
-    .subscribe(() => {
-    }, (err) => {
-      console.log('called device', err);
-    });
+    return this.deviceService.post(options)
+      .pipe(map((res) => {
+        return res;
+      }));
   }
 }

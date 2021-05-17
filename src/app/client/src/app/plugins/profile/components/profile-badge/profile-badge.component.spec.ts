@@ -7,14 +7,15 @@ import { mockRes } from './profile-badge.component.spec.data';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { SharedModule } from '@sunbird/shared';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
+import { configureTestSuite } from '@sunbird/test-util';
 
 describe('ProfileBadgeComponent', () => {
   let component: ProfileBadgeComponent;
   let fixture: ComponentFixture<ProfileBadgeComponent>;
-
+  configureTestSuite();
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      imports: [SharedModule.forRoot(), HttpClientTestingModule, CoreModule.forRoot()],
+      imports: [SharedModule.forRoot(), HttpClientTestingModule, CoreModule],
       declarations: [ProfileBadgeComponent],
       providers: [UserService, BadgesService],
       schemas: [NO_ERRORS_SCHEMA]
@@ -25,6 +26,7 @@ describe('ProfileBadgeComponent', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(ProfileBadgeComponent);
     component = fixture.componentInstance;
+    fixture.detectChanges();
   });
 
   it('should call getBadgeData method', () => {

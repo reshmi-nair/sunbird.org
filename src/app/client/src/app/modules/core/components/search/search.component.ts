@@ -1,28 +1,19 @@
-
 import { filter } from 'rxjs/operators';
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, OnDestroy, Input } from '@angular/core';
 import { ActivatedRoute, Router, NavigationEnd } from '@angular/router';
 import { UserService } from './../../services';
-import { ResourceService, ConfigService, IUserProfile } from '@sunbird/shared';
-
+import { ResourceService, ConfigService, IUserProfile, LayoutService, UtilService, ConnectionService } from '@sunbird/shared';
+import { Subscription } from 'rxjs';
+import * as _ from 'lodash-es';
 /**
  * Main menu component
  */
 @Component({
   selector: 'app-search',
   templateUrl: './search.component.html',
-  styles: [ `
-  .disableIcon {
-    pointer-events: none;
-    opacity: 0.45;
-  }
-
-  ::ng-deep .ui.floating.main-header-search-dropdown.dropdown .menu {
-      top:25px;
-  }
-  `]
+  styleUrls: ['./search.component.scss']
 })
-export class SearchComponent implements OnInit {
+export class SearchComponent implements OnInit, OnDestroy {
   /**
    * Sui dropdown initiator
    */
@@ -43,6 +34,8 @@ export class SearchComponent implements OnInit {
    */
   key: string;
   resourceService: ResourceService;
+  resourceDataSubscription: Subscription;
+
 
   /**
    * option selected on dropdown
@@ -65,6 +58,12 @@ export class SearchComponent implements OnInit {
 
   searchDropdownValues: Array<string> = ['All', 'Courses', 'Library'];
 
+  searchPlaceHolderValue: string;
+
+  searchDisplayValueMappers: object;
+  isDesktopApp = false;
+  isConnected = true;
+
   /**
    * reference of UserService service.
    */
@@ -78,6 +77,7 @@ export class SearchComponent implements OnInit {
   * To send activatedRoute.snapshot to router navigation
   * service for redirection to parent component
   */
+  @Input() layoutConfiguration: any;
   private activatedRoute: ActivatedRoute;
   /**
      * Constructor to create injected service(s) object
@@ -86,16 +86,21 @@ export class SearchComponent implements OnInit {
      * @param {ActivatedRoute} activatedRoute Reference of ActivatedRoute
    */
   constructor(route: Router, activatedRoute: ActivatedRoute, userService: UserService,
-    resourceService: ResourceService, config: ConfigService,
-    private cdr: ChangeDetectorRef) {
+    resourceService: ResourceService, config: ConfigService, public utilService: UtilService,
+    private cdr: ChangeDetectorRef, public layoutService: LayoutService, public connectionService: ConnectionService) {
     this.route = route;
     this.activatedRoute = activatedRoute;
     this.resourceService = resourceService;
     this.config = config;
     this.userService = userService;
+    this.searchDisplayValueMappers = {
+      'Users': 'users'
+    };
   }
 
   ngOnInit() {
+    this.isDesktopApp = this.utilService.isDesktopApp;
+    this.showInput = true;
     this.activatedRoute.queryParams.subscribe(queryParams => {
       this.queryParam = { ...queryParams };
       this.key = this.queryParam['key'];
@@ -114,7 +119,16 @@ export class SearchComponent implements OnInit {
         });
     });
     this.showSuiSelectDropdown = true;
+    this.resourceDataSubscription = this.resourceService.languageSelected$
+      .subscribe(item => {
+        this.setSearchPlaceHolderValue();
+      }
+    );
+    this.connectionService.monitor().subscribe(isConnected => {
+        this.isConnected = isConnected;
+    });
   }
+
   /**
    * on changing dropdown option
    * it navigate
@@ -122,6 +136,21 @@ export class SearchComponent implements OnInit {
   onChange() {
     this.route.navigate([this.search[this.selectedOption], 1]);
   }
+  ngOnDestroy() {
+    if (this.resourceDataSubscription) {
+      this.resourceDataSubscription.unsubscribe();
+    }
+  }
+  /**
+   * search input box placeholder value
+   */
+  setSearchPlaceHolderValue () {
+    const keyName = this.searchDisplayValueMappers[this.selectedOption];
+    if (keyName) {
+      this.searchPlaceHolderValue = this.selectedOption;
+    }
+  }
+
   /**
    * on entering keyword
    * it navigate
@@ -135,9 +164,22 @@ export class SearchComponent implements OnInit {
     } else {
       delete this.queryParam['key'];
     }
-    this.route.navigate([this.search[this.selectedOption], 1], {
-      queryParams: this.queryParam
-    });
+    const url = this.route.url.split('?')[0];
+    let redirectUrl;
+    if (this.selectedOption) {
+      redirectUrl = this.search[this.selectedOption];
+    } else {
+      redirectUrl = url.substring(0, url.indexOf('explore')) + 'explore';
+    }
+    
+    if (!_.includes(['Users', 'profile'], this.selectedOption)) {
+      this.queryParam['selectedTab'] = this.isDesktopApp && !this.isConnected ? 'mydownloads' : 'all';
+    }
+    if(this.isDesktopApp && !this.isConnected) {
+      this.route.navigate(['mydownloads'], { queryParams: this.queryParam });
+    } else {
+      this.route.navigate([redirectUrl, 1], { queryParams: this.queryParam });
+    }
   }
 
   setFilters() {
@@ -152,6 +194,7 @@ export class SearchComponent implements OnInit {
       this.setDropdownSelectedOption(this.value[2]);
     } else {
       this.selectedOption = 'All';
+      this.setSearchPlaceHolderValue();
       this.showInput = false;
     }
   }
@@ -169,6 +212,25 @@ export class SearchComponent implements OnInit {
     } else {
       this.selectedOption = value;
     }
+    this.setSearchPlaceHolderValue();
     this.showInput = true;
+  }
+
+
+  getInteractEdata(key) {
+    const searchInteractEdata = {
+      id: `search-${_.lowerCase(this.searchPlaceHolderValue)}-button`,
+      type: 'click',
+      pageid: this.route.url.split('/')[1]
+    };
+    if (key) {
+      searchInteractEdata['extra'] = {
+        query: key
+      };
+    }
+    return searchInteractEdata;
+  }
+  isLayoutAvailable() {
+    return this.layoutService.isLayoutAvailable(this.layoutConfiguration);
   }
 }

@@ -4,7 +4,9 @@ import { TelemetryImpressionDirective } from './telemetry-impression.directive';
 import { TelemetryService, TELEMETRY_PROVIDER } from '../../services';
 import {TestBed, ComponentFixture} from '@angular/core/testing';
 import {eventData} from './telemetry-impression.directive.spec.data';
+import { configureTestSuite } from '@sunbird/test-util';
 describe('TelemetryImpressionDirective', () => {
+  configureTestSuite();
   beforeEach(() => {
     TestBed.configureTestingModule({
       declarations: [TelemetryImpressionDirective],
@@ -16,7 +18,7 @@ describe('TelemetryImpressionDirective', () => {
     const directive = new TelemetryImpressionDirective(telemetryService);
     spyOn(telemetryService, 'impression').and.callFake(() => observableOf(eventData.inputData));
     directive.appTelemetryImpression = eventData.inputData;
-    directive.ngOnInit();
+    directive.ngOnChanges();
     expect(directive.appTelemetryImpression).toBeDefined();
     expect(directive.appTelemetryImpression).toBe(eventData.inputData);
     expect(telemetryService.impression).toHaveBeenCalled();

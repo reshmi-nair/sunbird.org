@@ -6,8 +6,10 @@ import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ConfigService } from '@sunbird/shared';
 import { OrgManagementService } from './org-management.service';
 import { LearnerService } from '@sunbird/core';
+import { configureTestSuite } from '@sunbird/test-util';
 
 describe('OrgManagementService', () => {
+  configureTestSuite();
   beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
@@ -32,18 +34,6 @@ describe('OrgManagementService', () => {
     const fd = formData;
     spyOn(learnerService, 'post').and.callFake(() => observableOf(testData.mockRes.successBulkStatusResponse));
     orgManagementService.bulkOrgUpload(testData.mockRes.request).subscribe(
-      apiResponse => {
-        expect(apiResponse.responseCode).toBe('OK');
-      });
-  });
-  it('should call bulkUserUpload method', () => {
-    const learnerService = TestBed.get(LearnerService);
-    const orgManagementService = TestBed.get(OrgManagementService);
-    const formData = new FormData();
-    formData.append('org', testData.mockRes.userRequest[0]);
-    const fd = formData;
-    spyOn(learnerService, 'post').and.callFake(() => observableOf(testData.mockRes.successBulkStatusResponse));
-    orgManagementService.bulkUserUpload(fd).subscribe(
       apiResponse => {
         expect(apiResponse.responseCode).toBe('OK');
       });

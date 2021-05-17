@@ -1,12 +1,15 @@
 import { TestBed, inject } from '@angular/core/testing';
 import { TelemetryService, TELEMETRY_PROVIDER } from './telemetry.service';
 import { mockData } from './telemetry.service.spec.data';
+import { configureTestSuite } from '@sunbird/test-util';
+import { DeviceDetectorService } from 'ngx-device-detector';
 
 describe('TelemetryService', () => {
+    configureTestSuite();
     beforeEach(() => {
         TestBed.configureTestingModule({
             imports: [],
-            providers: [TelemetryService, { provide: TELEMETRY_PROVIDER, useValue: EkTelemetry}]
+            providers: [TelemetryService, { provide: TELEMETRY_PROVIDER, useValue: EkTelemetry }, DeviceDetectorService]
         });
     });
 
@@ -122,6 +125,36 @@ describe('TelemetryService', () => {
             spyOn(EkTelemetry, 'log');
             service.log(mockData.logEventData);
             expect(EkTelemetry.log).not.toHaveBeenCalled();
+        }));
+    });
+
+    describe('exdata event', () => {
+        it('should send "exdata" event if service is initialised', inject([TelemetryService], (service: TelemetryService) => {
+            service.initialize(mockData.telemetry);
+            spyOn(EkTelemetry, 'exdata');
+            service.exData(mockData.exdataEventData);
+            expect(EkTelemetry.exdata).toHaveBeenCalledTimes(1);
+        }));
+
+        it('should not send "log" event if service is not initialised', inject([TelemetryService], (service: TelemetryService) => {
+            spyOn(EkTelemetry, 'exdata');
+            service.log(mockData.exdataEventData);
+            expect(EkTelemetry.exdata).not.toHaveBeenCalled();
+        }));
+    });
+
+    describe('Audit Event', () => {
+        it('should send audit event if service is Initialized', inject([TelemetryService], (service: TelemetryService) => {
+            service.initialize(mockData.telemetry);
+            spyOn(EkTelemetry, 'audit');
+            service.audit(mockData.auditEventData);
+            expect(EkTelemetry.audit).toHaveBeenCalled();
+        }));
+
+        it('should send audit event if service is Initialized', inject([TelemetryService], (service: TelemetryService) => {
+            spyOn(EkTelemetry, 'audit');
+            service.audit(mockData.auditEventData);
+            expect(EkTelemetry.audit).not.toHaveBeenCalled();
         }));
     });
 });

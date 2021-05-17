@@ -15,7 +15,6 @@ export * from './content-creation-default-template/content-creation-default-temp
 export * from './limited-published/limited-published.component';
 export * from './flagged/flagged.component';
 export * from './batch-list/batch-list.component';
-export * from './batch-card/batch-card.component';
 export * from './update-batch/update-batch.component';
 export * from './upforreview-contentplayer/upforreview-contentplayer.component';
 export * from './flag-conentplayer/flag-conentplayer.component';
@@ -24,7 +23,9 @@ export * from './published-popup/published-popup.component';
 export * from './request-changes-popup/request-changes-popup.component';
 export * from './all-content/all-content.component';
 export * from './flag-reviewer/flag-reviewer.component';
-export * from './all-my-content-filter/all-my-content-filter.component';
 export * from './collaborating-on/collaborating-on.component';
 export * from './collaboration-content-filter/collaboration-content-filter.component';
-
+export * from './batch-page-section/batch-page-section.component';
+export * from './workspace-content-filter/workspace-content-filter.component';
+export * from './all-textbooks/all-textbooks.component';
+export * from './content-editors/new-collection-editor/new-collection-editor.component';

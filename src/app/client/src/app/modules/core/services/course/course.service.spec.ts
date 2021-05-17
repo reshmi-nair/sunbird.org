@@ -8,11 +8,14 @@ import { LearnerService } from './../learner/learner.service';
 import { SharedModule } from '@sunbird/shared';
 import * as mockData from './course.service.spec.data';
 import { CoreModule } from '@sunbird/core';
+import { configureTestSuite } from '@sunbird/test-util';
+
 const testData = mockData.mockRes;
 describe('CoursesService', () => {
+  configureTestSuite();
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule, CoreModule.forRoot(), SharedModule.forRoot()],
+      imports: [HttpClientTestingModule, CoreModule, SharedModule.forRoot()],
       providers: []
     });
   });
