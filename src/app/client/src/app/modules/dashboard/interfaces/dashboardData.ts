@@ -28,6 +28,8 @@ export interface ICourseProgressData {
     progress: number;
     user: string;
     userName: string;
+    count: number;
+    data?: Array<any>;
 }
 
 export interface IBatchListData {
@@ -53,4 +55,15 @@ export interface IBatchListData {
     startDate?: string;
     status?: Number;
     updatedDate?: any;
+}
+
+export interface IDashboardItems {
+    title: string;
+    count: number;
+    type: string;
+}
+
+export interface IForumContext {
+    identifier: Array<string>;
+    type: string;
 }

@@ -9,7 +9,7 @@ import { PlayerService, ContentService, PermissionService, UserService } from '@
 @Component({
   selector: 'app-flag-conentplayer',
   templateUrl: './flag-conentplayer.component.html',
-  styleUrls: ['./flag-conentplayer.component.css']
+  styleUrls: ['./flag-conentplayer.component.scss']
 })
 export class FlagConentplayerComponent implements OnInit {
   /**

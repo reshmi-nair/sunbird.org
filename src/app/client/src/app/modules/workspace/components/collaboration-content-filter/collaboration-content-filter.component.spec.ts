@@ -1,7 +1,6 @@
 import { CollaborationContentFilterComponent } from './collaboration-content-filter.component';
 import { async, ComponentFixture, TestBed, inject, fakeAsync, tick } from '@angular/core/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { Ng2IziToastModule } from 'ng2-izitoast';
 import { SharedModule, PaginationService, ToasterService, ResourceService, ConfigService } from '@sunbird/shared';
 import { SearchService, ContentService } from '@sunbird/core';
 import { WorkSpaceService } from '../../services';
@@ -9,7 +8,10 @@ import { UserService, LearnerService, CoursesService, PermissionService } from '
 import { DebugElement, NO_ERRORS_SCHEMA } from '@angular/core';
 import { Observable, of as observableOf } from 'rxjs';
 import { ActivatedRoute, RouterModule, Router } from '@angular/router';
+import { IInteractEventEdata, IInteractEventInput, IInteractEventObject, IProducerData, TelemetryService } from '@sunbird/telemetry';
 import { By } from '@angular/platform-browser';
+import { configureTestSuite } from '@sunbird/test-util';
+
 describe('CollaborationContentFilterComponent', () => {
   let component: CollaborationContentFilterComponent;
   let fixture: ComponentFixture<CollaborationContentFilterComponent>;
@@ -21,13 +23,14 @@ describe('CollaborationContentFilterComponent', () => {
     'params': observableOf({ pageNumber: '1' }),
     'queryParams': observableOf({ subject: ['english', 'odia'] })
   };
+  configureTestSuite();
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       declarations: [ CollaborationContentFilterComponent ],
-      imports: [HttpClientTestingModule, Ng2IziToastModule, SharedModule.forRoot()],
+      imports: [HttpClientTestingModule, SharedModule.forRoot()],
       providers: [PaginationService, WorkSpaceService, UserService,
         SearchService, ContentService, LearnerService, CoursesService,
-        PermissionService, ResourceService, ToasterService,
+        PermissionService, ResourceService, ToasterService, TelemetryService,
         { provide: Router, useClass: RouterStub },
         { provide: ActivatedRoute, useValue: fakeActivatedRoute }
       ],

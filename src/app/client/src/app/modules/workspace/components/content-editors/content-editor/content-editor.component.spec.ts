@@ -4,7 +4,6 @@ import { async, ComponentFixture, TestBed, inject, tick } from '@angular/core/te
 import { ContentEditorComponent } from './content-editor.component';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { Ng2IziToastModule } from 'ng2-izitoast';
 import { NavigationHelperService, ResourceService, ConfigService, ToasterService, BrowserCacheTtlService } from '@sunbird/shared';
 import { EditorService } from '@sunbird/workspace';
 import { ContentService, UserService, LearnerService, TenantService, CoreModule } from '@sunbird/core';
@@ -12,30 +11,42 @@ import { mockRes } from './content-editor.component.spec.data';
 import { Router, ActivatedRoute } from '@angular/router';
 import { WorkSpaceService } from '../../../services';
 import { TelemetryModule } from '@sunbird/telemetry';
+import { configureTestSuite } from '@sunbird/test-util';
+
+document.body.innerHTML = document.body.innerHTML +
+  '<input id="contentEditorURL" value="https://dev.sunbirded.org/content-editor/index.html"'
+  + ' type="hidden" />';
 
 const mockResourceService = { messages: { emsg: { m0004: '1000' } } };
 const mockActivatedRoute = {
   snapshot: {
     params: {
-      'contentId': 'do_21247940906829414411032', 'state': 'upForReview', 'framework': 'framework'
+      'contentId': 'do_21247940906829414411032', 'state': 'upForReview', 'framework': 'framework', 'contentStatus': 'Review'
     }
   }
 };
 class RouterStub {
   navigate = jasmine.createSpy('navigate');
 }
-const mockUserService = { userProfile: { userId: '68777b59-b28b-4aee-88d6-50d46e4c35090'} };
+class NavigationHelperServiceStub {
+  public navigateToWorkSpace() {}
+}
+const mockUserService = {
+  userOrgDetails$ : observableOf({}),
+  userProfile: { userId: '68777b59-b28b-4aee-88d6-50d46e4c35090'} };
 describe('ContentEditorComponent', () => {
   let component: ContentEditorComponent;
   let fixture: ComponentFixture<ContentEditorComponent>;
+  configureTestSuite();
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       declarations: [ContentEditorComponent],
-      imports: [HttpClientTestingModule, Ng2IziToastModule, CoreModule.forRoot(), TelemetryModule.forRoot()],
+      imports: [HttpClientTestingModule, CoreModule, TelemetryModule.forRoot()],
       providers: [
         EditorService, UserService, ContentService, BrowserCacheTtlService,
         ResourceService, ToasterService, ConfigService, LearnerService,
-        NavigationHelperService, WorkSpaceService,
+        WorkSpaceService,
+        {provide: NavigationHelperService, useClass: NavigationHelperServiceStub},
         { provide: Router, useClass: RouterStub },
         { provide: ResourceService, useValue: mockResourceService },
         { provide: UserService, useValue: mockUserService },
@@ -83,6 +94,13 @@ describe('ContentEditorComponent', () => {
   it('should navigate to draft', inject([ NavigationHelperService], ( navigationHelperService) => () => {
     spyOn(navigationHelperService, 'navigateToWorkSpace').and.callFake(() => { });
     component.closeModal();
+    expect(component.redirectToWorkSpace).toHaveBeenCalled();
     expect(navigationHelperService.navigateToWorkSpace).toHaveBeenCalledWith('workspace/content/draft/1');
+  }));
+
+  it('should call retire method', inject([Router, NavigationHelperService], (router, navigationHelperService) => () => {
+    spyOn(component, 'retireLock');
+    component.closeModal();
+    expect(component.retireLock).toHaveBeenCalled();
   }));
 });

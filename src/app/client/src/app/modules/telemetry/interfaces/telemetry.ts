@@ -14,14 +14,15 @@ export interface IImpressionEventData {
   'subtype'?: string;
   'pageid': string;
   'uri': string;
+  'duration'?: Number;
   'visits'?: Array<IImpressionEventVisits>;
 }
 export interface IImpressionEventVisits {
-    objid: string;
-    objtype: string;
-    objver?: string;
-    section?: string;
-    index: string | number;
+  objid: string;
+  objtype: string;
+  objver?: string;
+  section?: string;
+  index: string | number;
 }
 export interface IInteractEventEdata {
   'id': string;
@@ -31,6 +32,13 @@ export interface IInteractEventEdata {
   'extra'?: {};
   'target'?: string;
   'plugin'?: string;
+}
+
+export interface IAuditEventEData {
+  'props': string[];
+  'state': string;
+  'prevstate': string;
+  'type'?: string;
 }
 export interface IShareEventData {
   'type': string;
@@ -56,6 +64,16 @@ export interface ILogEventData {
   'pageid'?: string;
   'params'?: Array<{}>;
 }
+export interface IExDataEventData {
+  'type': string;
+  'data': string;
+}
+
+export interface IFeedBackEventData {
+  'commentid'?: string;
+  'commenttxt'?: string;
+  'rating'?: number;
+}
 export interface ITelemetryContextData {
   'channel': string;
   'uid': string;
@@ -79,7 +97,7 @@ export interface TelemetryEventOptions {
 }
 export interface ITelemetryEvent {
   'edata': IStartEventData | IImpressionEventData | IInteractEventEdata | IShareEventData
-  | IErrorEventData | IEndEventData | ILogEventData;
+  | IErrorEventData | IEndEventData | ILogEventData | IFeedBackEventData;
   'contentId'?: string;
   'contentVer'?: string;
   'options': TelemetryEventOptions;
@@ -88,6 +106,7 @@ export interface ITelemetryEvent {
 export interface IEndEventInput {
   'context': {
     'env': string;
+    'cdata'?: Array<object>;
   };
   'object'?: {
     'id': string;
@@ -115,6 +134,7 @@ export interface IImpressionEventInput {
   'context': {
     'env': string;
     'cdata'?: Array<object>;
+    'pdata'?: IProducerData
   };
   'object'?: {
     'id': string;
@@ -128,6 +148,8 @@ export interface IImpressionEventInput {
 export interface IInteractEventInput {
   'context': {
     'env': string;
+    'cdata': Array<object>,
+    'pdata'?: IProducerData
   };
   'object'?: IInteractEventObject;
   'edata': IInteractEventEdata;
@@ -137,6 +159,20 @@ export interface IInteractEventObject {
   'type'?: string;
   'ver'?: string;
   'rollup'?: {};
+}
+
+export interface IAuditEventInput {
+  'context': {
+    'env': string;
+    'cdata': Array<object>;
+  };
+  'object'?: {
+    'id': string;
+    'type': string;
+    'ver'?: string;
+    'rollup'?: {};
+  };
+  'edata': IAuditEventEData;
 }
 export interface ILogEventInput {
   'context': {
@@ -151,6 +187,30 @@ export interface ILogEventInput {
   'edata': ILogEventData;
 }
 
+export interface IExDataEventInput {
+  'context': {
+    'env': string;
+  };
+  'object'?: {
+    'id': string;
+    'type': string;
+    'ver'?: string;
+    'rollup'?: {};
+  };
+  'edata': IExDataEventData;
+}
+export interface IFeedBackEventInput {
+  'context': {
+    'env': string;
+  };
+  'object'?: {
+    'id': string;
+    'type': string;
+    'ver'?: string;
+    'rollup'?: {};
+  };
+  'edata': IFeedBackEventData;
+}
 export interface IShareEventInput {
   'context': {
     'env': string;
@@ -189,7 +249,7 @@ export interface ITelemetry {
   'env': string;
   'apislug': string;
   'channel': string;
-  'uid': string;
+  'uid'?: string;
   'endpoint': string;
   'did'?: string;
   'authtoken'?: string;
@@ -202,6 +262,7 @@ export interface ITelemetry {
   'cdata'?: Array<{}>;
   'dispatcher'?: undefined;
   'enableValidation': boolean;
+  'timeDiff'?: Number;
 }
 
 export interface IUserOrgDetails {

@@ -4,7 +4,6 @@ import { FlagReviewerComponent } from './flag-reviewer.component';
 import { async, ComponentFixture, TestBed, inject } from '@angular/core/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { RouterTestingModule } from '@angular/router/testing';
-import { Ng2IziToastModule } from 'ng2-izitoast';
 import { SharedModule, PaginationService, ToasterService, ResourceService, ConfigService } from '@sunbird/shared';
 import { SearchService, ContentService } from '@sunbird/core';
 import { WorkSpaceService } from '../../services';
@@ -13,6 +12,9 @@ import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { ActivatedRoute, RouterModule, Router } from '@angular/router';
 import { Response } from './flag-reviewer.component.spec.data';
 import { TelemetryModule } from '@sunbird/telemetry';
+import { CoreModule } from '@sunbird/core';
+import { DateFilterXtimeAgoPipe } from './../../pipes';
+import { configureTestSuite } from '@sunbird/test-util';
 
 describe('FlagReviewerComponent', () => {
   let component: FlagReviewerComponent;
@@ -28,7 +30,8 @@ describe('FlagReviewerComponent', () => {
         'm0008': 'no-results',
         'm0033': 'You dont have any content for review...'
       }
-    }
+    },
+    languageSelected$: observableOf({})
   };
   class RouterStub {
     navigate = jasmine.createSpy('navigate');
@@ -63,10 +66,11 @@ describe('FlagReviewerComponent', () => {
   const mockUserRoles = {
     userRoles: ['PUBLIC']
   };
+  configureTestSuite();
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [FlagReviewerComponent],
-      imports: [HttpClientTestingModule, Ng2IziToastModule, SharedModule.forRoot(), TelemetryModule.forRoot()],
+      declarations: [FlagReviewerComponent, DateFilterXtimeAgoPipe],
+      imports: [HttpClientTestingModule, SharedModule.forRoot(), CoreModule, TelemetryModule.forRoot()],
       providers: [PaginationService, WorkSpaceService, UserService,
         SearchService, ContentService, LearnerService, CoursesService,
         PermissionService, ResourceService, ToasterService,

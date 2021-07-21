@@ -3,24 +3,13 @@ import { Component, OnInit, EventEmitter, Output } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ResourceService, ConfigService } from '@sunbird/shared';
 import { ISelectFilter } from '../../interfaces/selectfilter';
-import * as _ from 'lodash';
+import * as _ from 'lodash-es';
 import { debounceTime, distinctUntilChanged, delay, flatMap } from 'rxjs/operators';
 import { IInteractEventEdata } from '@sunbird/telemetry';
 @Component({
   selector: 'app-up-for-review-filter',
   templateUrl: './up-for-review-filter.component.html',
-  styles: [`
-     >>> .ui.dropdown:not(.button)>.default.text {
-      display: none;
-       }
-      .ui.inline.dropdown.search-dropdown {
-       margin-left: 5px;
-       box-sizing: border-box;
-       }
-      .popup-content{
-        width: 850px !important;
-       }
-   `]
+  styleUrls: ['./up-for-review-filter.component.scss']
 })
 export class UpforReviewFilterComponent implements OnInit {
   modelChanged: Subject<string> = new Subject<string>();
@@ -103,7 +92,7 @@ export class UpforReviewFilterComponent implements OnInit {
       .subscribe(params => {
         this.queryParams = { ...params };
         this.query = this.queryParams['query'];
-        this.sortByOption = this.queryParams['sort_by'];
+        this.sortByOption = _.isArray(this.queryParams['sort_by']) ? this.queryParams['sort_by'][0] : this.queryParams['sort_by'];
         _.forIn(params, (value, key) => {
           if (typeof value === 'string' && key !== 'query') {
             this.queryParams[key] = [value];

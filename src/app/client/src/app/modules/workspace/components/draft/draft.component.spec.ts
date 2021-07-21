@@ -1,12 +1,10 @@
 
 import {throwError as observableThrowError, of as observableOf,  Observable } from 'rxjs';
-import { DeleteComponent } from './../../../announcement/components/delete/delete.component';
 // Import NG testing module(s)
-import { async, ComponentFixture, TestBed, inject } from '@angular/core/testing';
+import { async, ComponentFixture, TestBed, inject, tick, fakeAsync } from '@angular/core/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { RouterTestingModule } from '@angular/router/testing';
-import { Ng2IziToastModule } from 'ng2-izitoast';
-import { SuiModalService, TemplateModalConfig, ModalTemplate } from 'ng2-semantic-ui';
+import { SuiModalService } from 'ng2-semantic-ui';
 // Import services
 import { DraftComponent } from './draft.component';
 import { SharedModule, PaginationService, ToasterService, ResourceService, ConfigService } from '@sunbird/shared';
@@ -14,17 +12,22 @@ import { SearchService, ContentService } from '@sunbird/core';
 import { WorkSpaceService } from '../../services';
 import { UserService, LearnerService, CoursesService, PermissionService } from '@sunbird/core';
 // Import Module
-import { ActivatedRoute, RouterModule, Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 // Test data
 import * as mockData from './draft.component.spec.data';
 import { TelemetryModule } from '@sunbird/telemetry';
 import { NgInviewModule } from 'angular-inport';
+import { CoreModule } from '@sunbird/core';
+import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { configureTestSuite } from '@sunbird/test-util';
+
 const testData = mockData.mockRes;
 describe('DraftComponent', () => {
   let component: DraftComponent;
   let fixture: ComponentFixture<DraftComponent>;
   const fakeActivatedRoute = {
     'params': observableOf({ 'pageNumber': 1 }),
+    'queryParams': observableOf({ subject: ['english', 'odia'], sort_by: 'lastUpdatedOn', sortType: 'asc' }),
     snapshot: {
       params: [
         {
@@ -56,12 +59,14 @@ describe('DraftComponent', () => {
       'smsg': {
         'm0006': 'Content deleted successfully...'
       }
-    }
+    },
+    languageSelected$: observableOf({})
   };
+  configureTestSuite();
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       declarations: [DraftComponent],
-      imports: [HttpClientTestingModule, Ng2IziToastModule, RouterTestingModule, SharedModule.forRoot(),
+      imports: [HttpClientTestingModule, RouterTestingModule, CoreModule, SharedModule.forRoot(),
         TelemetryModule.forRoot(), NgInviewModule],
       providers: [PaginationService, WorkSpaceService, UserService,
         SearchService, ContentService, LearnerService, CoursesService,
@@ -69,7 +74,8 @@ describe('DraftComponent', () => {
         { provide: ResourceService, useValue: resourceBundle },
         { provide: Router, useClass: RouterStub },
         { provide: ActivatedRoute, useValue: fakeActivatedRoute }
-      ]
+      ],
+      schemas: [CUSTOM_ELEMENTS_SCHEMA]
     })
       .compileComponents();
   }));
@@ -80,12 +86,16 @@ describe('DraftComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should call search api and returns result count more than 1', inject([SearchService], (searchService) => {
+  it('should call search api and returns result count more than 1', inject([SearchService, WorkSpaceService],
+    (searchService, workSpaceService) => {
     spyOn(searchService, 'compositeSearch').and.callFake(() => observableOf(testData.searchSuccessWithCountTwo));
-    component.fetchDrafts(9, 1);
+    spyOn(workSpaceService, 'getContentLockList').and.callFake(() => observableOf({result: {count: 0}}));
+    component.fetchDrafts(9, 1, { queryParams: { subject: ['english', 'odia'], sort_by: 'lastUpdatedOn', sortType: 'asc'}});
     fixture.detectChanges();
     expect(component.draftList).toBeDefined();
     expect(component.draftList.length).toBeGreaterThan(1);
+    expect(component.sort).toEqual({lastUpdatedOn: 'asc'});
+    expect(component.noResult).toBeFalsy();
   }));
 
   it('should call delete api and get success response', inject([SuiModalService, WorkSpaceService, ActivatedRoute],
@@ -116,10 +126,11 @@ describe('DraftComponent', () => {
   // if  search api's throw's error
   it('should throw error', inject([SearchService], (searchService) => {
     spyOn(searchService, 'compositeSearch').and.callFake(() => observableThrowError({}));
-    component.fetchDrafts(9, 1);
+    component.fetchDrafts(9, 1, { queryParams: { subject: ['english', 'odia'], sort_by: 'lastUpdatedOn', sortType: 'asc'}});
     fixture.detectChanges();
     expect(component.draftList.length).toBeLessThanOrEqual(0);
     expect(component.draftList.length).toEqual(0);
+    expect(component.sort).toEqual({lastUpdatedOn: 'asc'});
   }));
 
   it('should call setpage method and set proper page number', inject([Router],
@@ -128,7 +139,8 @@ describe('DraftComponent', () => {
       component.pager.totalPages = 8;
       component.navigateToPage(1);
       fixture.detectChanges();
-      expect(route.navigate).toHaveBeenCalledWith(['workspace/content/draft', component.pageNumber]);
+      expect(route.navigate).toHaveBeenCalledWith(['workspace/content/draft', component.pageNumber],
+      { queryParams: component.queryParams });
     }));
 
   it('should call deleteConfirmModal method to delte the content', inject([],
@@ -152,14 +164,16 @@ describe('DraftComponent', () => {
 
   it('should call search api and returns result count 0', inject([SearchService], (searchService) => {
     spyOn(searchService, 'compositeSearch').and.callFake(() => observableOf(testData.searchSuccessWithCountZero));
-    component.fetchDrafts(9, 1);
+    component.fetchDrafts(9, 1, { queryParams: { subject: ['english', 'odia'], sort_by: 'lastUpdatedOn', sortType: 'asc'}});
     fixture.detectChanges();
     expect(component.draftList).toBeDefined();
     expect(component.draftList.length).toBe(0);
     expect(component.showLoader).toBeFalsy();
+    expect(component.sort).toEqual({lastUpdatedOn: 'asc'});
+    expect(component.noResult).toBeTruthy();
   }));
 
-  it('should call navigateToContent to open content player when action type is onImage', inject([SuiModalService, Router],
+  it('should call navigateToContent to open content player when action type is onImage', inject([Router],
     (route) => {
       const params = {
         action: {
@@ -167,16 +181,19 @@ describe('DraftComponent', () => {
           eventName: 'onImage'
         }, data: { metaData: { identifier: 'do_2124341006465925121871' } }
       };
+      const userService = TestBed.get(UserService);
+      userService._userProfile = {};
       component.contentClick(params);
-      fixture.detectChanges();
       expect(component.pageNumber).toEqual(1);
     }));
-  it('should call inview method for visits data', () => {
+  it('should call inview method for visits data', fakeAsync(() => {
     spyOn(component, 'inview').and.callThrough();
+    component.ngAfterViewInit();
+    tick(100);
     component.inview(testData.event);
     expect(component.inview).toHaveBeenCalled();
     expect(component.inviewLogs).toBeDefined();
-  });
+  }));
   it('should call setpage method and page number should be default, i,e 1', inject([ConfigService, Router],
     (configService, route) => {
       component.pager = testData.pager;
@@ -191,8 +208,30 @@ describe('DraftComponent', () => {
       component.pager.totalPages = 8;
       component.navigateToPage(1);
       fixture.detectChanges();
-      expect(route.navigate).toHaveBeenCalledWith(['workspace/content/draft', component.pageNumber]);
+      expect(route.navigate).toHaveBeenCalledWith(['workspace/content/draft', component.pageNumber],
+      { queryParams: component.queryParams });
     }));
+  xit('should fetch drafts list freshly if all contents are deleted from single page',
+    inject([SuiModalService, ConfigService, Router, SearchService],
+    (modalService, configService, route) => {
+      spyOn(component, 'fetchDrafts').and.callThrough();
+      spyOn(component, 'delete').and.callFake(() => observableOf({}));
+      spyOn(modalService, 'open').and.callFake(() => observableOf({}));
+      spyOn(modalService, 'approve').and.callFake(() => observableOf({}));
+      component.draftList = testData.localSingleContentData;
+      component.deleteConfirmModal('do_112523105235623936168');
+      expect(component.fetchDrafts).toHaveBeenCalled();
+    }));
+
+    it('should call fetchDrafts()', () => {
+      spyOn(component, 'fetchDrafts');
+      const bothParams = { params: {pageNumber: 1},
+      queryParams: {subject: ['english', 'odia'], sort_by: 'lastUpdatedOn', sortType: 'asc'}};
+      component.pageNumber = 1;
+      component.queryParams = bothParams.queryParams;
+      component.ngOnInit();
+      expect(component.fetchDrafts).toHaveBeenCalledWith(9, 1, bothParams);
+    });
 });
 
 

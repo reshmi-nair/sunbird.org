@@ -3,21 +3,13 @@ import { ActivatedRoute, RouterModule , Router } from '@angular/router';
 import { ResourceService, ToasterService, RouterNavigationService, ServerResponse } from '@sunbird/shared';
 import { UserSearchService } from './../../services';
 
-/**
- * The delete component deletes the announcement
- * which is requested by the logged in user have announcement
- * creator access
- */
 @Component({
   selector: 'app-user-delete',
-  templateUrl: './user-delete.component.html',
-  styleUrls: ['./user-delete.component.css']
+  templateUrl: './user-delete.component.html'
 })
 export class UserDeleteComponent implements OnInit, OnDestroy {
-   @ViewChild('modal') modal;
-  /**
-	 * Contains unique announcement id
-	 */
+   @ViewChild('modal', {static: false}) modal;
+
   userId: string;
 
   /**
@@ -25,16 +17,8 @@ export class UserDeleteComponent implements OnInit, OnDestroy {
 	 */
   pageNumber = 1;
 
-  /**
-	 * Contains announcement details returned from API or object called from
-   * announcement service
-	 */
   userDetails: any;
 
-
-  /**
-   * To make get announcement by id
-   */
   private userSearchService: UserSearchService;
 
   /**
@@ -80,11 +64,6 @@ export class UserDeleteComponent implements OnInit, OnDestroy {
     this.routerNavigationService = routerNavigationService;
   }
 
-  /**
-   * This method calls the delete API with a particular announcement
-   * id and and changes the status to cancelled of that particular
-   * announcement.
-	 */
   deleteUser(): void {
     const option = { userId: this.userId };
     this.userSearchService.deleteUser(option).subscribe(
@@ -137,7 +116,9 @@ export class UserDeleteComponent implements OnInit, OnDestroy {
     this.setUserDetails();
   }
   ngOnDestroy() {
-    this.modal.deny();
+    if (this.modal && this.modal.deny) {
+      this.modal.deny();
+    }
   }
 }
 

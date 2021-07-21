@@ -1301,6 +1301,43 @@ export const mockRes = {
                 }
             }]
     },
+    cardClickEvent: {
+        'action': 'batchcardclick',
+        'data': {
+          'identifier': '012767178876862464110',
+          'createdFor': [
+            'ORG_001'
+          ],
+          'courseAdditionalInfo': {
+            'courseName': 'Course TestCourse test5307115132',
+            'leafNodesCount': '0',
+            'description': 'Course Test',
+            'courseLogoUrl': '',
+            'tocUrl': '',
+            'status': 'Live'
+          },
+          'countIncrementDate': '2019-05-22 02:36:50:462+0000',
+          'description': 'ABC',
+          'completedCount': 1,
+          'countIncrementStatus': true,
+          'createdDate': '2019-05-22 02:36:50:175+0000',
+          'reportUpdatedOn': '2019-06-24T07:39:05Z',
+          'createdBy': '874ed8a5-782e-4f6c-8f36-e0288455901e',
+          'courseCreator': 'a02bce3d-8f1f-4c6f-ab4d-b71b7e9c007a',
+          'hashTagId': '012767178876862464110',
+          'participantCount': 1,
+          'mentors': [],
+          'countDecrementStatus': false,
+          'name': 'ABC',
+          'id': '012767178876862464110',
+          'enrollmentType': 'invite-only',
+          'courseId': 'do_1127562904188026881135',
+          'startDate': '2019-05-22',
+          'status': 1,
+          'label': 1,
+          'userName': 'Creation '
+        }
+      },
     telemetryData: {
         context: {
             env: 'workspace'
@@ -1336,5 +1373,151 @@ export const mockRes = {
                 'count': 0,
             }
         }
-    }
+    },
+    courseIds: [
+        'do_113021634697519104119',
+        'do_112565570136662016136',
+        'do_1130292569979781121111',
+        'do_11302648252862464012'
+      ],
+
+    contentSearchResult: {
+        'id': 'api.content.search',
+        'ver': '1.0',
+        'ts': '2020-05-31T07:59:23.640Z',
+        'params': {
+          'resmsgid': 'a41f2780-a314-11ea-8de9-7d93eb75cf91',
+          'msgid': '260f80c1-347e-ba91-3a9c-ba07499d793f',
+          'status': 'successful',
+          'err': null,
+          'errmsg': null
+        },
+        'responseCode': 'OK',
+        'result': {
+          'count': 4,
+          'content': [
+            {
+              'identifier': 'do_112565570136662016136',
+              'name': 'Adpt course resume check',
+              'objectType': 'Content'
+            },
+            {
+              'identifier': 'do_113021634697519104119',
+              'name': 'Sudip -Final test copy as course',
+              'objectType': 'Content'
+            },
+            {
+              'identifier': 'do_1130292569979781121111',
+              'name': 'Sudip testing course- mentor and creator',
+              'objectType': 'Content'
+            },
+            {
+              'identifier': 'do_11302648252862464012',
+              'name': 'Test Course 1',
+              'objectType': 'Content'
+            }
+          ]
+        }
+    },
+    batchListWithCourseDetails: [
+        {
+          'identifier': '0130301153702215684',
+          'createdFor': [
+            'ORG_001'
+          ],
+          'courseDetails' : {
+            'identifier': 'do_112565570136662016136',
+            'name': 'Adpt course resume check',
+            'objectType': 'Content'
+          }
+        },
+        {
+          'identifier': '0130301153860812803',
+          'createdFor': [
+            'ORG_001'
+          ],
+          'courseDetails' : {
+            'identifier': 'do_112565570136662016136',
+            'name': 'Adpt course resume check',
+            'objectType': 'Content'
+          }
+        },
+        {
+          'identifier': '0130301183567462402',
+          'createdFor': [
+            'ORG_001'
+          ],
+          'courseDetails' : {
+            'identifier': 'do_112565570136662016136',
+            'name': 'Adpt course resume check',
+            'objectType': 'Content'
+          }
+        },
+        {
+          'identifier': '01302999207194624022',
+          'createdFor': [
+            'ORG_001'
+          ],
+          'courseDetails' : {
+            'identifier': 'do_112565570136662016136',
+            'name': 'Adpt course resume check',
+            'objectType': 'Content'
+          }
+        },
+        {
+          'identifier': '01302999139837542421',
+          'createdFor': [
+            'ORG_001'
+          ],
+          'courseDetails' : {
+            'identifier': 'do_112565570136662016136',
+            'name': 'Adpt course resume check',
+            'objectType': 'Content'
+          }
+        },
+        {
+          'identifier': '01302999191136665620',
+          'createdFor': [
+            'ORG_001'
+          ],
+          'courseDetails' : {
+            'identifier': 'do_112565570136662016136',
+            'name': 'Adpt course resume check',
+            'objectType': 'Content'
+          }
+        },
+        {
+          'identifier': '01302999658956390419',
+          'createdFor': [
+            'ORG_001'
+          ],
+          'courseDetails' : {
+            'identifier': 'do_112565570136662016136',
+            'name': 'Adpt course resume check',
+            'objectType': 'Content'
+          }
+        },
+        {
+          'identifier': '01302999079140556816',
+          'createdFor': [
+            'ORG_001'
+          ],
+          'courseDetails' : {
+            'identifier': 'do_112565570136662016136',
+            'name': 'Adpt course resume check',
+            'objectType': 'Content'
+          }
+        },
+        {
+          'identifier': '0130292642366914566',
+          'createdFor': [
+            'ORG_001'
+          ],
+          'courseDetails' : {
+            'identifier': 'do_112565570136662016136',
+            'name': 'Adpt course resume check',
+            'objectType': 'Content'
+          }
+        }
+    ]
 };

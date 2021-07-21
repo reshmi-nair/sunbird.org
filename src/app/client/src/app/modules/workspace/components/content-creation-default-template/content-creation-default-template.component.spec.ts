@@ -3,7 +3,6 @@ import {of as observableOf,  Observable } from 'rxjs';
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
-import { Ng2IziToastModule } from 'ng2-izitoast';
 import { ActivatedRoute, Router } from '@angular/router';
 import { SuiModule } from 'ng2-semantic-ui';
 import { EditorService, WorkSpaceService } from './../../services';
@@ -12,7 +11,7 @@ import { UserService, LearnerService, CoreModule } from '@sunbird/core';
 import { CacheService } from 'ng2-cache-service';
 import { DefaultTemplateComponent } from './content-creation-default-template.component';
 import { mockData } from './content-creation-default-template.component.spec.data';
-import { expand } from 'rxjs/operators';
+import { configureTestSuite } from '@sunbird/test-util';
 
 describe('DefaultTemplateComponent', () => {
   let component: DefaultTemplateComponent;
@@ -35,10 +34,10 @@ describe('DefaultTemplateComponent', () => {
   const fakeActivatedRoute = {
     'url': observableOf({ 'path': 'textbook' })
   };
-
+  configureTestSuite();
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule, Ng2IziToastModule, SuiModule, SharedModule.forRoot(), CoreModule.forRoot()],
+      imports: [HttpClientTestingModule, SuiModule, SharedModule.forRoot(), CoreModule],
       declarations: [ DefaultTemplateComponent ],
       providers: [UserService, LearnerService,
         CacheService, EditorService, WorkSpaceService,

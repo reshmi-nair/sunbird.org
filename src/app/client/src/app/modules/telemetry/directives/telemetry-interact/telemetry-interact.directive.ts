@@ -1,8 +1,8 @@
 import { Directive, Input, OnInit, OnChanges, HostListener } from '@angular/core';
-import { IInteractEventInput, IInteractEventObject, IInteractEventEdata } from '../../interfaces';
+import { IInteractEventInput, IInteractEventObject, IInteractEventEdata, IProducerData } from '../../interfaces';
 import { TelemetryService } from '../../services';
 import { ActivatedRoute, Router } from '@angular/router';
-import * as _ from 'lodash';
+import * as _ from 'lodash-es';
 /**
  * TelemetryInteract Directive
  */
@@ -21,6 +21,12 @@ export class TelemetryInteractDirective {
 
   @Input() telemetryInteractEdata: IInteractEventEdata;
 
+  @Input() telemetryInteractCdata: Array<{}>;
+  @Input() telemetryInteractContext;
+  @Input() telemetryInteractPdata: IProducerData;
+
+
+
   @HostListener('click', ['$event'])
 
   private onClick(e) {
@@ -28,14 +34,22 @@ export class TelemetryInteractDirective {
     if (this.telemetryInteractEdata) {
       this.appTelemetryInteractData = {
        context: {
-          env: _.get(this.activatedRoute, 'snapshot.root.firstChild.data.telemetry.env') ||
+          env: _.get(this.telemetryInteractContext, 'env') || _.get(this.activatedRoute, 'snapshot.root.firstChild.data.telemetry.env') ||
           _.get(this.activatedRoute, 'snapshot.data.telemetry.env') ||
           _.get(this.activatedRoute.snapshot.firstChild, 'children[0].data.telemetry.env') ,
+          cdata: this.telemetryInteractCdata || [],
         },
         edata: this.telemetryInteractEdata
       };
       if (this.telemetryInteractObject) {
+        if (this.telemetryInteractObject.ver) {
+          this.telemetryInteractObject.ver = _.isNumber(this.telemetryInteractObject.ver) ?
+          _.toString(this.telemetryInteractObject.ver) : this.telemetryInteractObject.ver;
+        }
         this.appTelemetryInteractData.object = this.telemetryInteractObject;
+      }
+      if (this.telemetryInteractPdata) {
+        this.appTelemetryInteractData.context.pdata = this.telemetryInteractPdata;
       }
       this.telemetryService.interact(this.appTelemetryInteractData);
     }

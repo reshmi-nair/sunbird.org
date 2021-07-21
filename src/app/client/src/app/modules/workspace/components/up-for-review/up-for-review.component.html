@@ -1,5 +1,6 @@
 <!-- Loader -->
-
+<div class="sbt-page-gap">
+  
 <app-up-for-review-filter ></app-up-for-review-filter>
 <div class="twelve wide column mt-20" *ngIf="showLoader ">
     <app-loader [data]="loaderMessage"></app-loader>
@@ -11,7 +12,7 @@
 <table class="ui upForReviewTable table" *ngIf="upForReviewContentData.length > 0 && !showLoader && !noResult">
   <thead>
     <tr>
-      <th class="six wide UpReviewTableHeader">{{ resourceService?.frmelmnts?.lbl?.content}}
+      <th class="six wide UpReviewTableHeader">{{ resourceService?.frmelmnts?.lbl?.contentLabel}}
       </th>
       <th class="four wide UpReviewTableHeader">{{ resourceService?.frmelmnts?.lbl?.author}}
       </th>
@@ -26,11 +27,11 @@
         <h5 class="ui image header">
           <img src="{{content.appIcon || 'assets/images/default.png' | cdnprefixurl}}" class="ui tiny image UpReviewTinyImage">
           <div class="content ">
-            <div class="UpReviewHeader">{{content.name | slice:0:40}}
-              <i *ngIf="content.name.length > 40">...</i>
+            <div class="UpReviewHeader">{{content.name | slice:0:30}}
+              <i *ngIf="content.name.length > 30">...</i>
             </div>
-            <div class="UpReviewSubHeader">{{content.contentType}}
-            </div>
+              <div class="UpReviewSubHeader">{{content.primaryCategory}}
+              </div>
           </div>
         </h5>
       </td>
@@ -60,4 +61,5 @@
       </div>
     </div>
   </div>
+</div>
 </div>

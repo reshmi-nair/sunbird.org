@@ -1,22 +1,25 @@
 import { Component, OnInit, ViewChild, Output, EventEmitter } from '@angular/core';
 import { Router } from '@angular/router';
 import { ResourceService } from '../../services';
-import * as _ from 'lodash';
-import { IInteractEventObject, IInteractEventEdata } from '@sunbird/telemetry';
+import * as _ from 'lodash-es';
+import { IInteractEventEdata } from '@sunbird/telemetry';
+
 @Component({
   selector: 'app-qr-code-modal',
-  templateUrl: './qr-code-modal.component.html',
-  styleUrls: ['./qr-code-modal.component.css']
+  templateUrl: './qr-code-modal.component.html'
 })
 export class QrCodeModalComponent implements OnInit {
-  @ViewChild('modal') modal;
+  @ViewChild('modal', {static: false}) modal;
   @Output() closeQrModal = new EventEmitter<any>();
+  instance: string;
   public submitDialCodeInteractEdata: IInteractEventEdata;
   public closeDialCodeInteractEdata: IInteractEventEdata;
   constructor(public router: Router, public resourceService: ResourceService) { }
 
   ngOnInit() {
     this.setInteractEventData();
+    this.instance = _.upperCase(this.resourceService.instance);
+
   }
   setInteractEventData() {
     this.closeDialCodeInteractEdata = {
@@ -31,6 +34,7 @@ export class QrCodeModalComponent implements OnInit {
     if (!_.isEmpty(dialCode)) {
       this.setsubmitDialCodeInteractEdata(dialCodeVal);
       this.modal.approve();
+      sessionStorage.removeItem('l1parent');  // l1parent value is removed (SB-19982)
       this.router.navigate(['/get/dial/', dialCode]);
     }
   }

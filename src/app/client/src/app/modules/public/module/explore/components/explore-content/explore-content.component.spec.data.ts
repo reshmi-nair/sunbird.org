@@ -83,6 +83,56 @@ export const Response = {
           'compatibilityLevel': 1,
           'node_id': 96096
         }
+      ],
+      'facets': [
+          {
+            'values': [
+              {
+                'name': 'grade 7',
+                'count': 8
+              },
+              {
+                'name': 'class 2',
+                'count': 85
+              }
+            ],
+            'name': 'gradeLevel'
+          },
+          {
+            'values': [
+              {
+                'name': 'chemistry',
+                'count': 2
+              },
+              {
+                'name': 'marathi',
+                'count': 9
+              }
+            ],
+            'name': 'subject'
+          },
+          {
+            'values': [
+              {
+                'name': 'explanation content',
+                'count': 2
+              },
+              {
+                'name': 'learning resource',
+                'count': 9
+              },
+              {
+                'name': 'course assessment',
+                'count': 2
+              },
+              {
+                'name': 'course',
+                'count': 9
+              }
+            ],
+            'name': 'primaryCategory'
+          }
+          
       ]
     }
   },
@@ -317,8 +367,8 @@ export const Response = {
         ],
         'name': 'board'
       }
-    ],
-    filters: [
+  ],
+  filters: [
       {
         'code': 'board',
         'dataType': 'text',
@@ -472,5 +522,234 @@ export const Response = {
           }
         ]
       }
-    ]
+    ],
+  download_event:
+    {
+      'action': 'download',
+      'data': {
+        'action':
+        {
+          'onImage': {'eventName': 'onImage'}
+        },
+      'addedToLibrary': true,
+      'completionPercentage': 0,
+      'contentType': 'Resource',
+      'description': 'Math-Magic_7_Jugs and Mugs_Bunny and Banno celebrate their Wedding Anniversary_Introduction to volume',
+      'gradeLevel': 'Class 4',
+      // tslint:disable-next-line:max-line-length
+      'image': 'https://ekstep-public-prod.s3-ap-south-1.amazonaws.com/content/do_312579855868370944110877/artifact/1n4jfaogvexvuuff6knjagpzmavlvdxk2.thumb.png',
+      'medium': 'English',
+      // tslint:disable-next-line:max-line-length
+      'metaData': {'identifier': 'do_312579855868370944110877', 'mimeType': 'video/x-youtube', 'framework': 'ekstep_ncert_k-12', 'contentType': 'Resource'},
+      'name': 'Jugs and Mugs_Bunny and Banno celebrate their Wedding Anniversary_2',
+      'orgDetails': {},
+      'rating': 3,
+      'ribbon': {
+        'left': {
+          'class': 'ui circular label  card-badges-image',
+          'image': 'https://ntpproduction.blob.core.windows.net/badgr/uploads/badges/739851bf8ecd6203aa5dd2d9de155f31.png'
+        },
+        'right': {
+          'class': 'ui black right ribbon label',
+          'name': 'Learn'
+        },
+      },
+      'subTopic': '',
+      'subject': 'Mathematics',
+      'topic': 'Volumes and Capacity'
+    },
+      'section': 'Featured Content'
+      },
+  download_list : {
+        id: 'api.content.download.list',
+        ver: '1.0',
+        ts: '2019-08-22T05:07:39.363Z',
+        params: {
+          resmsgid: 'f2da2305-75c9-4b54-a454-72cfe6433ebe',
+          msgid: '2025a654-e573-4546-b87d-0a293f2f6564',
+          status: 'successful',
+          err: null,
+          errmsg: null,
+        },
+        responseCode: 'OK',
+        result: {
+          response: {
+            downloads: {
+              submitted: [],
+              inprogress: [],
+              failed: [],
+              completed: [],
+            },
+          },
+        },
+      },
+   download_success : {
+      id: 'api.content.download',
+      ver: '1.0',
+      ts: '2019-08-16T04:54:02.569Z',
+      params: {
+        resmsgid: 'efe1bb13-a3a4-4458-baf1-234b1a109ea0',
+        msgid: 'c1932b9d-2a36-4036-ba57-2b80be4b3355',
+        status: 'successful',
+        err: null,
+        errmsg: null,
+      },
+      responseCode: 'OK',
+      result: { downloadId: '5e1ae60e-ecd8-459e-9e13-fe8ecf7c9487' },
+    },
+  download_error : {
+      id: 'api.content.download',
+      ver: '1.0',
+      ts: '2019-08-16T12:28:15.856Z',
+      params: {
+        resmsgid: 'dbbf8bd4-4da8-492b-bc5b-6c73351f1161',
+        msgid: '845ee75b-72e9-4d33-a0a2-1b38bf132b83',
+        status: 'failed',
+        err: 'ERR_INTERNAL_SERVER_ERROR',
+        errmsg: 'Error while processing the request',
+      },
+      responseCode: 'INTERNAL_SERVER_ERROR',
+      result: {},
+    },
+    result: {
+      id: 'api.content.read',
+      ver: '1.0',
+      ts: '2018-05-03T10:51:12.648Z',
+      params: 'params',
+      responseCode: 'OK',
+      result: {
+          content: {
+              downloadStatus: '',
+              mimeType: 'application/vnd.ekstep.ecml-archive',
+              body: 'body',
+              identifier: 'domain_66675',
+              versionKey: '1497028761823',
+              status: 'Live',
+              me_averageRating: '4',
+              description: 'ffgg',
+              name: 'ffgh',
+              concepts: ['AI', 'ML'],
+              contentType: '',
+              code: '',
+              framework: '',
+              userId: '',
+              userName: '',
+          }
+      }
+  },
+  formData: [{
+    'index': 1,
+    'title': 'frmelmnts.tab.courses',
+    'desc': 'frmelmnts.tab.courses',
+    'menuType': 'Content',
+    'isEnabled': true,
+    'theme': {
+      'baseColor': '',
+      'textColor': '',
+      'supportingColor': ''
+    },
+    'search': {
+      'facets': ['topic', 'purpose', 'medium', 'gradeLevel', 'subject', 'channel'],
+      'fields': [],
+      'filters': {
+        'contentType': ['Course']
+      },
+      'limit': 20
+    }
+  }, {
+    'index': 0,
+    'title': 'frmelmnts.lbl.textbooks',
+    'desc': 'frmelmnts.lbl.textbooks',
+    'menuType': 'Content',
+    'isEnabled': true,
+    'theme': {
+      'baseColor': '',
+      'textColor': '',
+      'supportingColor': ''
+    },
+    'search': {
+      'facets': ['board', 'gradeLevel', 'subject', 'medium', 'contentType', 'concepts'],
+      'fields': ['name', 'appIcon', 'mimeType', 'gradeLevel', 'identifier', 'medium', 'pkgVersion', 'board', 'subject', 'resourceType', 'contentType', 'channel', 'organisation'],
+      'filters': {
+        'contentType': ['TextBook']
+      },
+      'limit': 100
+    }
+  }, {
+    'index': 2,
+    'title': 'frmelmnts.tab.all',
+    'desc': 'frmelmnts.tab.all',
+    'menuType': 'Content',
+    'isEnabled': false,
+    'theme': {
+      'baseColor': '',
+      'textColor': '',
+      'supportingColor': ''
+    },
+    'search': {
+      'facets': ['board', 'gradeLevel', 'subject', 'medium', 'contentType', 'concepts'],
+      'fields': ['name', 'appIcon', 'mimeType', 'gradeLevel', 'identifier', 'medium', 'pkgVersion', 'board', 'subject', 'resourceType', 'contentType', 'channel', 'organisation'],
+      'filters': {
+        'contentType': ['Collection', 'TextBook', 'LessonPlan', 'Resource', 'SelfAssess', 'PracticeResource', 'LearningOutcomeDefinition', 'ExplanationResource', 'CurriculumCourse', 'Course']
+      },
+      'limit': 100
+    }
+  }],
+  hoverActionsData: {
+    'event': {
+        'isTrusted': true
+    },
+    'content': {
+        'name': '10sep book UT',
+        'image': 'https://ntpstagingall.blob8521957.thumb.jpg',
+        'description': 'Enter description for TextBook',
+        'rating': '0',
+        'subject': 'English',
+        'medium': 'Assamese',
+        'orgDetails': {},
+        'gradeLevel': 'Class 5',
+        'contentType': 'TextBook',
+        'topic': '',
+        'subTopic': '',
+        'metaData': {
+            'identifier': 'do_2128458518662184961150',
+            'mimeType': 'application/vnd.ekstep.content-collection',
+            'framework': 'as_k-12',
+            'contentType': 'TextBook'
+        },
+        'completionPercentage': 0,
+        'mimeTypesCount': '{\'application/vnd.ekstep.content-collection\':1,\'application/vnd.ekstep.ecml-archive\':1}',
+        'cardImg': 'https://ntpstagingall.blob8521957.thumb.jpg',
+        'resourceType': 'Book',
+        'organisation': ['Chhattisgarh', 'Chhattisgarh'],
+        'hoverData': {
+            'note': '',
+            'actions': [{
+                'type': 'download',
+                'label': 'Download',
+                'disabled': false
+            }, {
+                'type': 'open',
+                'label': 'Open'
+            }]
+        },
+        'board': 'State (Assam)',
+        'identifier': 'do_2128458518662184961150',
+        'mimeType': 'application/vnd.ekstep.content-collection',
+        'action': {
+            'onImage': {
+                'eventName': 'onImage'
+            }
+        },
+        'ribbon': {
+            'left': {
+                'class': 'ui circular label  card-badges-image'
+            },
+            'right': {
+                'name': 'Book',
+                'class': 'ui black right ribbon label'
+            }
+        }
+    }
+  },
 };

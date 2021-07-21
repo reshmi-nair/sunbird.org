@@ -13,55 +13,117 @@ export const mockRes = {
   },
   courseProgressData: {
     getBatchDetails: {
-      'id': 'api.sunbird.dashboard.course.admin',
-      'ver': 'v1',
-      'ts': '2017-12-29 09:50:32:125+0000',
+      'id': 'api.dashboard.progress.course',
+      'ver': 'v2',
+      'ts': '2019-02-20 09:11:20:700+0000',
       'params': {
-        'resmsgid': null,
-        'msgid': '8e27cbf5-e299-43b0-bca7-8347f7e5abcf',
-        'err': null,
-        'status': 'success',
-        'errmsg': null
+       'resmsgid': null,
+       'msgid': '9c1ce105-0de5-fad9-945b-4aeaaedcb3cb',
+       'err': null,
+       'status': 'success',
+       'errmsg': null
       },
       'responseCode': 'OK',
       'result': {
-        'period': '7d',
-        'series': {
-          'course.progress.users_enrolled.count': {
-            'name': 'List of users enrolled for the course',
-            'split': 'content.sum(time_spent)',
-            'buckets': [{
-              'userName': 'sanvijna9',
-              'user': '2a6bde34-0e89-4182-b717-fe6d8faf849f'
-            }, {
-              'userName': 'arvind12745.yadav127',
-              'user': 'c6f02b71-4ef6-4450-96f8-0d173f67f33f'
-            }]
-          },
-          'course.progress.course_progress_per_user.count': {
-            'name': 'List of users enrolled for the course',
-            'split': 'content.sum(time_spent)',
-            'buckets': [{
-              'enrolledOn': '2017-12-26 11:32:41:484+0000',
-              'lastAccessTime': '2017-12-26 11:32:41:484+0000',
-              'org': 'Sunbird',
-              'progress': 0,
-              'batchEndsOn': '2017-12-29',
-              'userName': 'sanvijna9',
-              'user': '2a6bde34-0e89-4182-b717-fe6d8faf849f'
-            }, {
-              'enrolledOn': '2017-12-26 11:32:40:878+0000',
-              'lastAccessTime': '2017-12-26 11:32:40:877+0000',
-              'org': 'Sunbird',
-              'progress': 0,
-              'batchEndsOn': '2017-12-29',
-              'userName': 'arvind12745.yadav127',
-              'user': 'c6f02b71-4ef6-4450-96f8-0d173f67f33f'
-            }]
-          }
+       'data': [
+        {
+         'orgName': null,
+         'enrolledOn': '2019-02-14 05:48:01:770+0000',
+         'lastAccessedOn': null,
+         'phone': '******7418',
+         'progress': 0,
+         'batchId': '01269861558192537614',
+         'courseId': 'do_1126981011606323201176',
+         'username': 'User six'
+        },
+        {
+         'orgName': 'Sunbird',
+         'enrolledOn': '2019-02-14 05:48:01:813+0000',
+         'lastAccessedOn': null,
+         'phone': '******7418',
+         'progress': 0,
+         'batchId': '01269861558192537614',
+         'courseId': 'do_1126981011606323201176',
+         'username': 'User ten'
+        },
+        {
+         'orgName': 'Sunbird',
+         'enrolledOn': '2019-02-14 05:48:01:895+0000',
+         'lastAccessedOn': null,
+         'phone': '******7418',
+         'progress': 0,
+         'batchId': '01269861558192537614',
+         'courseId': 'do_1126981011606323201176',
+         'username': 'User twelve'
+        },
+        {
+         'orgName': 'Sunbird',
+         'enrolledOn': '2019-02-14 05:48:01:966+0000',
+         'lastAccessedOn': null,
+         'phone': '******7418',
+         'progress': 0,
+         'batchId': '01269861558192537614',
+         'courseId': 'do_1126981011606323201176',
+         'username': 'User five'
+        },
+        {
+         'orgName': 'Sunbird',
+         'enrolledOn': '2019-02-14 05:48:01:732+0000',
+         'lastAccessedOn': null,
+         'phone': '******7418',
+         'progress': 0,
+         'batchId': '01269861558192537614',
+         'courseId': 'do_1126981011606323201176',
+         'username': 'User eight'
+        },
+        {
+         'orgName': 'Sunbird',
+         'enrolledOn': '2019-02-14 05:48:01:850+0000',
+         'lastAccessedOn': null,
+         'phone': '******7418',
+         'progress': 0,
+         'batchId': '01269861558192537614',
+         'courseId': 'do_1126981011606323201176',
+         'username': 'User thirteen'
+        },
+        {
+         'orgName': 'Sunbird',
+         'enrolledOn': '2019-02-14 05:48:01:931+0000',
+         'lastAccessedOn': null,
+         'phone': '******7418',
+         'progress': 0,
+         'batchId': '01269861558192537614',
+         'courseId': 'do_1126981011606323201176',
+         'username': 'User seven'
+        },
+        {
+         'orgName': 'Sunbird',
+         'enrolledOn': '2019-02-14 07:15:43:468+0000',
+         'lastAccessedOn': '2019-02-14 10:22:44:552+0000',
+         'phone': '******6453',
+         'progress': 100,
+         'batchId': '01269861558192537614',
+         'courseId': 'do_1126981011606323201176',
+         'username': 'Anuj Gupta'
+        },
+        {
+         'orgName': 'Sunbird',
+         'enrolledOn': '2019-02-14 05:48:01:671+0000',
+         'lastAccessedOn': '2019-02-14 05:54:35:277+0000',
+         'phone': '******7418',
+         'progress': 100,
+         'batchId': '01269861558192537614',
+         'courseId': 'do_1126981011606323201176',
+         'username': 'Creator User122'
         }
+       ],
+       'endDate': null,
+       'response': 'SUCCESS',
+       'count': 9,
+       'completedCount': 2,
+       'startDate': '2019-02-14'
       }
-    },
+     },
     errorResponse: {
       'id': 'api.sunbird.dashboard.course.admin',
       'ver': 'v1',
@@ -159,5 +221,39 @@ export const mockRes = {
         }]
       }
     }
+  },
+  reportsLastUpdatedDateMock: {
+    'id': 'api.report',
+    'ver': '1.0',
+    'ts': '2020-04-13 18:57:58:092+0530',
+    'params': {
+        'resmsgid': '9705ccc0-7d8a-11ea-9082-5d763a6be3a2',
+        'msgid': null,
+        'status': 'success',
+        'err': null,
+        'errmsg': null
+    },
+    'responseCode': 'OK',
+    'result': {
+        'course-progress-reports': {
+            'lastModified': 'Mon, 13 Apr 2020 06:37:06 GMT'
+        },
+        'assessment-reports': {
+            'msg': 'NotFound',
+            'statusCode': 404,
+            'filename': 'assessment-reports/report-01299166246978355236.csv',
+            'reportname': 'assessment-reports'
+          }
+    }
+ },
+ getFileMetaDataInput: [
+  {
+      'id': 'first',
+      'path': '/reports/fetch/hawk-eye/daily_plays_by_mode.json'
+  },
+  {
+      'id': 'second',
+      'path': '/reports/fetch/hawk-eye/daily_quiz_play_by_lang.json'
   }
+]
 };

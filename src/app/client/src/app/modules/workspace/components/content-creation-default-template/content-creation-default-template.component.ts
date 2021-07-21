@@ -2,7 +2,7 @@ import { Component, Input, OnInit, AfterViewInit, Output, EventEmitter } from '@
 import { FormGroup, FormControl } from '@angular/forms';
 import { ResourceService, ConfigService, ToasterService, ServerResponse, IUserData, IUserProfile, Framework } from '@sunbird/shared';
 import { FormService, FrameworkService, UserService } from '@sunbird/core';
-import * as _ from 'lodash';
+import * as _ from 'lodash-es';
 import { CacheService } from 'ng2-cache-service';
 import { Router } from '@angular/router';
 import { EditorService } from './../../services';
@@ -31,9 +31,9 @@ export class DefaultTemplateComponent implements OnInit {
   /**
     * This variable hepls to show and hide page loader.
     * It is kept true by default as at first when we comes
-    * to a page the loader should be displayed before showing
-    * any data
-    */
+   * to a page the loader should be displayed before showing
+   * any data
+   */
   showLoader = true;
 
   /**
@@ -134,28 +134,54 @@ export class DefaultTemplateComponent implements OnInit {
       }
     });
   }
+
+  mapParents(data, callback) {
+    // create parent to all the fields
+    _.forEach(data, (val, index) => {
+      data[index].parent = [];
+    });
+
+    // set parents
+    _.forEach(data, (field, index) => {
+      if (field.depends) {
+        _.forEach(field.depends, (depend) => {
+          _.forEach(data, (category, counter) => {
+            if (depend === category.code) {
+              data[counter].parent.push(field.code);
+            }
+          });
+
+        });
+      }
+    });
+    return callback(data);
+  }
+
   ngOnInit() {
     /***
- * Call User service to get user data
- */
-    this.setFormConfig();
-    this.userService.userData$.subscribe(
-      (user: IUserData) => {
-        if (user && !user.err) {
-          this.userProfile = user.userProfile;
-        }
-      });
-    this.showLoader = false;
-    this.years = this.getYearsForCreateTextBook();
-    this.mapMasterCategoryList('');
+     * Call User service to get user data
+     */
+    this.mapParents(this.formFieldProperties, (data) => {
+      this.formFieldProperties = data;
+      this.setFormConfig();
+      this.userService.userData$.subscribe(
+        (user: IUserData) => {
+          if (user && !user.err) {
+            this.userProfile = user.userProfile;
+          }
+        });
+      this.showLoader = false;
+      this.years = this.getYearsForCreateTextBook();
+      this.mapMasterCategoryList('');
+    });
   }
 
   /**
 * to get selected concepts from concept picker.
 */
-  concepts(events) {
-    this.formInputData['concepts'] = events;
-  }
+  // concepts(events) {
+  //   this.formInputData['concepts'] = events;
+  // }
 
   /**
   * @description            - Which is used to update the form when vlaues is get changes
@@ -164,11 +190,48 @@ export class DefaultTemplateComponent implements OnInit {
   updateForm(object) {
     if (object.field.range) {
       this.getAssociations(object.value, object.field.range, (associations) => {
-        this.applyDependencyRules(object.field, associations, true);
+        this.getParentAssociations(object.field, associations, object.formData, (commonAssociations) => {
+          this.applyDependencyRules(object.field, commonAssociations, true);
+        });
       });
     }
   }
 
+
+  getCommonAssociations(parentAssociations, childAssociations) {
+    let intersectionData = [];
+    if (parentAssociations && parentAssociations.length) {
+      intersectionData = _.filter(parentAssociations, (e) => {
+        return _.find(childAssociations, e);
+      });
+    }
+    return intersectionData;
+  }
+
+  getParentAssociations(fields, associations, formData, callback) {
+    if (fields.parent && fields.parent.length) {
+      _.forEach(fields.parent, (val) => {
+        _.forEach(this.formFieldProperties, (field) => {
+          if (field.code === val) {
+            _.forEach(field.range, (range) => {
+              if (_.isArray(formData[val]) && formData[val].length > 0) {
+                _.forEach(formData[val], (metadata) => {
+                  if (range.name === metadata) {
+                    associations = this.getCommonAssociations(range.associations, associations);
+                  }
+                });
+              } else {
+                if (range.name === formData[val]) {
+                  associations = this.getCommonAssociations(range.associations, associations);
+                }
+              }
+            });
+          }
+        });
+      });
+    }
+    callback(associations);
+  }
   /**
 * @description                    - Which is used to get the association object by mapping key and range object
 * @param {String | Array} keys    - To the associactio object for particular key's
@@ -213,23 +276,24 @@ export class DefaultTemplateComponent implements OnInit {
     // reset the depended field first
     // Update the depended field with associated value
     // Currently, supported only for the dropdown values
-    let dependedValues;
-    let groupdFields;
+    let dependedValues = [];
+    let groupdFields = [];
     if (field.depends && field.depends.length) {
       _.forEach(field.depends, (id) => {
         if (resetSelected) {
           this.resetSelectedField(id, field.range);
         }
         dependedValues = _.map(associations, i => _.pick(i, ['name', 'category']));
-        groupdFields = _.chain(dependedValues)
-          .groupBy('category')
-          .map((name, category) => ({ name, category }))
-          .value();
-        this.updateDropDownList(id, dependedValues);
-        if (groupdFields.length) {
-          _.forEach(groupdFields, (value, key) => {
-            this.updateDropDownList(value.category, _.map(value.name, i => _.pick(i, 'name')));
-          });
+        if (dependedValues.length) {
+          groupdFields = _.groupBy(dependedValues, 'category');
+          this.updateDropDownList(id, dependedValues);
+        }
+        if (groupdFields) {
+          for (const key in groupdFields) {
+            if (groupdFields.hasOwnProperty(key)) {
+              this.updateDropDownList(key, groupdFields[key]);
+            }
+          }
         } else {
           this.updateDropDownList(id, []);
         }

@@ -18,3 +18,17 @@ export * from './fancyTree';
 export * from './card';
 export * from './courseStates';
 export * from './telemetryShare';
+export * from './batch';
+export * from './highlightText';
+export * from './language';
+export interface IPagination {
+    totalItems: number;
+    currentPage: number;
+    pageSize: number;
+    totalPages: number;
+    startPage: number;
+    endPage: number;
+    startIndex: number;
+    endIndex: number;
+    pages: Array<number>;
+}

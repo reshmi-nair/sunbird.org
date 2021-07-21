@@ -15,17 +15,20 @@ module.exports = function (config) {
       require('karma-coverage-istanbul-reporter'),
       require('@angular-devkit/build-angular/plugins/karma')
     ],
-    browserNoActivityTimeout: 50000,
+    browserNoActivityTimeout: 100000,
     client: {
+      jasmine: {
+        timeoutInterval: 300000
+      },
       args: [tags],
       clearContext: false // leave Jasmine Spec Runner output visible in browser
     },
     coverageIstanbulReporter: {
-      dir: require('path').join(__dirname, 'coverage'), reports: [ 'html', 'lcovonly' ],
+      dir: require('path').join(__dirname, './coverage'), reports: [ 'html', 'lcovonly' ],
       fixWebpackSourcePaths: true
     },
     
-    reporters: ['mocha'],
+    reporters: ['mocha', 'coverage-istanbul'],
     mochaReporter: {
       symbols: {
         success: '+',
@@ -47,7 +50,10 @@ module.exports = function (config) {
           '--headless',
           '--disable-gpu',
           // Without a remote debugging port, Google Chrome exits immediately.
-          '--remote-debugging-port=9222'
+          '--remote-debugging-port=9222',
+          '--proxy-server=direct://',
+          '--proxy-bypass-list=*',
+          '--max_old_space_size=4096'
         ]
       }
     },

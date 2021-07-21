@@ -3,9 +3,11 @@ import { map } from 'rxjs/operators';
 import { Injectable, Input, EventEmitter } from '@angular/core';
 import { ConfigService, ServerResponse } from '@sunbird/shared';
 import { SearchParam, LearnerService, UserService, ContentService, SearchService } from '@sunbird/core';
-import * as _ from 'lodash';
+import * as _ from 'lodash-es';
 
-@Injectable()
+@Injectable({
+  providedIn: 'root'
+})
 export class CourseBatchService {
   private _enrollToBatchDetails: any;
   private _updateBatchDetails: any;
@@ -21,6 +23,7 @@ export class CourseBatchService {
   batchSearch(requestParam: SearchParam): Observable<ServerResponse> {
     const option = {
       url: this.configService.urlConFig.URLS.BATCH.GET_BATCHS,
+      param : {...requestParam.params},
       data: {
         request: {
           filters: requestParam.filters,
@@ -45,12 +48,16 @@ export class CourseBatchService {
           }
         }
       };
-      const mentorOrg = this.userService.userProfile.roleOrgMap['COURSE_MENTOR'];
+      if (requestParam.limit) {
+        option.data.request['limit'] = requestParam.limit;
+      }
+      const mentorOrg = this.userService.userProfile.roleOrgMap['CONTENT_CREATOR'];
       if (mentorOrg && mentorOrg.includes(this.userService.rootOrgId)) {
         option.data.request.filters['rootOrgId'] = this.userService.rootOrgId;
       } else if (mentorOrg) {
         option.data.request.filters['organisations.organisationId'] = mentorOrg;
       }
+      option.data.request.filters['organisations.roles'] = ['COURSE_MENTOR'];
       return this.learnerService.post(option).pipe(map((data) => {
         if (_.isEmpty(requestParam)) {
           this.defaultUserList = data;
@@ -89,6 +96,17 @@ export class CourseBatchService {
       }));
     }
   }
+
+  getParticipantList(data) {
+    const options = {
+      url: this.configService.urlConFig.URLS.BATCH.GET_PARTICIPANT_LIST,
+      data: data
+    };
+    return this.learnerService.post(options).pipe(map((response: any) => {
+      return _.get(response, 'result.batch.participants') || [];
+    }));
+  }
+
   enrollToCourse(data) {
     const options = {
       url: this.configService.urlConFig.URLS.COURSE.ENROLL_USER_COURSE,
@@ -130,6 +148,14 @@ export class CourseBatchService {
     };
     return this.learnerService.post(option);
   }
+
+  removeUsersFromBatch(batchId, request) {
+    const option = {
+      url: this.configService.urlConFig.URLS.BATCH.REMOVE_USERS + '/' + batchId,
+      data: request
+    };
+    return this.learnerService.post(option);
+  }
   getEnrolledBatchDetails(batchId) {
     if (this._enrolledBatchDetails && this._enrolledBatchDetails.identifier === batchId) {
       return observableOf(this._enrolledBatchDetails);
@@ -139,5 +165,25 @@ export class CourseBatchService {
         return data.result.response;
       }));
     }
+  }
+  getcertificateDescription(enrolledBatchInfo) {
+    let certificateDescription = {isCertificate: false,description: ''};
+    const certificateTemplate = _.get(enrolledBatchInfo, 'cert_templates');
+    if(certificateTemplate && Object.keys(certificateTemplate).length !== 0) {
+      const templateKey = Object.keys(certificateTemplate);
+      const description = certificateTemplate[templateKey[0]].description
+      if(description){
+        certificateDescription = {
+          isCertificate: true,
+          description: description
+        };
+      }else{
+        certificateDescription = {
+          isCertificate: true,
+          description: ''
+        };
+      }
+    }
+    return certificateDescription;
   }
 }

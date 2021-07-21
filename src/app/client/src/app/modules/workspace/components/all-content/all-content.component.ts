@@ -1,26 +1,30 @@
 
-import {combineLatest as observableCombineLatest,  Observable } from 'rxjs';
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { combineLatest as observableCombineLatest, Observable, forkJoin } from 'rxjs';
+import { Component, OnInit, ViewChild, AfterViewInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { WorkSpace } from '../../classes/workspace';
-import { SearchService, UserService, ISort } from '@sunbird/core';
+import { SearchService, UserService, ISort, FrameworkService } from '@sunbird/core';
 import {
-  ServerResponse, PaginationService, ConfigService, ToasterService,
-  ResourceService, ILoaderMessage, INoResultMessage, IContents
+  ServerResponse, PaginationService, ConfigService, ToasterService, IPagination,
+  ResourceService, ILoaderMessage, INoResultMessage, IContents, NavigationHelperService
 } from '@sunbird/shared';
 import { Ibatch, IStatusOption } from './../../interfaces/';
 import { WorkSpaceService } from '../../services';
-import { IPagination } from '@sunbird/announcement';
-import * as _ from 'lodash';
+import * as _ from 'lodash-es';
 import { IImpressionEventInput } from '@sunbird/telemetry';
 import { SuiModalService, TemplateModalConfig, ModalTemplate } from 'ng2-semantic-ui';
+import { debounceTime, map } from 'rxjs/operators';
+import { ContentIDParam } from '../../interfaces/delteparam';
+
 @Component({
   selector: 'app-all-content',
   templateUrl: './all-content.component.html',
-  styleUrls: ['./all-content.component.css']
+  styleUrls: ['./all-content.component.scss']
 })
-export class AllContentComponent extends WorkSpace implements OnInit {
-  @ViewChild('modalTemplate')
+
+export class AllContentComponent extends WorkSpace implements OnInit, AfterViewInit {
+
+  @ViewChild('modalTemplate', {static: false})
   public modalTemplate: ModalTemplate<{ data: string }, string, string>;
   /**
      * state for content editior
@@ -47,6 +51,7 @@ export class AllContentComponent extends WorkSpace implements OnInit {
   */
   allContent: Array<IContents> = [];
 
+  // pageLoadTime = new PageLoadTime()
   /**
    * To show / hide loader
   */
@@ -63,6 +68,16 @@ export class AllContentComponent extends WorkSpace implements OnInit {
   noResult = false;
 
   /**
+   * lock popup data for locked contents
+  */
+  lockPopupData: object;
+
+  /**
+   * To show content locked modal
+  */
+  showLockedContentModal = false;
+
+  /**
    * To show / hide error
   */
   showError = false;
@@ -76,11 +91,6 @@ export class AllContentComponent extends WorkSpace implements OnInit {
     * For showing pagination on draft list
   */
   private paginationService: PaginationService;
-
-  /**
-    * Refrence of UserService
-  */
-  private userService: UserService;
 
   /**
   * To get url, app configs
@@ -155,6 +165,41 @@ export class AllContentComponent extends WorkSpace implements OnInit {
   public resourceService: ResourceService;
 
   /**
+  * To store all the collection details to be shown in collection modal
+  */
+  public collectionData: Array<any>;
+
+  /**
+  * Flag to show/hide loader on first modal
+  */
+  private showCollectionLoader: boolean;
+
+  /**
+  * To define collection modal table header
+  */
+  private headers: any;
+
+  /**
+  * To store deleting content id
+  */
+  private currentContentId: ContentIDParam;
+
+  /**
+  * To store deleteing content type
+  */
+  private contentMimeType: string;
+
+  /**
+   * To store modal object of first yes/No modal
+   */
+  private deleteModal: any;
+
+  /**
+   * To show/hide collection modal
+   */
+  public collectionListModal = false;
+  public isQuestionSetFilterEnabled: boolean;
+  /**
     * Constructor to create injected service(s) object
     Default method of Draft Component class
     * @param {SearchService} SearchService Reference of SearchService
@@ -165,17 +210,18 @@ export class AllContentComponent extends WorkSpace implements OnInit {
     * @param {ConfigService} config Reference of ConfigService
   */
   constructor(public searchService: SearchService,
+    public navigationhelperService: NavigationHelperService,
     public workSpaceService: WorkSpaceService,
+    public frameworkService: FrameworkService,
     paginationService: PaginationService,
     activatedRoute: ActivatedRoute,
     route: Router, userService: UserService,
     toasterService: ToasterService, resourceService: ResourceService,
     config: ConfigService, public modalService: SuiModalService) {
-    super(searchService, workSpaceService);
+    super(searchService, workSpaceService, userService);
     this.paginationService = paginationService;
     this.route = route;
     this.activatedRoute = activatedRoute;
-    this.userService = userService;
     this.toasterService = toasterService;
     this.resourceService = resourceService;
     this.config = config;
@@ -187,17 +233,19 @@ export class AllContentComponent extends WorkSpace implements OnInit {
   }
 
   ngOnInit() {
+    this.workSpaceService.questionSetEnabled$.subscribe(
+      (response: any) => {
+        this.isQuestionSetFilterEnabled = response.questionSetEnablement;
+      }
+    );
     this.filterType = this.config.appConfig.allmycontent.filterType;
     this.redirectUrl = this.config.appConfig.allmycontent.inPageredirectUrl;
     observableCombineLatest(
       this.activatedRoute.params,
-      this.activatedRoute.queryParams,
-      (params: any, queryParams: any) => {
-        return {
-          params: params,
-          queryParams: queryParams
-        };
-      })
+      this.activatedRoute.queryParams).pipe(
+        debounceTime(10),
+        map(([params, queryParams]) => ({ params, queryParams })
+      ))
       .subscribe(bothParams => {
         if (bothParams.params.pageNumber) {
           this.pageNumber = Number(bothParams.params.pageNumber);
@@ -206,18 +254,6 @@ export class AllContentComponent extends WorkSpace implements OnInit {
         this.query = this.queryParams['query'];
         this.fecthAllContent(this.config.appConfig.WORKSPACE.PAGE_LIMIT, this.pageNumber, bothParams);
       });
-    this.telemetryImpression = {
-      context: {
-        env: this.activatedRoute.snapshot.data.telemetry.env
-      },
-      edata: {
-        type: this.activatedRoute.snapshot.data.telemetry.type,
-        pageid: this.activatedRoute.snapshot.data.telemetry.pageid,
-        subtype: this.activatedRoute.snapshot.data.telemetry.subtype,
-        uri: this.activatedRoute.snapshot.data.telemetry.uri + '/' + this.activatedRoute.snapshot.params.pageNumber,
-        visits: this.inviewLogs
-      }
-    };
   }
   /**
   * This method sets the make an api call to get all UpForReviewContent with page No and offset
@@ -234,26 +270,33 @@ export class AllContentComponent extends WorkSpace implements OnInit {
       this.sort = { lastUpdatedOn: this.config.appConfig.WORKSPACE.lastUpdatedOn };
     }
     const preStatus = ['Draft', 'FlagDraft', 'Review', 'Processing', 'Live', 'Unlisted', 'FlagReview'];
+    const primaryCategories = _.compact(_.concat(this.frameworkService['_channelData'].contentPrimaryCategories,
+        this.frameworkService['_channelData'].collectionPrimaryCategories));
     const searchParams = {
       filters: {
         status: bothParams.queryParams.status ? bothParams.queryParams.status : preStatus,
         createdBy: this.userService.userid,
-        contentType: this.config.appConfig.WORKSPACE.contentType,
-        objectType: this.config.appConfig.WORKSPACE.objectType,
+        // tslint:disable-next-line:max-line-length
+        primaryCategory: _.get(bothParams, 'queryParams.primaryCategory') || (!_.isEmpty(primaryCategories) ? primaryCategories : this.config.appConfig.WORKSPACE.primaryCategory),
         board: bothParams.queryParams.board,
         subject: bothParams.queryParams.subject,
         medium: bothParams.queryParams.medium,
-        gradeLevel: bothParams.queryParams.gradeLevel,
-        resourceType: bothParams.queryParams.resourceType
+        gradeLevel: bothParams.queryParams.gradeLevel
       },
       limit: limit,
       offset: (pageNumber - 1) * (limit),
       query: _.toString(bothParams.queryParams.query),
       sort_by: this.sort
     };
-    this.search(searchParams).subscribe(
+    if (this.isQuestionSetFilterEnabled !== true) {
+      searchParams.filters['objectType'] = this.config.appConfig.WORKSPACE.objectType;
+    }
+    this.searchContentWithLockStatus(searchParams).subscribe(
       (data: ServerResponse) => {
-        if (data.result.count && data.result.content.length > 0) {
+        if (data.result.count && (data.result.content.length > 0 || data.result.QuestionSet.length > 0)) {
+          if (this.isQuestionSetFilterEnabled === true && data.result.QuestionSet) {
+            data.result.content = _.concat(data.result.content, data.result.QuestionSet);
+          }
           this.allContent = data.result.content;
           this.totalCount = data.result.count;
           this.pager = this.paginationService.getPager(data.result.count, pageNumber, limit);
@@ -264,7 +307,7 @@ export class AllContentComponent extends WorkSpace implements OnInit {
           this.noResult = true;
           this.showLoader = false;
           this.noResultMessage = {
-            'messageText': this.resourceService.messages.stmsg.m0125
+            'messageText': 'messages.stmsg.m0006'
           };
         }
       },
@@ -276,34 +319,113 @@ export class AllContentComponent extends WorkSpace implements OnInit {
       }
     );
   }
-  public deleteConfirmModal(contentIds) {
+
+  public deleteConfirmModal(contentIds, mimeType) {
+    this.currentContentId = contentIds;
+    this.contentMimeType = mimeType;
+    this.showCollectionLoader = false;
     const config = new TemplateModalConfig<{ data: string }, string, string>(this.modalTemplate);
-    config.isClosable = true;
-    config.size = 'mini';
+    config.isClosable = false;
+    config.size = 'small';
+    config.transitionDuration = 0;
+    config.mustScroll = true;
     this.modalService
-      .open(config)
-      .onApprove(result => {
-        this.showLoader = true;
-        this.loaderMessage = {
-          'loaderMessage': this.resourceService.messages.stmsg.m0034,
-        };
-        this.delete(contentIds).subscribe(
-          (data: ServerResponse) => {
-            this.showLoader = false;
-            this.allContent = this.removeAllMyContent(this.allContent, contentIds);
-            if (this.allContent.length === 0) {
-              this.ngOnInit();
+      .open(config);
+  }
+
+  /**
+  * This method checks whether deleting content is linked to any collections, if linked to collection displays collection list pop modal.
+  */
+  public checkLinkedCollections(modal) {
+    if (!_.isUndefined(modal)) {
+      this.deleteModal = modal;
+    }
+    this.showCollectionLoader = false;
+    if (this.contentMimeType === 'application/vnd.ekstep.content-collection') {
+      this.deleteContent(this.currentContentId);
+      return;
+    }
+
+    this.getLinkedCollections(this.currentContentId)
+      .subscribe((response) => {
+        const count = _.get(response, 'result.count');
+        if (!count) {
+          this.deleteContent(this.currentContentId);
+          return;
+        }
+        this.showCollectionLoader = true;
+        const collections = _.get(response, 'result.content', []);
+
+        const channels = _.map(collections, (collection) => {
+          return _.get(collection, 'channel');
+        });
+        const channelMapping = {};
+        forkJoin(_.map(channels, (channel: string) => {
+            return this.getChannelDetails(channel);
+          })).subscribe((forkResponse) => {
+            this.collectionData = [];
+            _.forEach(forkResponse, channelResponse => {
+              const channelId = _.get(channelResponse, 'result.channel.code');
+              const channelName = _.get(channelResponse, 'result.channel.name');
+              channelMapping[channelId] = channelName;
+            });
+
+            _.forEach(collections, collection => {
+              const obj = _.pick(collection, ['contentType', 'board', 'medium', 'name', 'gradeLevel', 'subject', 'channel']);
+              obj['channel'] = channelMapping[obj.channel];
+              this.collectionData.push(obj);
+          });
+
+          this.headers = {
+            type: 'Type',
+            name: 'Name',
+            subject: 'Subject',
+            grade: 'Grade',
+            medium: 'Medium',
+            board: 'Board',
+            channel: 'Tenant Name'
+            };
+            if (!_.isUndefined(modal)) {
+              this.deleteModal.deny();
             }
-            this.toasterService.success(this.resourceService.messages.smsg.m0006);
+          this.collectionListModal = true;
           },
-          (err: ServerResponse) => {
-            this.showLoader = false;
-            this.toasterService.error(this.resourceService.messages.fmsg.m0022);
-          }
-        );
-      })
-      .onDeny(result => {
-      });
+          (error) => {
+            this.toasterService.error(_.get(this.resourceService, 'messages.emsg.m0014'));
+            console.log(error);
+          });
+        },
+        (error) => {
+          this.toasterService.error(_.get(this.resourceService, 'messages.emsg.m0015'));
+          console.log(error);
+        });
+  }
+
+  /**
+  * This method deletes content using the content id.
+  */
+  deleteContent(contentId) {
+    this.showLoader = true;
+    this.loaderMessage = {
+      'loaderMessage': this.resourceService.messages.stmsg.m0034,
+    };
+    this.delete(contentId).subscribe(
+      (data: ServerResponse) => {
+        this.showLoader = false;
+        this.allContent = this.removeAllMyContent(this.allContent, contentId);
+        if (this.allContent.length === 0) {
+          this.ngOnInit();
+        }
+        this.toasterService.success(this.resourceService.messages.smsg.m0006);
+      },
+      (err: ServerResponse) => {
+        this.showLoader = false;
+        this.toasterService.error(this.resourceService.messages.fmsg.m0022);
+      }
+    );
+    if (!_.isUndefined(this.deleteModal)) {
+      this.deleteModal.deny();
+    }
   }
 
   /**
@@ -322,10 +444,52 @@ export class AllContentComponent extends WorkSpace implements OnInit {
     this.pageNumber = page;
     this.route.navigate(['workspace/content/allcontent', this.pageNumber], { queryParams: this.queryParams });
   }
+
   contentClick(content) {
-    if (content.status.toLowerCase() !== 'processing') {
-      this.workSpaceService.navigateToContent(content, this.state);
+    if (content.originData) {
+      const originData = JSON.parse(content.originData);
+      if (originData.copyType === 'shallow') {
+        const errMsg = (this.resourceService.messages.emsg.m1414).replace('{instance}', originData.organisation[0]);
+        this.toasterService.error(errMsg);
+        return;
+      }
     }
+    if (_.size(content.lockInfo) && this.userService.userid !== content.lockInfo.createdBy) {
+      this.lockPopupData = content;
+      this.showLockedContentModal = true;
+    } else {
+      const status = content.status.toLowerCase();
+      if (status === 'processing') {
+        return;
+      }
+      if (status === 'draft') { // only draft state contents need to be locked
+        this.workSpaceService.navigateToContent(content, this.state);
+      } else {
+        this.workSpaceService.navigateToContent(content, this.state);
+      }
+    }
+  }
+
+  public onCloseLockInfoPopup () {
+    this.showLockedContentModal = false;
+  }
+
+  ngAfterViewInit () {
+    setTimeout(() => {
+      this.telemetryImpression = {
+        context: {
+          env: this.activatedRoute.snapshot.data.telemetry.env
+        },
+        edata: {
+          type: this.activatedRoute.snapshot.data.telemetry.type,
+          pageid: this.activatedRoute.snapshot.data.telemetry.pageid,
+          subtype: this.activatedRoute.snapshot.data.telemetry.subtype,
+          uri: this.activatedRoute.snapshot.data.telemetry.uri + '/' + this.activatedRoute.snapshot.params.pageNumber,
+          visits: this.inviewLogs,
+          duration: this.navigationhelperService.getPageLoadTime()
+        }
+      };
+    });
   }
 
   inview(event) {

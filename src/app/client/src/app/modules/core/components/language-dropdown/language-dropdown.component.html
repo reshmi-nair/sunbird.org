@@ -1,6 +1,19 @@
-<div class="ui dropdown width-100">
-  <sui-select [(ngModel)]="selectedLanguage" (ngModelChange)="onLanguageChange($event)" class="selection width-100 language-selector" labelField="name"
-    valueField="value">
-    <sui-select-option *ngFor="let option of languages" [value]="option"></sui-select-option>
-  </sui-select>
+
+<div *ngIf="!isLayoutAvailable()" class="d-flex flex-ai-center language-selector">
+  <div class="computer only fsmall">{{resourceService.frmelmnts?.btn?.selectLanguage}} :&nbsp;</div>
+  <label *ngIf="!isLayoutAvailable()">
+  <sui-select class="ui dropdown fsmall" (contextmenu)="false" role="tablist" [(ngModel)]="selectedLanguage" (ngModelChange)="onLanguageChange($event)" labelField="label" valueField="value">
+    <sui-select-option *ngFor="let option of languageRange" appTelemetryInteract
+      [telemetryInteractEdata]="getTelemetryInteractEdata(option.value)" [value]="option"  role="img"  title="{{option.accessibleText}}">
+    </sui-select-option>
+  </sui-select></label>
 </div>
+
+
+ <!-- language dropdown -->
+ <label class="mb-0" *ngIf="isLayoutAvailable()">
+ <sui-select *ngIf="isLayoutAvailable()" role="tablist" class="selection sbt-dropdown sbt-dropdown--md sbt-green sbt-dropdown-language sbt-dropdown-tick"[(ngModel)]="selectedLanguage" (ngModelChange)="onLanguageChange($event)" labelField="label" valueField="value">
+  <sui-select-option *ngFor="let option of languageRange" appTelemetryInteract
+    [telemetryInteractEdata]="getTelemetryInteractEdata(option.value)" [value]="option"  role="img"  title="{{option.accessibleText}}">
+  </sui-select-option>
+</sui-select></label>

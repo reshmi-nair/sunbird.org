@@ -1,12 +1,16 @@
-import { ProfileModule, ProfilePlugin } from './plugins/profile';
+import { OfflinePlugins } from './modules/public/module/offline/plugin';
+import { OfflineModule } from './modules/public/module/offline/';
 
 export const WebExtensionsConfig = {
-  plugins: [{
-    'id': 'profile',
+  plugins: [
+    {
+    'id': 'offline-plugins',
     'ver': '1.0.0',
-    'module': ProfileModule,
-    'main': ProfilePlugin
-  }]
+    'module': OfflineModule,
+    'main': OfflinePlugins
+  }
+]
 };
 
-export const PluginModules = [ ProfileModule ];
+export const PluginModules = [ OfflineModule ];
+

@@ -1,17 +1,18 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild, OnDestroy, AfterViewInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { WorkSpace } from '../../classes/workspace';
 import { SearchService, UserService } from '@sunbird/core';
 import {
-  ServerResponse, PaginationService, ConfigService, ToasterService,
-  ResourceService, ILoaderMessage, INoResultMessage
+  ServerResponse, PaginationService, ConfigService, ToasterService, IPagination,
+  ResourceService, ILoaderMessage, INoResultMessage, NavigationHelperService,LayoutService
 } from '@sunbird/shared';
-import { Ibatch, IStatusOption } from './../../interfaces/';
+import { combineLatest, Subject } from 'rxjs';
+import { takeUntil, map, filter } from 'rxjs/operators';
+import { Ibatch } from './../../interfaces/';
 import { WorkSpaceService, BatchService } from '../../services';
-import { IPagination } from '@sunbird/announcement';
-import * as _ from 'lodash';
+import * as _ from 'lodash-es';
 import { SuiModalService, TemplateModalConfig, ModalTemplate } from 'ng2-semantic-ui';
-import { IInteractEventInput, IImpressionEventInput } from '@sunbird/telemetry';
+import { IInteractEventInput, IImpressionEventInput, IInteractEventEdata } from '@sunbird/telemetry';
 
 /**
  * The batch list component
@@ -19,10 +20,9 @@ import { IInteractEventInput, IImpressionEventInput } from '@sunbird/telemetry';
 
 @Component({
   selector: 'app-batch-list',
-  templateUrl: './batch-list.component.html',
-  styleUrls: ['./batch-list.component.css']
+  templateUrl: './batch-list.component.html'
 })
-export class BatchListComponent extends WorkSpace implements OnInit {
+export class BatchListComponent extends WorkSpace implements OnInit, OnDestroy, AfterViewInit {
 
   /**
   * To navigate to other pages
@@ -30,15 +30,19 @@ export class BatchListComponent extends WorkSpace implements OnInit {
   route: Router;
 
   /**
+   *url value
+   */
+  queryParams: any;
+
+  /**
    * To send activatedRoute.snapshot to router navigation
    * service for redirection to draft  component
   */
-  private activatedRoute: ActivatedRoute;
+  public activatedRoute: ActivatedRoute;
 
-  /**
-   * Status option
-  */
-  statusOptions: Array<IStatusOption> = [];
+  public closeIntractEdata: IInteractEventEdata;
+  layoutConfiguration: any;
+  public unsubscribe$ = new Subject<void>();
   /**
    * Contains list of batchList  of logged-in user
   */
@@ -47,6 +51,16 @@ export class BatchListComponent extends WorkSpace implements OnInit {
     status for preselection;
   */
   status: number;
+
+  /**
+    on click of close icon in the list page
+  */
+  closeUrl: string;
+
+  /**
+    category of the list 'assigned' or 'created';
+  */
+  category: string;
 
   /**
    * To show / hide loader
@@ -79,11 +93,6 @@ export class BatchListComponent extends WorkSpace implements OnInit {
   private paginationService: PaginationService;
 
   /**
-    * Refrence of UserService
-  */
-  private userService: UserService;
-
-  /**
     * to get url app config
   */
   public config: ConfigService;
@@ -113,6 +122,10 @@ export class BatchListComponent extends WorkSpace implements OnInit {
   */
   private toasterService: ToasterService;
 
+  /**
+ *search filters
+ */
+  filters: any;
 
   /**
   * To call resource service which helps to use language constant
@@ -126,6 +139,10 @@ export class BatchListComponent extends WorkSpace implements OnInit {
 	* inviewLogs
 	*/
   inviewLogs = [];
+
+  public sectionName: string;
+
+  public unsubscribe = new Subject<void>();
 
   /**
     * Constructor to create injected service(s) object
@@ -144,65 +161,78 @@ export class BatchListComponent extends WorkSpace implements OnInit {
     activatedRoute: ActivatedRoute,
     route: Router, userService: UserService,
     toasterService: ToasterService, resourceService: ResourceService,
-    config: ConfigService) {
-    super(searchService, workSpaceService);
+    config: ConfigService, public navigationhelperService: NavigationHelperService, public layoutService: LayoutService) {
+    super(searchService, workSpaceService, userService);
     this.paginationService = paginationService;
     this.route = route;
     this.activatedRoute = activatedRoute;
-    this.userService = userService;
     this.toasterService = toasterService;
     this.resourceService = resourceService;
     this.config = config;
-    this.statusOptions = this.config.dropDownConfig.statusOptions;
-    this.status = this.statusOptions[0].value;
     this.loaderMessage = {
       'loaderMessage': this.resourceService.messages.stmsg.m0108,
     };
     this.noResultMessage = {
-      'message': this.resourceService.messages.stmsg.m0020,
-      'messageText': this.resourceService.messages.stmsg.m0008
+      'message': 'messages.stmsg.m0020',
+      'messageText': 'messages.stmsg.m0008'
     };
   }
+
   ngOnInit() {
-    this.activatedRoute.params.subscribe(params => {
-      this.pageNumber = Number(params.pageNumber);
+    this.initLayout();
+    combineLatest(this.activatedRoute.params, this.activatedRoute.queryParams).pipe(
+      map(results => ({ params: results[0], queryParams: results[1] })),
+      filter(res => this.pageNumber !== Number(res.params.pageNumber) || !_.isEqual(this.queryParams, res.queryParams)),
+      takeUntil(this.unsubscribe)
+    ).subscribe((res: any) => {
+      this.queryParams = res.queryParams;
+      this.manipulateQueryParam();
+      const route = this.route.url.split('/view-all');
+      this.closeUrl = '/workspace/content/batches/' + (this.queryParams.mentors ? 'assigned' : 'created');
+      this.sectionName = res.params.section.replace(/\-/g, ' ');
+      this.pageNumber = Number(res.params.pageNumber);
       this.fetchBatchList();
-    });
-    this.telemetryImpression = {
-      context: {
-        env: this.activatedRoute.snapshot.data.telemetry.env
-      },
-      edata: {
-        type: this.activatedRoute.snapshot.data.telemetry.type,
-        pageid: this.activatedRoute.snapshot.data.telemetry.pageid,
-        subtype: this.activatedRoute.snapshot.data.telemetry.subtype,
-        uri: this.activatedRoute.snapshot.data.telemetry.uri + '/' + this.activatedRoute.snapshot.params.pageNumber,
-        visits: this.inviewLogs
-      }
-    };
-    this.batchService.updateEvent
-      .subscribe((data) => {
-        console.log('update event in list');
-        this.fetchBatchList();
+      this.setInteractEventData();
+      this.batchService.updateEvent
+        .subscribe((data) => {
+          this.fetchBatchList();
+      });
+    }, (error) => {
+      this.showLoader = false;
+      this.noResult = true;
+      this.toasterService.error(this.resourceService.messages.fmsg.m0051);
     });
   }
-  changeBatchStatus() {
-    this.pageNumber = 1;
-    this.route.navigate(['workspace/content/batches', 1]);
-    this.fetchBatchList();
+
+  initLayout() {
+    this.layoutConfiguration = this.layoutService.initlayoutConfig();
+    this.layoutService.switchableLayout().
+        pipe(takeUntil(this.unsubscribe$)).subscribe(layoutConfig => {
+        if (layoutConfig != null) {
+          this.layoutConfiguration = layoutConfig.layout;
+        }
+      });
   }
+
   /**
     * This method sets the make an api call to get all batch with page No and offset
   */
+  manipulateQueryParam() {
+    this.filters = {};
+    const queryFilters = _.omit(this.queryParams, ['key', 'softConstraintsFilter', 'appliedFilters',
+      'sort_by', 'sortType', 'defaultSortBy', 'exists', 'dynamic']);
+    if (!_.isEmpty(queryFilters)) {
+      _.forOwn(queryFilters, (queryValue, queryKey) => {
+        this.filters[queryKey] = queryValue;
+      });
+    }
+  }
+
   fetchBatchList() {
     this.showLoader = true;
-    this.pageLimit = this.config.appConfig.WORKSPACE.PAGE_LIMIT;
+    this.pageLimit = this.config.appConfig.WORKSPACE.courseBatch.PAGE_LIMIT;
     const searchParams = {
-      filters: {
-        status: this.status.toString(),
-        createdFor: this.userService.RoleOrgMap['COURSE_MENTOR'],
-        createdBy: this.userService.userid
-      },
+      filters: this.filters,
       limit: this.pageLimit,
       pageNumber: this.pageNumber,
       sort_by: { createdDate: this.config.appConfig.WORKSPACE.createdDate }
@@ -211,10 +241,12 @@ export class BatchListComponent extends WorkSpace implements OnInit {
       (data: ServerResponse) => {
         if (data.result.response.count && data.result.response.content.length > 0) {
           this.noResult = false;
+          this.batchList = [];
           this.batchList = data.result.response.content;
           this.totalCount = data.result.response.count;
           this.pager = this.paginationService.getPager(data.result.response.count, this.pageNumber, this.pageLimit);
           this.updateBatch();
+          this.getCourseName(_.uniq(_.map(this.batchList, 'courseId')));
         } else {
           this.showError = false;
           this.noResult = true;
@@ -222,12 +254,45 @@ export class BatchListComponent extends WorkSpace implements OnInit {
         }
       },
       (err: ServerResponse) => {
+        this.batchList = [];
         this.showLoader = false;
         this.noResult = false;
         this.showError = true;
         this.toasterService.error(this.resourceService.messages.fmsg.m0004);
       }
     );
+  }
+
+  onCardClick (event) {
+    const batchData = event.data;
+    if (batchData.enrollmentType === 'open') {
+      this.batchService.setBatchData(batchData);
+    }
+    this.route.navigate(['update/batch', batchData.identifier], {queryParamsHandling: 'merge', relativeTo: this.activatedRoute});
+  }
+
+  /**
+   * @since - #SH-58
+   * @param  {Array} courseIds - unique courseIDs of the batches.
+   * @description - This method helps to get the name of course to which the batch belongs.
+   * @returns - course name mapped to the batch list.
+   */
+  getCourseName(courseIds) {
+    const searchOption = {
+      'filters': {
+        'identifier': _.uniq(courseIds),
+        'status': ['Live'],
+        'contentType': ['Course']
+      },
+      'fields': ['name']
+    };
+    this.searchService.contentSearch(searchOption, false).subscribe(data => {
+      if (_.get(data, 'result.content')) {
+        _.map(this.batchList, (batchData) => {
+          batchData.courseDetails = _.find(_.get(data, 'result.content'), courseData => courseData.identifier === batchData.courseId);
+        });
+      }
+    });
   }
 
   /**
@@ -239,12 +304,17 @@ export class BatchListComponent extends WorkSpace implements OnInit {
  *
  * @example navigateToPage(1)
  */
+
   navigateToPage(page: number): undefined | void {
+    const route = this.route.url.split('?');
+    const url = route[0].substring(0, route[0].lastIndexOf('/'));
     if (page < 1 || page > this.pager.totalPages) {
       return;
     }
-    this.pageNumber = page;
-    this.route.navigate(['workspace/content/batches', this.pageNumber]);
+    this.route.navigate([url, page], {
+      queryParams: this.queryParams,
+      relativeTo: this.activatedRoute
+    });
   }
 
   /**
@@ -257,7 +327,7 @@ export class BatchListComponent extends WorkSpace implements OnInit {
     _.forEach(this.batchList, (item, key) => {
       participants[item.id] = !_.isUndefined(item.participant) ? _.size(item.participant) : 0;
       userList.push(item.createdBy);
-      this.batchList[key].label = participants[item.id];
+      this.batchList[key].label = item.participantCount || 0;
     });
     userList = _.compact(_.uniq(userList));
     const req = {
@@ -265,9 +335,8 @@ export class BatchListComponent extends WorkSpace implements OnInit {
     };
     this.UserList(req).subscribe((res: ServerResponse) => {
       if (res.result.response.count && res.result.response.content.length > 0) {
-        this.showLoader = false;
         _.forEach(res.result.response.content, (val, key) => {
-          userName[val.identifier] = val.firstName + ' ' + val.lastName;
+          userName[val.identifier] = (val.firstName || '') + ' ' + (val.lastName || '');
         });
         _.forEach(this.batchList, (item, key) => {
           this.batchList[key].userName = userName[item.createdBy];
@@ -275,6 +344,7 @@ export class BatchListComponent extends WorkSpace implements OnInit {
       } else {
         this.toasterService.error(this.resourceService.messages.fmsg.m0056);
       }
+      this.showLoader = false;
     },
       (err: ServerResponse) => {
         this.showLoader = false;
@@ -283,8 +353,32 @@ export class BatchListComponent extends WorkSpace implements OnInit {
         this.toasterService.error(this.resourceService.messages.fmsg.m0056);
       }
     );
-    this.showLoader = false;
   }
+
+  setTelemetryImpressionData () {
+     this.telemetryImpression = {
+      context: {
+        env: this.activatedRoute.snapshot.data.telemetry.env
+      },
+      edata: {
+        type: this.activatedRoute.snapshot.data.telemetry.type,
+        pageid: this.activatedRoute.snapshot.data.telemetry.pageid,
+        subtype: this.activatedRoute.snapshot.data.telemetry.subtype,
+        uri: this.activatedRoute.snapshot.data.telemetry.uri + '/' + this.activatedRoute.snapshot.params.pageNumber,
+        visits: this.inviewLogs,
+        duration: this.navigationhelperService.getPageLoadTime()
+      }
+    };
+  }
+
+  setInteractEventData() {
+    this.closeIntractEdata = {
+      id: 'close',
+      type: 'click',
+      pageid: _.get(this.activatedRoute.snapshot, 'data.telemetry.pageid'),
+    };
+  }
+
   /**
   * get inview  Data
   */
@@ -304,6 +398,17 @@ export class BatchListComponent extends WorkSpace implements OnInit {
     this.telemetryImpression.edata.visits = this.inviewLogs;
     this.telemetryImpression.edata.subtype = 'pageexit';
     this.telemetryImpression = Object.assign({}, this.telemetryImpression);
+  }
+
+  ngAfterViewInit () {
+    setTimeout(() => {
+      this.setTelemetryImpressionData();
+    });
+  }
+
+  ngOnDestroy() {
+    this.unsubscribe.next();
+    this.unsubscribe.complete();
   }
 }
 

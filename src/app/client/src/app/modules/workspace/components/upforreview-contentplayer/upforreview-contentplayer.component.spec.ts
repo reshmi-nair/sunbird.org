@@ -2,15 +2,15 @@
 import {of as observableOf, throwError as observableThrowError,  Observable } from 'rxjs';
 import { async, ComponentFixture, TestBed, inject } from '@angular/core/testing';
 import { UpforreviewContentplayerComponent } from './upforreview-contentplayer.component';
-
+import { TelemetryModule , TelemetryService } from '@sunbird/telemetry';
 // Import NG testing module(s)
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { RouterTestingModule } from '@angular/router/testing';
-import { Ng2IziToastModule } from 'ng2-izitoast';
 import { SharedModule,  ToasterService, ResourceService, NavigationHelperService } from '@sunbird/shared';
 import { PlayerService, UserService, LearnerService, ContentService, CoreModule } from '@sunbird/core';
 import * as mockData from './upforreview-content.component.spce.data';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
+import { configureTestSuite } from '@sunbird/test-util';
 
 const testData = mockData.mockRes;
 describe('UpforreviewContentplayerComponent', () => {
@@ -31,14 +31,16 @@ describe('UpforreviewContentplayerComponent', () => {
     }
   }
 };
+  configureTestSuite();
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       declarations: [ UpforreviewContentplayerComponent ],
       schemas: [NO_ERRORS_SCHEMA],
-      imports: [HttpClientTestingModule, Ng2IziToastModule,
-      CoreModule.forRoot(),
+      imports: [HttpClientTestingModule,
+      CoreModule,
+      TelemetryModule,
       RouterTestingModule, SharedModule.forRoot()],
-      providers: [ ResourceService, ToasterService, NavigationHelperService,
+      providers: [ ResourceService, ToasterService, NavigationHelperService, TelemetryService,
       { provide: ResourceService, useValue: resourceBundle }
       ]
     })
@@ -78,6 +80,28 @@ describe('UpforreviewContentplayerComponent', () => {
     expect(component.contentData).toBeDefined();
     expect(component.showError).toBeFalsy();
     expect(component.showLoader).toBeFalsy();
+  });
+  it('should call handleSceneChangeEvent', () => {
+    component.stageId = '1';
+    const data = {
+      stageId: '2'
+    };
+    spyOn(component, 'handleSceneChangeEvent').and.callThrough();
+    component.handleSceneChangeEvent(data);
+    expect(component.handleSceneChangeEvent).toHaveBeenCalledWith(data);
+    expect(component.stageId).toBe('2');
+  });
+  it('should redo layout on render', () => {
+    component.layoutConfiguration = {};
+    spyOn(component, 'initLayout').and.callThrough();
+    component.ngOnInit();
+    expect(component.initLayout).toHaveBeenCalled();
+  });
+  it('should unsubscribe from all observable subscriptions', () => {
+    component.ngOnInit();
+    spyOn(component.unsubscribe$, 'complete');
+    component.ngOnDestroy();
+    expect(component.unsubscribe$.complete).toHaveBeenCalled();
   });
 
 });

@@ -1,6 +1,8 @@
-import { Injectable } from '@angular/core';
+import { EventEmitter, Injectable } from '@angular/core';
 import { ISharelink } from './../../interfaces';
 import { ConfigService } from './../config/config.service';
+import { environment } from '@sunbird/environment';
+import * as _ from 'lodash-es';
 
 @Injectable()
 export class ContentUtilsServiceService {
@@ -8,12 +10,20 @@ export class ContentUtilsServiceService {
   *baseUrl;
   */
   public baseUrl: string;
+
+  public contentShareEvent: EventEmitter<any> =  new EventEmitter<any>();
   /**
   *input for Sharelink;
   */
   contentShare: ISharelink;
   constructor(public configService: ConfigService) {
+    const isDesktopApp = environment.isDesktopApp;
     this.baseUrl = document.location.origin + '/';
+    if (isDesktopApp) {
+      let origin = (<HTMLInputElement>document.getElementById('baseUrl'))
+        ? (<HTMLInputElement>document.getElementById('baseUrl')).value : document.location.origin;
+      this.baseUrl = origin + '/';
+    }
   }
   /**
    * getBase64Url
@@ -45,15 +55,41 @@ export class ContentUtilsServiceService {
   * getPublicShareUrl
   * {string}  identifier - content or course identifier
   * {string}  type - content or course type
+  * {string}  collectionId - collection Id
   * returns {string} url to share
   */
-  getPublicShareUrl(identifier, type) {
+  getPublicShareUrl(identifier, type, collectionId?) {
     let playertype: string;
+    if (collectionId) {
+      return `${this.baseUrl}play/collection/${collectionId}?contentId=${identifier}`;
+    }
     if (type === this.configService.appConfig.PLAYER_CONFIG.MIME_TYPE.collection) {
       playertype = 'collection';
+    } 
+    else if (type === this.configService.appConfig.PLAYER_CONFIG.MIME_TYPE.questionset) {
+      playertype = 'questionset';
     } else {
       playertype = 'content';
     }
     return this.baseUrl + 'play' + '/' + playertype + '/' + identifier;
+  }
+
+  getCoursePublicShareUrl (courseid) {
+    return `${this.baseUrl}explore-course/course/${courseid}`;
+  }
+
+  getCourseModulePublicShareUrl (courseId: string, moduleId: string) {
+    return `${this.baseUrl}explore-course/course/${courseId}?moduleId=${moduleId}`;
+  }
+  /**
+  * {content} is node which comes from collection tree for each content and returns rollup object upto 4 elements
+  *  this function is called from public and private modules of collection and course players
+  */
+  getContentRollup (content) {
+    const objectRollUp = {};
+    let nodes = content.getPath();
+    nodes = _.slice(nodes, 0, 4).slice(0, -1);
+    nodes.forEach((eachnode, index) => objectRollUp['l' + (index + 1)] = eachnode.model.identifier);
+    return objectRollUp;
   }
 }

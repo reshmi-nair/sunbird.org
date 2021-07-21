@@ -1,32 +1,22 @@
 import { Injectable } from '@angular/core';
-import { Ng2IzitoastService } from 'ng2-izitoast';
 
 /**
  * Service to show toaster
  *
  */
 @Injectable()
-
-/**
- * ToasterService helps to change the config of
- * the iziToast
- */
 export class ToasterService {
 
   /**
    * To show toaster messages
    */
-  public iziToast: Ng2IzitoastService;
+  public iziToast: any;
 
   /**
 	 * Constructor to create injected service(s) object
-	 *
-	 * Default method of ToasterService class
-	 *
-   * @param {Ng2IzitoastService} iziToast To show toaster messages
 	 */
-  constructor(iziToast: Ng2IzitoastService) {
-    this.iziToast = iziToast;
+  constructor() {
+    this.iziToast = iziToast; // global object
     this.iziToast.settings({
       position: 'topCenter',
       titleSize: '18'
@@ -40,7 +30,8 @@ export class ToasterService {
    */
   success(message: string) {
     this.iziToast.success({
-      title: message
+      title: message,
+      class: 'sb-toaster sb-toast-success'
     });
   }
 
@@ -51,7 +42,8 @@ export class ToasterService {
    */
   info(message: string) {
     this.iziToast.info({
-      title: message
+      title: message,
+      class: 'sb-toaster sb-toast-info'
     });
   }
 
@@ -62,7 +54,8 @@ export class ToasterService {
    */
   error(message: string) {
     this.iziToast.error({
-      title: message
+      title: message,
+      class: 'sb-toaster sb-toast-error'
     });
   }
 
@@ -73,7 +66,19 @@ export class ToasterService {
    */
   warning(message: string) {
     this.iziToast.warning({
-      title: message
+      title: message,
+      class: 'sb-toaster sb-toast-warning'
+    });
+  }
+
+  /**
+   * Custom toaster message to be configured
+   * @param config
+   */
+  custom(config: any) {
+    this.iziToast.show({
+      class: config.class,
+      message: config.message
     });
   }
 }

@@ -1,15 +1,33 @@
 import { CoreModule } from '@sunbird/core';
 import { SharedModule } from '@sunbird/shared';
-import { NgModule , ModuleWithProviders} from '@angular/core';
+import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ViewAllComponent, ProfileFrameworkPopupComponent } from './components';
+import {
+  ProfileFrameworkPopupComponent, TermsAndConditionsPopupComponent,
+  OtpPopupComponent, BatchInfoComponent, SsoMergeConfirmationComponent, ValidateTeacherIdentifierPopupComponent,
+  UserLocationComponent, UserOnboardingComponent, OnboardingUserSelectionComponent,
+  ConfirmationPopupComponent, CertPreviewPopupComponent, ContentPlayerComponent, CollectionPlayerComponent, YearOfBirthComponent
+} from './components';
 import { SlickModule } from 'ngx-slick';
-import { SuiModule } from 'ng2-semantic-ui';
 import { TelemetryModule } from '@sunbird/telemetry';
-import { NgInviewModule } from 'angular-inport';
 import { RouterModule } from '@angular/router';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { SuiSelectModule, SuiModalModule, SuiAccordionModule, SuiPopupModule, SuiDropdownModule,
+  SuiProgressModule, SuiRatingModule, SuiCollapseModule, SuiDimmerModule } from 'ng2-semantic-ui';
+import { GlobalConsentPiiComponent } from './components/global-consent-pii/global-consent-pii.component';
+import { CsModule } from '@project-sunbird/client-services';
+import { CsLibInitializerService } from '../../service/CsLibInitializer/cs-lib-initializer.service';
+import { PlayerHelperModule } from '@sunbird/player-helper';
+import { CommonConsumptionModule } from '@project-sunbird/common-consumption-v8';
+import { CommonFormElementsModule } from 'common-form-elements';
+import { LocationModule } from '../../plugins/location';
 
+export const csUserServiceFactory = (csLibInitializerService: CsLibInitializerService) => {
+  if (!CsModule.instance.isInitialised) {
+    csLibInitializerService.initializeCs();
+  }
+  return CsModule.instance.userService;
+};
 @NgModule({
   imports: [
     CommonModule,
@@ -17,13 +35,29 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
     SharedModule,
     CoreModule,
     TelemetryModule,
-    NgInviewModule,
     RouterModule,
-    SuiModule,
+    SuiSelectModule, SuiModalModule, SuiAccordionModule, SuiPopupModule, SuiDropdownModule,
+    SuiProgressModule, SuiRatingModule, SuiCollapseModule, SuiDimmerModule,
     FormsModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    PlayerHelperModule,
+    CommonConsumptionModule,
+    CommonFormElementsModule,
+    LocationModule
   ],
-  declarations: [ViewAllComponent, ProfileFrameworkPopupComponent],
-  exports: [ViewAllComponent, ProfileFrameworkPopupComponent]
+  providers:  [{ provide: 'CS_USER_SERVICE', useFactory: csUserServiceFactory, deps: [CsLibInitializerService] }],
+  declarations: [ProfileFrameworkPopupComponent, TermsAndConditionsPopupComponent,
+    OtpPopupComponent, BatchInfoComponent, SsoMergeConfirmationComponent, ValidateTeacherIdentifierPopupComponent,
+    UserLocationComponent,
+    UserOnboardingComponent,
+    OnboardingUserSelectionComponent,
+    ConfirmationPopupComponent, CertPreviewPopupComponent, ContentPlayerComponent, GlobalConsentPiiComponent,
+     CollectionPlayerComponent, YearOfBirthComponent
+  ],
+  exports: [ProfileFrameworkPopupComponent, TermsAndConditionsPopupComponent,
+    OtpPopupComponent, BatchInfoComponent, SsoMergeConfirmationComponent, ValidateTeacherIdentifierPopupComponent,
+    UserLocationComponent, UserOnboardingComponent, OnboardingUserSelectionComponent,
+    ConfirmationPopupComponent, CertPreviewPopupComponent,
+     ContentPlayerComponent, GlobalConsentPiiComponent, CollectionPlayerComponent, YearOfBirthComponent]
 })
 export class SharedFeatureModule { }

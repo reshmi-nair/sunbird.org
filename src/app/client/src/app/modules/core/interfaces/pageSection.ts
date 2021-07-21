@@ -28,4 +28,11 @@ export interface IPageSection {
     mode?: string;
     exists?: Array<string>;
     params?: object;
+    organisationId?: string;
+    sections?: object;
+     /**
+    * page fields
+    */
+   fields?: object;
+   facets?: object;
 }

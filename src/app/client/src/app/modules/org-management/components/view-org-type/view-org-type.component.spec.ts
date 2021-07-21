@@ -3,19 +3,19 @@ import {throwError as observableThrowError, of as observableOf,  Observable ,  B
 import { async, ComponentFixture, TestBed, inject, fakeAsync, tick } from '@angular/core/testing';
 import { mockRes } from './view-org-type.component.spec.data';
 import { Component, OnInit } from '@angular/core';
-import * as _ from 'lodash';
+import * as _ from 'lodash-es';
 import { HttpClient } from '@angular/common/http';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { HttpClientModule } from '@angular/common/http';
 import { RouterTestingModule } from '@angular/router/testing';
 import { ActivatedRoute, Router, RouterOutlet } from '@angular/router';
-import { Ng2IziToastModule } from 'ng2-izitoast';
 import { ViewOrgTypeComponent, OrgTypeService, IorgTypeData } from '@sunbird/org-management';
 import { LearnerService } from '@sunbird/core';
 import { TelemetryModule } from '@sunbird/telemetry';
 import {
     SharedModule, ResourceService, PaginationService, ToasterService, ServerResponse
 } from '@sunbird/shared';
+import { configureTestSuite } from '@sunbird/test-util';
 
 describe('ViewOrgTypeComponent', () => {
     let component: ViewOrgTypeComponent;
@@ -33,11 +33,11 @@ describe('ViewOrgTypeComponent', () => {
     class RouterStub {
         navigate = jasmine.createSpy('navigate');
     }
-
+    configureTestSuite();
     beforeEach(async(() => {
         TestBed.configureTestingModule({
             declarations: [ViewOrgTypeComponent],
-            imports: [HttpClientTestingModule, Ng2IziToastModule,
+            imports: [HttpClientTestingModule,
                 RouterTestingModule, TelemetryModule.forRoot(),
                 SharedModule.forRoot()],
             providers: [HttpClientModule, OrgTypeService, HttpClient,
