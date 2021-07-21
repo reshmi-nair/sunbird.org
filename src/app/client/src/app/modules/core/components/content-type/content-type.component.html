@@ -34,7 +34,7 @@
 
 </ng-container>
 
-<ng-container *ngIf="isLayoutAvailable()">
+<ng-container *ngIf="isLayoutAvailable() && !showBackButton">
   <div class="sb-linkmenu m-0 d-flex flex-ai-center">
     <ng-container *ngFor="let contentType of contentTypes">
       <a *ngIf="contentType.isEnabled && contentType?.isOnlineOnly" tabindex="0" (click)="showContentType(contentType)" (keyup.enter)="showContentType(contentType)" appOnlineOnly

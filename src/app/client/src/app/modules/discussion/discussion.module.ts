@@ -1,5 +1,5 @@
 import { DiscussionService } from './services/discussion/discussion.service';
-import { SuiModalModule } from 'ng2-semantic-ui';
+import { SuiModalModule } from 'ng2-semantic-ui-v9';
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
@@ -30,6 +30,9 @@ export class DiscussionModule {
       this.discussionTelemetryService.logTelemetryEvent(event);
       if (_.get(event, 'action') === 'DF_CLOSE' ) {
         this.navigationHelperService.navigateToLastUrl();
+      }
+      if (_.get(event, 'action') === 'DF_BACK' ) {
+        this.navigationHelperService.popHistory();
       }
     });
   }
