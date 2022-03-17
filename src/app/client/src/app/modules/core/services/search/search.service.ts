@@ -74,7 +74,7 @@ export class SearchService {
    */
   searchContentByUserId(requestParam: SearchParam, options: any = { params: {} }): Observable<ServerResponse> {
     const option = {
-      url: this.config.urlConFig.URLS.COMPOSITE.SEARCH,
+      url: this.config.urlConFig.URLS.CONTENT.SEARCH,
       param: options.params,
       data: {
         request: {
@@ -561,6 +561,11 @@ export class SearchService {
           facet['placeholder'] =  _.get(this.resourceService, 'frmelmnts.lbl.orgname');
           facet['values'] = _.map(facet.values || [], value => ({ ...value, name: value.orgName }));
           break;
+          case 'additionalCategories':
+            facet['index'] = '71';
+            facet['label'] = this.resourceService.frmelmnts.lbl.additionalCategories;
+            facet['placeholder'] = this.resourceService.frmelmnts.lbl.selectAdditionalCategory;
+            break;
       }
       return facet;
     });
@@ -570,4 +575,19 @@ export class SearchService {
     return (_.lowerCase(_.get(content, 'trackable.enabled')) === 'yes'
       || (_.lowerCase(type) === _.lowerCase(this.config.appConfig.contentType.Course)));
   }
+
+  /**
+   * global User Search.
+  */
+ globalUserSearch(requestParam: SearchParam): Observable<ServerResponse> {
+  const option = {
+    url: this.config.urlConFig.URLS.ADMIN.USER_SEARCH,
+    data: {
+      request: {
+        filters: requestParam.filters,
+      }
+    }
+  };
+  return this.learnerService.post(option);
+}
 }

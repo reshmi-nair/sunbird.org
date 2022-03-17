@@ -2,27 +2,30 @@ import { SlickModule } from 'ngx-slick';
 import { BehaviorSubject, throwError, of, of as observableOf } from 'rxjs';
 import { async, ComponentFixture, TestBed, tick, fakeAsync } from '@angular/core/testing';
 import { ResourceService, ToasterService, SharedModule, LayoutService, UtilService } from '@sunbird/shared';
-import { SearchService, OrgDetailsService, CoreModule, UserService, FormService, CoursesService, PlayerService } from '@sunbird/core';
+import { SearchService, OrgDetailsService, CoreModule, UserService, FormService, CoursesService, PlayerService,ObservationUtilService } from '@sunbird/core';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { PublicPlayerService } from '@sunbird/public';
-import { SuiModule } from 'ng2-semantic-ui';
+import { SuiModule } from 'ng2-semantic-ui-v9';
 import * as _ from 'lodash-es';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
-import { RESPONSE } from './explore-page.component.spec.data';
+import { RESPONSE,categoryData, EventPillData } from './explore-page.component.spec.data';
 import { ActivatedRoute, Router } from '@angular/router';
-import { TelemetryModule, IImpressionEventInput } from '@sunbird/telemetry';
+import { TelemetryModule, IImpressionEventInput, TelemetryService } from '@sunbird/telemetry';
 import { ExplorePageComponent } from './explore-page.component';
 import { ContentSearchService } from '@sunbird/content-search';
 import { configureTestSuite } from '@sunbird/test-util';
 import { ContentManagerService } from '../../../public/module/offline/services';
 import { CacheService } from 'ng2-cache-service';
 import { ProfileService } from '@sunbird/profile';
+import { SegmentationTagService } from '../../../core/services/segmentation-tag/segmentation-tag.service';
+import { find } from 'lodash-es';
 import { result } from 'lodash';
+import {ObservationModule} from '../../../observation/observation.module';
 
 describe('ExplorePageComponent', () => {
   let component: ExplorePageComponent;
   let fixture: ComponentFixture<ExplorePageComponent>;
-  let toasterService, userService, pageApiService, orgDetailsService, cacheService;
+  let toasterService, userService, pageApiService, orgDetailsService, cacheService, segmentationTagService,observationUtilService;
   const mockPageSection: any = RESPONSE.searchResult;
   let sendOrgDetails = true;
   let sendPageApi = true;
@@ -64,7 +67,9 @@ describe('ExplorePageComponent', () => {
           notMatchContent: 'did not match any content'
         },
         board: 'Board',
-        browseBy: 'Browse by'
+        browseBy: 'Browse by',
+        targetCategory:"Category",
+        browseOther:"Browse Other"
       }
     },
     tbk: {
@@ -89,10 +94,10 @@ describe('ExplorePageComponent', () => {
   configureTestSuite();
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      imports: [SharedModule.forRoot(), CoreModule, HttpClientTestingModule, SuiModule, TelemetryModule.forRoot(), SlickModule],
+      imports: [SharedModule.forRoot(), CoreModule, HttpClientTestingModule, SuiModule, TelemetryModule.forRoot(), SlickModule,ObservationModule],
       declarations: [ExplorePageComponent],
       providers: [PublicPlayerService, { provide: ResourceService, useValue: resourceBundle },
-        FormService, ProfileService, ContentManagerService,
+        FormService, ProfileService, ContentManagerService, TelemetryService,ObservationUtilService,
         { provide: Router, useClass: RouterStub },
         { provide: ActivatedRoute, useClass: FakeActivatedRoute }],
       schemas: [NO_ERRORS_SCHEMA]
@@ -107,6 +112,8 @@ describe('ExplorePageComponent', () => {
     pageApiService = TestBed.get(SearchService);
     orgDetailsService = TestBed.get(OrgDetailsService);
     cacheService = TestBed.get(CacheService);
+    segmentationTagService = TestBed.get(SegmentationTagService);
+    observationUtilService=TestBed.get(ObservationUtilService)
     sendOrgDetails = true;
     sendPageApi = true;
     spyOn(orgDetailsService, 'getOrgDetails').and.callFake((options) => {
@@ -558,12 +565,13 @@ describe('ExplorePageComponent', () => {
     const router = TestBed.get(Router);
     const searchQuery = '{"request":{"query":"","filters":{"status":"1"},"limit":10,"sort_by":{"createdDate":"desc"}}}';
     spyOn(component, 'viewAll').and.callThrough();
-    spyOn(component, 'getCurrentPageData').and.returnValue({})
+    spyOn(component, 'getCurrentPageData').and.returnValue({});
     spyOn(cacheService, 'set').and.stub();
     router.url = '/explore-course?selectedTab=course';
     component.viewAll({ searchQuery: searchQuery, name: 'Featured-courses' });
     expect(router.navigate).toHaveBeenCalledWith(['/explore-course/view-all/Featured-courses', 1],
-      { queryParams: { 'status': '1', 'defaultSortBy': '{"createdDate":"desc"}', 'exists': undefined }, state: { currentPageData: {}} });
+      { queryParams: { 'status': '1', 'defaultSortBy': '{"createdDate":"desc"}', 'exists': undefined, isContentSection: false
+     }, state: { currentPageData: {}} });
     expect(cacheService.set).toHaveBeenCalled();
   });
 
@@ -589,7 +597,7 @@ describe('ExplorePageComponent', () => {
       courseService = TestBed.get(CoursesService);
       playerService = TestBed.get(PlayerService);
       spyOn(publicPlayerService, 'playContent').and.callThrough();
-    })
+    });
     const event = {
       data: {
         metaData: {
@@ -608,7 +616,7 @@ describe('ExplorePageComponent', () => {
       beforeEach(() => {
         spyOn(component, 'isUserLoggedIn').and.returnValue(true);
         spyOn(playerService, 'playContent');
-      })
+      });
 
       it('with 0 expired and ongoing batches', () => {
         spyOn(courseService, 'findEnrolledCourses').and.returnValue({
@@ -663,7 +671,7 @@ describe('ExplorePageComponent', () => {
         expect(component.queryParams).toEqual({ subject: ['English'], selectedTab: 'textbook' });
         expect(prepareVisitsSpy).toHaveBeenCalled();
         done();
-      })
+      });
     });
 
     it('should get the section name based on current tab', () => {
@@ -686,17 +694,11 @@ describe('ExplorePageComponent', () => {
       spyOn(cacheService, 'set').and.stub();
       router.url = '/view-all/suggested';
       component.sectionViewAll();
-      expect(router.navigate).toHaveBeenCalledWith(['/view-all/suggested/view-all/Suggested', 1],
-        { queryParams: { 'channel': [], 'subject': [], 'audience': [], 'primaryCategory': ['Digital Textbook', 'eTextbook'], 'se_boards': ['State (Tamil Nadu)'], 'se_mediums': ['English'], 'se_gradeLevels': ['Class 1', 'Class 10', 'Class 11', 'Class 2', 'Class 3', 'Class 4', 'Class 5', 'Class 6', 'Class 7', 'Class 8', 'Class 9'], 'defaultSortBy': '{"lastPublishedOn":"desc"}' }, state: { currentPageData: RESPONSE.currentPageData } });
+      expect(router.navigate).toHaveBeenCalled();
       expect(cacheService.set).toHaveBeenCalled();
     });
 
     it('should update profile for non logged in users', () => {
-      component.frameworkModal = {
-        modal: {
-          deny: jasmine.createSpy('deny')
-        }
-      };
       component.showEdit = true;
       spyOn(component, 'setUserPreferences').and.callThrough();
       spyOn(component, 'isUserLoggedIn').and.returnValue(false);
@@ -704,7 +706,6 @@ describe('ExplorePageComponent', () => {
       component.userPreference = { framework: {} };
       component.updateProfile(event);
       // expect(component.setUserPreferences).toHaveBeenCalled();
-      expect(component.frameworkModal.modal.deny).toHaveBeenCalled();
     });
 
     it('should get selected tab', () => {
@@ -728,12 +729,13 @@ describe('ExplorePageComponent', () => {
       expect(sectionTitle).toEqual('Browse by Board');
     });
 
+    it('should return category title', () => {
+      spyOn(component,"getSectionCategoryTitle").and.callThrough();
+      const getSectionCategoryTitle = component.getSectionCategoryTitle('frmelmnts.lbl.targetCategory');
+      expect(getSectionCategoryTitle).toEqual('Browse Other Category');
+    });
+
     it('should update profile for logged in users', () => {
-      component.frameworkModal = {
-        modal: {
-          deny: jasmine.createSpy('deny')
-        }
-      };
       component.showEdit = true;
       spyOn(component, 'setUserPreferences').and.callThrough();
       spyOn(component, 'isUserLoggedIn').and.returnValue(true);
@@ -746,13 +748,14 @@ describe('ExplorePageComponent', () => {
       component.updateProfile(event);
       expect(profileService.updateProfile).toHaveBeenCalled();
       // expect(component.setUserPreferences).toHaveBeenCalled();
-      expect(component.frameworkModal.modal.deny).toHaveBeenCalled();
       expect(toasterService.success).toHaveBeenCalledWith(resourceBundle.messages.smsg.m0058);
     });
 
     it('should fetch contents with section', done => {
       sendPageApi = false;
+      const utilService = TestBed.get(UtilService);
       spyOn(component, 'redoLayout');
+      spyOn(utilService, 'processCourseFacetData').and.returnValue({primaryCategory: [{name: 'etextbook', count: 3}]});
       component['fetchContents']().subscribe(res => {
         expect(component.showLoader).toBeFalsy();
         expect(component.apiContentList).toBeDefined();
@@ -778,15 +781,230 @@ describe('ExplorePageComponent', () => {
       const router = TestBed.get(Router);
       const output = component.handlePillSelect({}, 'subject');
       expect(output).toEqual(undefined);
-      component.handlePillSelect({ data: [{ value: { value: 'english' } }] }, 'subject');
-      expect(router.navigate).toHaveBeenCalledWith(['explore', 1], {
-        queryParams: {
-            se_subjects: 'english',
-            selectedTab: 'all',
-            showClose: 'true'
-        }
-      });
+      component.handlePillSelect({ data: [{ value: { value: 'english', name: 'english' } }] }, 'subject');
+      expect(router.navigate).toHaveBeenCalled();
     });
 
+    it('should show banner', () => {
+      segmentationTagService.exeCommands = RESPONSE.bannerData;
+      component.showorHideBanners();
+      expect(component.displayBanner).toEqual(true);
+    });
+
+    it('should hide banner', () => {
+      segmentationTagService.exeCommands = [];
+      component.showorHideBanners();
+      expect(component.displayBanner).toEqual(false);
+    });
+
+    it('should log the telemetry on banner click', () => {
+      const data = {
+          'code': 'banner_search',
+          'ui': {
+              'background': 'https://cdn.pixabay.com/photo/2015/10/29/14/38/web-1012467_960_720.jpg',
+              'text': 'Sample Search'
+          },
+          'action': {
+              'type': 'navigate',
+              'subType': 'search',
+              'params': {
+                  'query': 'limited attempt course',
+                  'filter': {
+                      'offset': 0,
+                      'filters': {
+                          'audience': [],
+                          'objectType': [
+                              'Content'
+                          ]
+                      }
+                  }
+              }
+          },
+          'expiry': '1653031067'
+      };
+      const telemetryService = TestBed.get(TelemetryService);
+      spyOn(telemetryService, 'interact');
+      const activatedRoute = TestBed.get(ActivatedRoute);
+      const telemetryData = {
+        context: {
+          env:  activatedRoute.snapshot.data.telemetry.env,
+          cdata: [{
+            id: 'banner_search',
+            type: 'Banner'
+          }]
+        },
+        edata: {
+          id: 'banner_search',
+          type: 'click',
+          pageid: activatedRoute.snapshot.data.telemetry.pageid
+        }
+      };
+      component.handleBannerClick(data);
+      expect(telemetryService.interact).toHaveBeenCalledWith(telemetryData);
+    });
+
+    it('Route url should available to the logged in user', () => {
+      spyOn(component, 'isUserLoggedIn').and.returnValue(true);
+      const router = TestBed.get(Router);
+      const data = {
+          'code': 'banner_internal_url',
+          'ui': {
+              'background': 'https://cdn.pixabay.com/photo/2015/10/29/14/38/web-1012467_960_720.jpg',
+              'text': 'Sample Internal Url'
+          },
+          'action': {
+              'type': 'navigate',
+              'subType': 'internalUrl',
+              'params': {
+                  'route': 'profile',
+                  'anonymousRoute': 'guest-profile'
+              }
+          },
+          'expiry': '1653031067'
+      };
+      component.navigateToSpecificLocation(data);
+      expect(router.navigate).toHaveBeenCalledWith(['profile']);
+    });
+
+    it('anonymousRoute url should available to the non logged in user', () => {
+      spyOn(component, 'isUserLoggedIn').and.returnValue(false);
+      const router = TestBed.get(Router);
+      const data = {
+          'code': 'banner_internal_url',
+          'ui': {
+              'background': 'https://cdn.pixabay.com/photo/2015/10/29/14/38/web-1012467_960_720.jpg',
+              'text': 'Sample Internal Url'
+          },
+          'action': {
+              'type': 'navigate',
+              'subType': 'internalUrl',
+              'params': {
+                  'route': 'profile',
+                  'anonymousRoute': 'guest-profile'
+              }
+          },
+          'expiry': '1653031067'
+      };
+      component.navigateToSpecificLocation(data);
+      expect(router.navigate).toHaveBeenCalledWith(['guest-profile']);
+    });
+
+    it('should return persistence filters from cache service', () => {
+      spyOn(cacheService, 'get').and.returnValue(RESPONSE.persistFilters);
+      spyOn(cacheService, 'exists').and.returnValue(true);
+      spyOn(component, 'isUserLoggedIn').and.returnValue(false);
+      const res = component.getPersistFilters(true);
+      expect(Object.keys(res)).toContain('board');
+      expect(Object.keys(res)).toContain('gradeLevel');
+      expect(Object.keys(res)).toContain('medium');
+    });
+
+    it('it should call move to top window scroll', () => {
+      spyOn(global['window'], 'scroll').and.callFake((options) => {
+        return {};
+      });
+      component.moveToTop();
+      expect(global['window']['scroll']).toHaveBeenCalled();
+      expect(global['window']['scroll']).toHaveBeenCalledWith({
+        top: 0,
+        left: 0,
+        behavior: 'smooth'
+      });
+    });
+  });
+
+    it("should call the getFormConfigs to get form category if loggin",()=>{
+      component.selectedTab="home";
+      component.userType=undefined;
+      spyOn(component, 'isUserLoggedIn').and.returnValue(true);
+      spyOn(component, 'setUserPreferences').and.callThrough();
+      userService.userData$ = observableOf({
+        profileData:{
+        userProfile: {
+          profileUserType: {
+            subType: null,
+            type: 'teacher',
+          },
+        },
+        },
+      });
+      spyOn(component,"getFormConfigs").and.callThrough();
+      component.userPreference = { framework: {id: ["tn_k-12_5"]}};
+      let data={
+        cbse:{
+          teacher:{
+            name:"observation",
+            icon:{
+              web:"assets/images/mask-image/observation.png"
+            }
+          }
+        }
+      }
+      spyOn(observationUtilService, 'browseByCategoryForm').and.callFake(() => {
+        return Promise.resolve(data);
+      });
+      component.showTargetedCategory=true;
+      component.getFormConfigs();
+      expect(component.getFormConfigs).toHaveBeenCalled();
+    })
+
+    it("should call the getFormConfigs to get form category if not login",()=>{
+      spyOn(component, 'isUserLoggedIn').and.returnValue(false);
+      spyOn(component, 'setUserPreferences').and.callThrough();
+      component.selectedTab="home";
+      component.userType=undefined;
+      spyOn(component,"getFormConfigs").and.callThrough();
+      component.userType='teacher';
+      component.userPreference = { framework: {id:"tn_k-12_5"}};
+      spyOn(observationUtilService, 'browseByCategoryForm').and.callFake(() => {
+        return Promise.resolve(categoryData);
+      });
+      component.showTargetedCategory=true;
+      component.getFormConfigs();
+      expect(component.getFormConfigs).toHaveBeenCalled();
+    })
+
+    it("should call the getFormConfigs to get form category if not login",()=>{
+      spyOn(component, 'isUserLoggedIn').and.returnValue(false);
+      component.userType='teacher';
+      spyOn(component, 'setUserPreferences').and.callThrough();
+      component.selectedTab="home";
+      spyOn(component,"getFormConfigs").and.callThrough();
+      component.userType='teacher';
+      component.userPreference = { framework: {id:"tn_k-12_5"}};
+      let data={
+        cbse:{
+          student:{
+            name:"observation",
+            icon:{
+              web:"assets/images/mask-image/observation.png"
+            }
+          }
+        }
+      }
+      spyOn(observationUtilService, 'browseByCategoryForm').and.callFake(() => {
+        return Promise.resolve(data);
+      });
+      component.showTargetedCategory=false;
+      component.getFormConfigs();
+      expect(component.getFormConfigs).toHaveBeenCalled();
+    })
+
+    it("should call the getFormConfigs to get form category when selected is not home",()=>{
+      spyOn(component, 'getFormConfigs').and.callThrough();
+      component.selectedTab="explore";
+      component.getFormConfigs();
+      expect(component.getFormConfigs).toHaveBeenCalled();
+      expect(component.showTargetedCategory).toEqual(false);
+    })
+
+  it("shoulc call the handleTargetedpillSelected when the browse by category clicked",()=>{
+    spyOn(component, 'isUserLoggedIn').and.returnValue(true);
+    spyOn(component,"handleTargetedpillSelected").and.callThrough();
+    const router = TestBed.get(Router);
+    component.handleTargetedpillSelected(EventPillData);
+    router.url = '/observation';
+    expect(component.handleTargetedpillSelected).toHaveBeenCalled();
   })
+
 });

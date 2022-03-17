@@ -15,9 +15,10 @@ import { IInteractEventEdata } from '@sunbird/telemetry';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Subject } from 'rxjs';
 import { debounceTime, map, takeUntil, filter } from 'rxjs/operators';
-import { LibraryFiltersLayout } from '@project-sunbird/common-consumption-v8';
+import { LibraryFiltersLayout } from '@project-sunbird/common-consumption-v9';
 import { UserService } from '@sunbird/core';
-import { IFacetFilterFieldTemplateConfig } from 'common-form-elements';
+import { IFacetFilterFieldTemplateConfig } from 'common-form-elements-web-v9';
+import { CacheService } from 'ng2-cache-service';
 
 @Component({
   selector: 'app-global-search-filter',
@@ -27,7 +28,7 @@ import { IFacetFilterFieldTemplateConfig } from 'common-form-elements';
 export class GlobalSearchFilterComponent implements OnInit, OnChanges, OnDestroy {
   @Input() facets;
   @Input() queryParamsToOmit;
-  @Input() supportedFilterAttributes = ['se_boards', 'se_mediums', 'se_gradeLevels', 'se_subjects', 'primaryCategory', 'mediaType'];
+  @Input() supportedFilterAttributes = ['se_boards', 'se_mediums', 'se_gradeLevels', 'se_subjects', 'primaryCategory', 'mediaType', 'additionalCategories'];
   public filterLayout = LibraryFiltersLayout;
   public selectedMediaTypeIndex = 0;
   public selectedMediaType: string;
@@ -39,14 +40,15 @@ export class GlobalSearchFilterComponent implements OnInit, OnChanges, OnDestroy
   @Input() layoutConfiguration;
   @Input() isOpen;
   @Output() filterChange: EventEmitter<{ status: string, filters?: any }> = new EventEmitter();
-
-  @ViewChild('sbSearchFacetFilterComponent', { static: false }) searchFacetFilterComponent: any;
+  @Input() cachedFilters?: any;
+  
+  @ViewChild('sbSearchFacetFilterComponent') searchFacetFilterComponent: any;
 
   filterFormTemplateConfig?: IFacetFilterFieldTemplateConfig[];
 
   constructor(public resourceService: ResourceService, public router: Router,
     private activatedRoute: ActivatedRoute, private cdr: ChangeDetectorRef, private utilService: UtilService,
-    public userService: UserService) {
+    public userService: UserService, private cacheService: CacheService) {
   }
 
   onChange(facet) {
@@ -148,11 +150,11 @@ export class GlobalSearchFilterComponent implements OnInit, OnChanges, OnDestroy
       map((queryParams) => {
         const queryFilters: any = {};
         _.forIn(queryParams, (value, key) => {
-          if (['medium', 'gradeLevel', 'board', 'channel', 'subject', 'primaryCategory', 'key', 'mediaType', 'se_boards', 'se_mediums', 'se_gradeLevels', 'se_subjects'].includes(key)) {
+          if (['medium', 'gradeLevel', 'board', 'channel', 'subject', 'primaryCategory', 'key', 'mediaType', 'se_boards', 'se_mediums', 'se_gradeLevels', 'se_subjects', 'additionalCategories'].includes(key)) {
             queryFilters[key] = key === 'key' || _.isArray(value) ? value : [value];
           }
         });
-        if (queryParams.selectedTab){
+        if (queryParams.selectedTab) {
           queryFilters['selectedTab'] = queryParams.selectedTab;
         }
         if (queryParams.mediaType) {
@@ -164,6 +166,10 @@ export class GlobalSearchFilterComponent implements OnInit, OnChanges, OnDestroy
         return queryFilters;
       })).subscribe(filters => {
         this.selectedFilters = _.cloneDeep(filters);
+        /* istanbul ignore next */
+        if (this.cachedFilters) {
+          this.selectedFilters = this.cachedFilters;
+        }
         this.emitFilterChangeEvent(true);
         this.hardRefreshFilter();
       }, error => {

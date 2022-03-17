@@ -2,7 +2,7 @@ import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { ShareLinkComponent } from './share-link.component';
 import { ResourceService, ConfigService, BrowserCacheTtlService } from '../../services/index';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
-import { SuiModule } from 'ng2-semantic-ui';
+import { SuiModule } from 'ng2-semantic-ui-v9';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { Response } from './share-link.component.spec.data';
 import { By } from '@angular/platform-browser';
@@ -25,7 +25,7 @@ describe('ShareLinkComponent', () => {
   configureTestSuite();
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      imports: [SuiModule , HttpClientTestingModule,TranslateModule.forRoot({
+      imports: [SuiModule , HttpClientTestingModule, TranslateModule.forRoot({
          loader: {
             provide: TranslateLoader,
             useClass: TranslateFakeLoader
@@ -53,15 +53,12 @@ describe('ShareLinkComponent', () => {
   });
   it('should take content share link  INPUT  ', () => {
     component.shareLink = Response.contentShare;
-    expect(component.sharelinkModal).toBeDefined();
-    expect(component.sharelinkModal).toBeFalsy();
     expect(component.shareLink).toBeDefined();
     expect(component.shareLink).toBe(Response.contentShare);
   });
   it('Should show the content share model', () => {
     spyOn(component, 'initializeModal').and.callThrough();
     component.initializeModal();
-    expect(component.sharelinkModal).toBeFalsy();
   });
   xit('Should call copyLink and copy the the link', () => {
     spyOn(component, 'copyLink').and.callThrough();

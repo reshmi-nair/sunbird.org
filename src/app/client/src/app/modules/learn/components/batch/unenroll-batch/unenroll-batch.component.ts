@@ -8,13 +8,12 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { IImpressionEventInput } from '@sunbird/telemetry';
 import * as _ from 'lodash-es';
 import { Subject } from 'rxjs';
-import { IInteractEventObject, IInteractEventEdata } from '@sunbird/telemetry';
+import { TelemetryService, IInteractEventObject, IInteractEventEdata } from '@sunbird/telemetry';
 @Component({
   selector: 'app-unenroll-batch',
   templateUrl: './unenroll-batch.component.html'
 })
 export class UnEnrollBatchComponent implements OnInit, OnDestroy, AfterViewInit {
-  @ViewChild('unenrollBatch', {static: false}) unenrollBatch;
   batchId: string;
   batchDetails: any;
   showEnrollDetails = false;
@@ -31,6 +30,7 @@ export class UnEnrollBatchComponent implements OnInit, OnDestroy, AfterViewInit 
   constructor(public router: Router, public activatedRoute: ActivatedRoute, public courseBatchService: CourseBatchService,
     public resourceService: ResourceService, public toasterService: ToasterService, public userService: UserService,
     public configService: ConfigService, public coursesService: CoursesService,
+    private telemetryService: TelemetryService,
     public navigationhelperService: NavigationHelperService, public generaliseLabelService: GeneraliseLabelService) { }
 
   ngOnInit() {
@@ -56,9 +56,6 @@ export class UnEnrollBatchComponent implements OnInit, OnDestroy, AfterViewInit 
     });
   }
   ngOnDestroy() {
-    if (this.unenrollBatch && this.unenrollBatch.deny) {
-      this.unenrollBatch.deny();
-    }
     this.unsubscribe.next();
     this.unsubscribe.complete();
   }
@@ -111,6 +108,7 @@ export class UnEnrollBatchComponent implements OnInit, OnDestroy, AfterViewInit 
     const textbook = _.get(this.activatedRoute, 'snapshot.queryParams.textbook');
     const queryParams = textbook ? { textbook } : {};
     this.router.navigate(['/learn/course', this.batchDetails.courseId], { queryParams }).then(() => {
+      this.telemetryService.syncEvents(false);
       window.location.reload();
     });
   }

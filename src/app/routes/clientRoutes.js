@@ -16,6 +16,7 @@ const CONSTANTS = require('../helpers/constants');
 const { memoryStore } = require('../helpers/keyCloakHelper')
 const session = require('express-session');
 const { logger } = require('@project-sunbird/logger');
+const VDNURL = envHelper.vdnURL || 'https://dockstaging.sunbirded.org';
 
 logger.info({msg:`CDN index file exist: ${cdnIndexFileExist}`});
 
@@ -57,13 +58,15 @@ module.exports = (app, keycloak) => {
     next();
   });
 
-  app.get(['/dist/*.ttf', '/dist/*.woff2', '/dist/*.woff', '/dist/*.eot', '/dist/*.svg',
+  if (process.env.sunbird_environment !== 'local') {
+    app.get(['/dist/*.ttf', '/dist/*.woff2', '/dist/*.woff', '/dist/*.eot', '/dist/*.svg',
     '/*.ttf', '/*.woff2', '/*.woff', '/*.eot', '/*.svg', '/*.html'], compression(),
     (req, res, next) => {
       res.setHeader('Cache-Control', 'public, max-age=' + oneDayMS * 30)
       res.setHeader('Expires', new Date(Date.now() + oneDayMS * 30).toUTCString())
       next()
-  })
+    })
+  }
 
   app.use(express.static(path.join(__dirname, '../dist'), { extensions: ['ejs'], index: false }))
 
@@ -79,11 +82,13 @@ module.exports = (app, keycloak) => {
     app.use(express.static(path.join(__dirname, '../tenant', envHelper.DEFAULT_CHANNEL)))
   }
 
-  app.get('/assets/images/*', (req, res, next) => {
-    res.setHeader('Cache-Control', 'public, max-age=' + oneDayMS)
-    res.setHeader('Expires', new Date(Date.now() + oneDayMS).toUTCString())
-    next()
-  })
+  if (process.env.sunbird_environment !== 'local') {
+    app.get('/assets/images/*', (req, res, next) => {
+      res.setHeader('Cache-Control', 'public, max-age=' + oneDayMS)
+      res.setHeader('Expires', new Date(Date.now() + oneDayMS).toUTCString())
+      next()
+    })
+  }
 
   app.all('/play/quiz/*', playContent);
   app.all('/manage-learn/*', MLContent);
@@ -99,13 +104,13 @@ module.exports = (app, keycloak) => {
   app.all(['/announcement', '/announcement/*', '/search', '/search/*',
   '/orgType', '/orgType/*', '/dashBoard', '/dashBoard/*',
   '/workspace', '/workspace/*', '/profile', '/profile/*', '/learn', '/learn/*', '/resources', '/discussion-forum/*',
-  '/resources/*', '/myActivity', '/myActivity/*', '/org/*', '/manage', '/contribute','/contribute/*','/groups','/groups/*', '/my-groups','/my-groups/*','/certs/configure/*',
-   '/observation', '/observation/*'], 
+  '/resources/*', '/myActivity', '/myActivity/*', '/org/*', '/manage/*', '/contribute','/contribute/*','/groups','/groups/*', '/my-groups','/my-groups/*','/certs/configure/*',
+   '/observation', '/observation/*','/solution','/solution/*','/questionnaire','/questionnaire/*', '/uci-admin', '/uci-admin/*','/program'],
   session({
     secret: envHelper.PORTAL_SESSION_SECRET_KEY,
     resave: false,
     cookie: {
-      maxAge: envHelper.sunbird_session_ttl 
+      maxAge: envHelper.sunbird_session_ttl
     },
     saveUninitialized: false,
     store: memoryStore
@@ -116,12 +121,12 @@ module.exports = (app, keycloak) => {
     '/explore/*', '/:slug/explore', '/:slug/explore/*', '/play/*', '/:slug/play/*',  '/explore-course', '/explore-course/*',
     '/:slug/explore-course', '/:slug/explore-course/*', '/:slug/signup', '/signup', '/:slug/sign-in/*',
     '/sign-in/*', '/download/*', '/accountMerge/*','/:slug/accountMerge/*', '/:slug/download/*', '/certs/*', '/:slug/certs/*', '/recover/*', '/:slug/recover/*', '/explore-groups',
-    '/guest-profile'], 
+    '/guest-profile'],
     session({
       secret: envHelper.PORTAL_SESSION_SECRET_KEY,
       resave: false,
       cookie: {
-        maxAge: envHelper.sunbird_session_ttl 
+        maxAge: envHelper.sunbird_session_ttl
       },
       saveUninitialized: false,
       store: memoryStore
@@ -170,6 +175,7 @@ function getLocals(req) {
   locals.buildNumber = envHelper.BUILD_NUMBER
   locals.apiCacheTtl = envHelper.PORTAL_API_CACHE_TTL
   locals.cloudStorageUrls = envHelper.CLOUD_STORAGE_URLS
+  locals.publicStorageAccount = envHelper.SUNBIRD_PUBLIC_STORAGE_ACCOUNT_NAME;
   locals.userUploadRefLink = envHelper.sunbird_portal_user_upload_ref_link
   locals.deviceRegisterApi = envHelper.DEVICE_REGISTER_API
   locals.deviceApi = envHelper.sunbird_device_api
@@ -196,9 +202,14 @@ function getLocals(req) {
   locals.p1reCaptchaEnabled = envHelper.sunbird_p1_reCaptcha_enabled;
   locals.p2reCaptchaEnabled = envHelper.sunbird_p2_reCaptcha_enabled;
   locals.p3reCaptchaEnabled = envHelper.sunbird_p3_reCaptcha_enabled;
+  locals.sunbirdQuestionSetChildrenLimit = envHelper.sunbird_questionset_children_limit,
+  locals.sunbirdCollectionChildrenLimit =  envHelper.sunbird_collection_children_limit,
   locals.enableSSO = envHelper.sunbird_enable_sso;
   locals.reportsListVersion = envHelper.reportsListVersion;
+  locals.sunbirdDefaultFileSize = envHelper.SUNBIRD_DEFAULT_FILE_SIZE;
   locals.baseUrl = null;
+  locals.blobUrl = envHelper.sunbird_portal_cdn_blob_url;
+  locals.uciBotPhoneNumber = envHelper.sunbird_portal_uci_bot_phone_number;
   return locals
 }
 
@@ -283,6 +294,10 @@ const redirectTologgedInPage = (req, res) => {
 			[`/${req.params.slug}/explore-course`]: '/learn'
 		}
 	}
+  if ((_.get(req, 'query.redirect_uri')) && (_.get(req, 'query.redirect_uri')).includes(VDNURL)){
+    res.cookie ('redirectPath', VDNURL);
+    res.cookie ('redirectTo', (_.get(req, 'query.redirect_uri')));
+  }
 	if (_.get(req, 'sessionID') && _.get(req, 'session.userId')) {
 		if (_.get(redirectRoutes, req.originalUrl)) {
 			const routes = _.get(redirectRoutes, req.originalUrl);

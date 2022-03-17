@@ -6,16 +6,19 @@ import { SharedModule } from '@sunbird/shared';
 import { ChartsModule } from 'ng2-charts';
 import { async, ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { DataChartComponent } from './data-chart.component';
-import { SuiModule } from 'ng2-semantic-ui';
+import { SuiModule } from 'ng2-semantic-ui-v9';
 import { ReactiveFormsModule } from '@angular/forms';
 import { mockChartData } from './data-chart.component.spec.data';
 import { NgxDaterangepickerMd } from 'ngx-daterangepicker-material';
-import { By } from '@angular/platform-browser';
+import { By } from '@angular/platform-browser'
 import { TelemetryModule } from '@sunbird/telemetry';
 import { ActivatedRoute } from '@angular/router';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { ReportService } from '../../services';
 import { configureTestSuite } from '@sunbird/test-util';
+import { MatDialogModule } from '@angular/material/dialog';
+import { NoopAnimationsModule} from '@angular/platform-browser/animations';
+
 
 describe('DataChartComponent', () => {
     let component: DataChartComponent;
@@ -26,7 +29,8 @@ describe('DataChartComponent', () => {
             declarations: [],
             schemas: [NO_ERRORS_SCHEMA],
             imports: [ChartsModule, SuiModule, ReactiveFormsModule, SharedModule.forRoot(), HttpClientTestingModule,
-                NgxDaterangepickerMd.forRoot(), TelemetryModule.forRoot(), RouterTestingModule, CoreModule, DashboardModule],
+                NgxDaterangepickerMd.forRoot(), TelemetryModule.forRoot(), RouterTestingModule, CoreModule, DashboardModule,
+                MatDialogModule, NoopAnimationsModule],
             providers: [ReportService, {
                 provide: ActivatedRoute, useValue: {
                     snapshot: {
@@ -211,32 +215,26 @@ describe('DataChartComponent', () => {
         expect(component.chartType).toEqual('bar');
     }));
 
-    it('should close popup', fakeAsync(() => {
-        component.ngOnInit();
-        tick(1000);
-        component.filterModalPopup(false);
-        expect(component.filterPopup).toEqual(false);
-    }));
-
     it('should open modal popup', fakeAsync(() => {
         component.ngOnInit();
         tick(1000);
+        component.currentFilters=[];
         component.filterModalPopup(true);
-        expect(component.filterPopup).toEqual(true);
+        expect(component.chartData['selectedFilters']).toEqual([]);
     }));
 
     it('should check checkFilterReferance', fakeAsync(() => {
         component.ngOnInit();
         tick(1000);
         component.dateFilters = ['date'];
-        const response = component.checkFilterReferance("date");
+        const response = component.checkFilterReferance('date');
         expect(response).toEqual(true);
     }));
 
     it('should set globalFilter', fakeAsync(() => {
         component.ngOnInit();
         tick(1000);
-        component.globalFilter = { chartData: mockChartData.chartData };
+        component.globalFilter = { chartData: [{ 'id': 'aggregated_live_textbook_qr_content_status', data : mockChartData.chartData }]};
         expect(component.chartData).toEqual(mockChartData.chartData);
 
     }));

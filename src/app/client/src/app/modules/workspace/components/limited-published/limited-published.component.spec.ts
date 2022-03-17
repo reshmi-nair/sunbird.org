@@ -11,7 +11,7 @@ import { WorkSpaceService } from '../../services';
 import { UserService, LearnerService, CoursesService, PermissionService } from '@sunbird/core';
 import {
   SuiModalService, TemplateModalConfig, ModalTemplate
-} from 'ng2-semantic-ui';
+} from 'ng2-semantic-ui-v9';
 import { mockUserData } from './../../../core/services/user/user.mock.spec.data';
 // Import Module
 import { ActivatedRoute, RouterModule, Router } from '@angular/router';
@@ -22,6 +22,7 @@ import { TelemetryModule } from '@sunbird/telemetry';
 import { NgInviewModule } from 'angular-inport';
 import { CoreModule } from '@sunbird/core';
 import { configureTestSuite } from '@sunbird/test-util';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 describe('LimitedPublishedComponent', () => {
   let component: LimitedPublishedComponent;
@@ -68,7 +69,7 @@ describe('LimitedPublishedComponent', () => {
     TestBed.configureTestingModule({
       declarations: [LimitedPublishedComponent],
       imports: [HttpClientTestingModule, RouterTestingModule, CoreModule, SharedModule.forRoot(),
-        TelemetryModule.forRoot(), NgInviewModule],
+        TelemetryModule.forRoot(), NgInviewModule, BrowserAnimationsModule],
       providers: [PaginationService, WorkSpaceService, UserService,
         SearchService, ContentService, LearnerService, CoursesService,
         PermissionService, ResourceService, ToasterService,
@@ -205,8 +206,8 @@ describe('LimitedPublishedComponent', () => {
         }
       };
       component.contentClick(params);
-      expect(route.navigate).toHaveBeenCalledWith(['/workspace/content/edit/collection',
-        'do_2124341006465925121871', 'TextBook', 'limited-publish', 'NCF']);
+      expect(route.navigate).toHaveBeenCalledWith(['workspace/edit/', 'TextBook',
+        'do_2124341006465925121871', 'limited-publish']);
       fixture.detectChanges();
     }));
   it('should throw error', inject([SearchService], (searchService) => {

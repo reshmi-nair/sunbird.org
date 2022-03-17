@@ -3,7 +3,7 @@ import { GroupsRoutingModule } from './groups-routing.module';
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { SharedModule } from '@sunbird/shared';
-import { SuiModule, SuiModalModule, SuiRatingModule } from 'ng2-semantic-ui/dist';
+import { SuiModule, SuiModalModule, SuiRatingModule } from 'ng2-semantic-ui-v9';
 import { NgInviewModule } from 'angular-inport';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MyGroupsComponent, AddMemberComponent, GroupHeaderComponent, NoGroupResultComponent,
@@ -13,15 +13,14 @@ import { MyGroupsComponent, AddMemberComponent, GroupHeaderComponent, NoGroupRes
   PopupComponent } from './components';
 import { CoreModule } from '@sunbird/core';
 import { SharedFeatureModule } from '@sunbird/shared-feature';
-import { GroupsService } from './services';
-import { CommonConsumptionModule } from '@project-sunbird/common-consumption-v8';
+import { CommonConsumptionModule } from '@project-sunbird/common-consumption-v9';
 import { CsLibInitializerService } from '../../service/CsLibInitializer/cs-lib-initializer.service';
 import { ContentSearchModule } from '@sunbird/content-search';
 import { SlickModule } from 'ngx-slick';
 import { RecaptchaModule } from 'ng-recaptcha';
 import { DiscussionModule } from '../discussion/discussion.module';
 import { ActivityDetailsComponent } from './components/activity/activity-details/activity-details.component';
-import { DashletModule } from '@project-sunbird/sb-dashlet';
+import { ActivityDashboardDirective } from './directive/activity-dashboard/activity-dashbord.directive';
 
 @NgModule({
   imports: [
@@ -42,9 +41,8 @@ import { DashletModule } from '@project-sunbird/sb-dashlet';
     SuiRatingModule,
     RecaptchaModule,
     DiscussionModule,
-    DashletModule
+    SharedFeatureModule
   ],
-  providers: [GroupsService],
   declarations: [ MyGroupsComponent, AddMemberComponent,
     GroupHeaderComponent, NoGroupResultComponent,
     AddActivityComponent, MemberActionsComponent, GroupMembersComponent, FtuPopupComponent,
@@ -58,7 +56,9 @@ import { DashletModule } from '@project-sunbird/sb-dashlet';
     AddActivityContentTypesComponent,
     PopupComponent,
     ActivityDetailsComponent,
-    ]
+    ActivityDashboardDirective
+    ],
+    exports: [ActivityDashboardDirective]
 })
 export class GroupsModule {
   constructor(private csLibInitializerService: CsLibInitializerService) {

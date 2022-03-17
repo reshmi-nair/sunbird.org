@@ -3,13 +3,6 @@
 
 .sb-prominent-filter-field {
   .form-control {
-    min-width: 250px;
-    width: 100%;
-    height: calculateRem(40px);
-    font-size: calculateRem(18px);
-    border: calculateRem(1px) solid var(--gray-200);
-    border-radius: calculateRem(24px);
-    padding: calculateRem(8px);
 
     &:focus {
       border: calculateRem(1px) solid var(--rc-dddddd);
@@ -149,7 +142,7 @@
 .sb-prominent-filter-field {
   ::ng-deep {
     label {
-      padding-bottom: 4px;
+      padding-bottom: 2px;
       margin-bottom: 0px !important;
       margin-left: 10px !important;
     }
@@ -194,7 +187,7 @@
 }
 
 .ui.selection.dropdown {
-  color:#49B1F2 !important;  
+  color: var(--ui-dropdown-selection-icon) !important;  
   box-sizing: border-box;
   height: 40px !important;
   border: 1px solid #D7D7D7;
@@ -219,6 +212,15 @@ sui-multi-select.selection.sb-select-searchfilter.ui.dropdown.multiple {
  background: #E9E8D9 !important; 
 }
 
-
-
-  
+::ng-deep{
+  .modals.dimmer .ui.scrolling.modal {
+    margin: 3.5rem auto auto !important;
+  }
+}
+.additional-selection {
+  opacity: 0.75;
+  font-size: 0.75em;
+}
+.select-container{
+  margin-top:10px;
+}

@@ -11,6 +11,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import * as _ from 'lodash-es';
 import { takeUntil, first, mergeMap, map, tap, filter } from 'rxjs/operators';
 import { IInteractEventObject, IInteractEventEdata, IImpressionEventInput } from '@sunbird/telemetry';
+import { Location } from '@angular/common';
 
 
 @Component({
@@ -117,10 +118,7 @@ export class ViewAllComponent implements OnInit, OnDestroy, AfterViewInit {
   hashTagId: string;
   formAction: string;
   showFilter = false;
-  /**
-  * To show / hide login popup on click of content
-  */
-  showLoginModal = false;
+  pageClicked = 0;
   public showBatchInfo = false;
   public selectedCourseBatches: any;
   /**
@@ -150,7 +148,7 @@ export class ViewAllComponent implements OnInit, OnDestroy, AfterViewInit {
     resourceService: ResourceService, toasterService: ToasterService, private publicPlayerService: PublicPlayerService,
     configService: ConfigService, coursesService: CoursesService, public utilService: UtilService,
     private orgDetailsService: OrgDetailsService, userService: UserService, private browserCacheTtlService: BrowserCacheTtlService,
-    public navigationhelperService: NavigationHelperService, public layoutService: LayoutService) {
+    public navigationhelperService: NavigationHelperService, public layoutService: LayoutService, private location: Location) {
     this.searchService = searchService;
     this.router = router;
     this.activatedRoute = activatedRoute;
@@ -365,6 +363,11 @@ export class ViewAllComponent implements OnInit, OnDestroy, AfterViewInit {
       mode: _.get(manipulatedData, 'mode'),
       params: this.configService.appConfig.ViewAll.contentApiQueryParams,
     };
+
+    if (_.get(this.filters, 'isContentSection')) {
+      requestParams.filters = _.omit(this.filters, ['isContentSection']);
+    }
+
     requestParams['exists'] = request.queryParams.exists,
       requestParams['sort_by'] = request.queryParams.sortType ?
         { [request.queryParams.sort_by]: request.queryParams.sortType } : JSON.parse(request.queryParams.defaultSortBy);
@@ -374,7 +377,7 @@ export class ViewAllComponent implements OnInit, OnDestroy, AfterViewInit {
     if (_.get(this.activatedRoute, 'snapshot.data.facets')) {
       requestParams['facets'] = this.facetsList;
     }
-
+    this.pageClicked++;
     if (this.userService.loggedIn) {
       return combineLatest(
         this.searchService.contentSearch(requestParams),
@@ -404,37 +407,47 @@ export class ViewAllComponent implements OnInit, OnDestroy, AfterViewInit {
     }
     const url = decodeURI(this.router.url.split('?')[0].replace(/[^\/]+$/, page.toString()));
     this.router.navigate([url], { queryParams: this.queryParams, relativeTo: this.activatedRoute });
-    window.scroll({
-      top: 0,
-      left: 0,
-      behavior: 'smooth'
-    });
+    this.moveToTop();
   }
-
-  playContent(event) {
-
+  public moveToTop() {
+    window.scroll({
+        top: 0,
+        left: 0,
+        behavior: 'smooth'
+    });
+}
+  playContent(event, content?) {
+    this.moveToTop();
     if (!this.userService.loggedIn && event.data.contentType === 'Course') {
       this.publicPlayerService.playContent(event);
     } else {
       const url = this.router.url.split('/');
       if (url[1] === 'learn' || url[1] === 'resources') {
-        this.handleCourseRedirection(event);
+        const batchId = _.get(content,'metaData.batchId');
+        this.handleCourseRedirection(event, batchId);
       } else {
         this.publicPlayerService.playContent(event);
       }
     }
   }
-  handleCourseRedirection({ data }) {
+  handleCourseRedirection({ data }, batchId?) {
     const { metaData } = data;
     const { onGoingBatchCount, expiredBatchCount, openBatch, inviteOnlyBatch } = this.coursesService.findEnrolledCourses(metaData.identifier);
     if (!expiredBatchCount && !onGoingBatchCount) { // go to course preview page, if no enrolled batch present
+      return this.playerService.playContent(metaData);
+    }
+    if (batchId) {
+      metaData.batchId = batchId;
+      metaData.trackable={
+        enabled:'Yes'
+      }
       return this.playerService.playContent(metaData);
     }
 
     if (onGoingBatchCount === 1) { // play course if only one open batch is present
       metaData.batchId = openBatch.ongoing.length ? openBatch.ongoing[0].batchId : inviteOnlyBatch.ongoing[0].batchId;
       return this.playerService.playContent(metaData);
-    } 
+    }
     // else if (onGoingBatchCount === 0 && expiredBatchCount === 1) {
     //   metaData.batchId = openBatch.expired.length ? openBatch.expired[0].batchId : inviteOnlyBatch.expired[0].batchId;
     //   return this.playerService.playContent(metaData);
@@ -492,10 +505,7 @@ export class ViewAllComponent implements OnInit, OnDestroy, AfterViewInit {
     this.unsubscribe.next();
     this.unsubscribe.complete();
   }
-  closeModal() {
-    this.showLoginModal = false;
-  }
-
+  
   updateCardData(downloadListdata) {
     _.each(this.searchList, (contents) => {
       this.publicPlayerService.updateDownloadStatus(downloadListdata, contents);
@@ -539,6 +549,8 @@ export class ViewAllComponent implements OnInit, OnDestroy, AfterViewInit {
       this.totalCount = enrolledCourseCount;
       const sortedData = _.map(_.orderBy(filteredCourses, ['enrolledDate'], ['desc']), (val) => {
         const value = _.get(val, 'content');
+        value.batchId = _.get(val, 'batchId');
+        value.batch = _.get(val, 'batch');
         return value;
       });
       this.searchList = this.formatSearchresults(sortedData);
@@ -637,10 +649,14 @@ export class ViewAllComponent implements OnInit, OnDestroy, AfterViewInit {
     return facetsData;
   }
   public handleCloseButton() {
+    if (this.queryParams.selectedTab === 'all') {
+      window.history.go(-this.pageClicked);
+    } else {
     const [path] = this.router.url.split('/view-all');
     const redirectionUrl = `/${path.toString()}`;
     const { selectedTab = '' } = this.queryParams || {};
     this.router.navigate([redirectionUrl], { queryParams: { selectedTab } });
+    }
   }
 
   private getFormConfig(input = { formType: 'contentcategory', formAction: 'menubar', contentType: 'global' }): Observable<object> {
@@ -651,10 +667,10 @@ export class ViewAllComponent implements OnInit, OnDestroy, AfterViewInit {
 
   private getCurrentPageData() {
     const { currentPageData = null } = _.get(history, 'state') || {};
-    if (currentPageData) return of(currentPageData);
+    if (currentPageData) { return of(currentPageData); }
     const selectedTab = _.get(this.activatedRoute, 'snapshot.queryParams.selectedTab') || 'textbook';
     return this.getFormConfig().pipe(
       map(this.getPageData(selectedTab))
-    )
+    );
   }
 }

@@ -7,13 +7,16 @@ import {
 import { ViewAllComponent } from '@sunbird/content-search';
 const routes: Routes = [
   {
-    path: '', loadChildren: '../../../learn/learn.module#LearnModule'
+    path: '', loadChildren: () => import('../../../learn/learn.module').then(m => m.LearnModule)
   },
   {
     path: 'view-all/:section/:pageNumber', component: ViewAllComponent,
     data: {
       telemetry: {
         env: 'explore-course', pageid: 'explore-view-all', type: 'view', subtype: 'paginate'
+      },
+      menuBar: {
+        visible: false
       },
       filterType: 'explore-course',
       frameworkName: true,
@@ -25,6 +28,9 @@ const routes: Routes = [
     path: ':pageNumber', component: ExploreCourseComponent, data: {
       telemetry: {
         env: 'explore-course', pageid: 'explore-course-search', type: 'view', subtype: 'paginate'
+      },
+      menuBar: {
+        visible: false
       },
       softConstraints: { badgeAssertions: 98, board: 99, channel: 100 }
     }
@@ -38,6 +44,9 @@ const routes: Routes = [
         data: {
           telemetry: {
             env: 'explore-course-toc', pageid: 'explore-course-toc', type: 'view'
+          },
+          menuBar: {
+            visible: false
           }
         },
       },

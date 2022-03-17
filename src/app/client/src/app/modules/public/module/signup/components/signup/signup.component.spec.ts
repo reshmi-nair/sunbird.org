@@ -1,4 +1,4 @@
-import { SuiModule } from 'ng2-semantic-ui';
+import { SuiModule } from 'ng2-semantic-ui-v9';
 import { async, ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { SignupComponent } from './signup.component';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
@@ -441,6 +441,22 @@ describe('SignUpComponent', () => {
     expect(component.showSignUpForm).toBe(false);
     expect(component.disableSubmitBtn).toBe(false);
     expect(signupService.generateOTPforAnonymousUser).toHaveBeenCalledWith(SignUpComponentMockData.generateOtp, undefined);
+  });
+
+  it('call the year of birth method', () => {
+    const obj = {
+      target: {
+        value: currentYear - 20
+      }
+    };
+    const expectedYr = String(currentYear - 20);
+    component.ngOnInit();
+    component.isIOSDevice = true;
+    component.changeBirthYear(obj);
+    const email = component.signUpForm.controls['email'];
+    email.setValue('User2010@gmail.com');
+    expect(component.yearOfBirth).toEqual(expectedYr);
+    expect(component.isMinor).toBe(false);
   });
 
 });

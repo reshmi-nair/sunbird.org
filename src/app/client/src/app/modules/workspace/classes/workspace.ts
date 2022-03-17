@@ -40,29 +40,53 @@ export class WorkSpace {
     searchContentWithLockStatus(searchParams) {
         return this.search(searchParams).pipe(mergeMap((contentList: ServerResponse) => {
             if (contentList.result.count) {
+                let questionsetIds = [];
                 const inputParams = {
                     filters: {
                         resourceId: _.map(contentList.result.content, 'identifier')
                     }
                 };
+                if (_.has(contentList.result, 'QuestionSet')) {
+                    questionsetIds = _.map(contentList.result.QuestionSet, 'identifier');
+                }
+                inputParams.filters.resourceId = [...inputParams.filters.resourceId, ...questionsetIds];
                 return this.workSpaceService.getContentLockList(inputParams)
                     .pipe(map((lockList: ServerResponse) => ({contentList, lockList})));
             } else {
                 return observableOf({contentList, lockList: undefined});
             }
         }), map(({contentList, lockList}) => {
-            const contents = contentList.result.content;
-            if (_.get(lockList, 'result.count')) {
-                const lockDataKeyByContentId = _.keyBy(lockList.result.data, 'resourceId');
-                _.each(contents, (eachContent, index) => {
-                    const lockInfo = { ...lockDataKeyByContentId[eachContent.identifier]};
-                    if (!_.isEmpty(lockInfo) && eachContent.status !== 'Live') {
-                        lockInfo.creatorInfo = JSON.parse(lockInfo.creatorInfo);
-                        contents[index].lockInfo = lockInfo;
-                    }
-                });
+            let contents = [];
+            if (!_.isEmpty(contentList.result.content)) {
+                contents = contentList.result.content;
+                if (_.get(lockList, 'result.count')) {
+                    const lockDataKeyByContentId = _.keyBy(lockList.result.data, 'resourceId');
+                    _.each(contents, (eachContent, index) => {
+                        const lockInfo = { ...lockDataKeyByContentId[eachContent.identifier]};
+                        if (!_.isEmpty(lockInfo) && eachContent.status !== 'Live') {
+                            lockInfo.creatorInfo = JSON.parse(lockInfo.creatorInfo);
+                            contents[index].lockInfo = lockInfo;
+                        }
+                    });
+                }
+            }
+
+            let questionSets = [];
+            if (!_.isEmpty(contentList.result.QuestionSet)) {
+                questionSets = contentList.result.QuestionSet;
+                if (_.get(lockList, 'result.count')) {
+                    const lockDataKeyByContentId = _.keyBy(lockList.result.data, 'resourceId');
+                    _.each(questionSets, (eachContent, index) => {
+                        const lockInfo = { ...lockDataKeyByContentId[eachContent.identifier]};
+                        if (!_.isEmpty(lockInfo) && eachContent.status !== 'Live') {
+                            lockInfo.creatorInfo = JSON.parse(lockInfo.creatorInfo);
+                            questionSets[index].lockInfo = lockInfo;
+                        }
+                    });
+                }
             }
             contentList.result.content = contents;
+            contentList.result.QuestionSet = questionSets;
             return contentList;
         }));
     }

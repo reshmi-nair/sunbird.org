@@ -122,7 +122,7 @@
                             class="sb-btn sb-btn-xs sb-btn-link-primary pull-right sbt-btn-reset cursor-pointer">{{resourceService.frmelmnts?.btn?.reset | translate}}
                             <i class="icon undo"></i></button>
                         <span class="sbt-filter-close"><i class="icon-svg icon-svg--xxs icon-close cursor-pointer"
-                                (click)="isOpen = !isOpen" tabindex="0">
+                                (click)="isOpen = !isOpen" tabindex="0" attr.aria-label="{{resourceService.frmelmnts?.btn?.close}}">
                                 <svg class="icon icon-svg--red">
                                     <use xlink:href="./assets/images/sprite.svg#close"></use>
                                 </svg>
@@ -131,11 +131,14 @@
                     </div>
                     <div class="fsmall my-8 text-left filter-pref-text" tabindex="0">{{resourceService.frmelmnts?.lbl?.basedOnPref | translate}}</div>
                     <div class="sbt-filter-scrollable pr-24">
-                      <sb-search-framework-filter [frameworkAssociations]="allValues"
-                                                  [frameworkCategoryFilterFieldTemplateConfig]="filterFormTemplateConfig"
-                                                  [baseSearchFilter]="defaultFilters"
-                                                  #sbSearchFrameworkFilterComponent>
-                      </sb-search-framework-filter>
+
+                        <ng-container *ngIf="filterFormTemplateConfig && refreshSearchFilterComponent">
+                            <sb-search-framework-filter [frameworkAssociations]="allValues"
+                                [frameworkCategoryFilterFieldTemplateConfig]="filterFormTemplateConfig" [baseSearchFilter]="defaultFilters"
+                                #sbSearchFrameworkFilterComponent>
+                            </sb-search-framework-filter>
+                        </ng-container>
+
                     </div>
                 </div>
             </ng-container>

@@ -1,14 +1,14 @@
 import {Component, Output, EventEmitter, Input, OnInit, OnDestroy, ChangeDetectorRef, ViewChild} from '@angular/core';
 import * as _ from 'lodash-es';
-import { LibraryFiltersLayout } from '@project-sunbird/common-consumption-v8';
+import { LibraryFiltersLayout } from '@project-sunbird/common-consumption-v9';
 import { ResourceService, LayoutService } from '@sunbird/shared';
 import { Router, ActivatedRoute } from '@angular/router';
-import { Subject, merge, of, zip, BehaviorSubject } from 'rxjs';
+import { Subject, merge, of, zip, BehaviorSubject, defer } from 'rxjs';
 import { debounceTime, map, tap, switchMap, takeUntil, retry, catchError } from 'rxjs/operators';
 import { ContentSearchService } from '../../services';
 import { FormService } from '@sunbird/core';
-import {IFrameworkCategoryFilterFieldTemplateConfig} from 'common-form-elements';
-
+import {IFrameworkCategoryFilterFieldTemplateConfig} from 'common-form-elements-web-v9';
+import { CacheService } from 'ng2-cache-service';
 
 @Component({
   selector: 'app-search-filter',
@@ -44,57 +44,60 @@ export class SearchFilterComponent implements OnInit, OnDestroy {
   allValues = {};
   selectedNgModels = {};
   private audienceList;
+  public refreshSearchFilterComponent = true;
 
-  @ViewChild('sbSearchFrameworkFilterComponent', { static: false }) searchFrameworkFilterComponent: any;
-  filterFormTemplateConfig: IFrameworkCategoryFilterFieldTemplateConfig[] = [
+  @ViewChild('sbSearchFrameworkFilterComponent') searchFrameworkFilterComponent: any;
+  filterFormTemplateConfig: IFrameworkCategoryFilterFieldTemplateConfig[];
+  private _filterConfig$ = defer(() => of([
     {
       category: 'board',
       type: 'dropdown',
-      labelText: 'Board',
+      labelText: _.get(this.resourceService, 'frmelmnts.lbl.boards'),
       placeholderText: 'Select Board',
       multiple: false
     },
     {
       category: 'medium',
-      type: 'pills',
-      labelText: 'Medium',
+      type: 'dropdown',
+      labelText: _.get(this.resourceService, 'frmelmnts.lbl.medium'),
       placeholderText: 'Select Board',
       multiple: true
     },
     {
       category: 'gradeLevel',
-      type: 'pills',
-      labelText: 'Class',
+      type: 'dropdown',
+      labelText: _.get(this.resourceService, 'frmelmnts.lbl.class'),
       placeholderText: 'Select Class',
       multiple: true
     },
     {
       category: 'subject',
       type: 'dropdown',
-      labelText: 'Subject',
+      labelText: _.get(this.resourceService, 'frmelmnts.lbl.subject'),
       placeholderText: 'Select Subject',
       multiple: true
     },
     {
       category: 'publisher',
       type: 'dropdown',
-      labelText: 'Published by',
+      labelText: _.get(this.resourceService, 'frmelmnts.lbl.publishedBy'),
       placeholderText: 'Select Published by',
       multiple: true
     },
     {
       category: 'audience',
       type: 'dropdown',
-      labelText: 'Published User Type',
+      labelText: _.get(this.resourceService, 'frmelmnts.lbl.publishedUserType'),
       placeholderText: 'Select User Type',
       multiple: true
     }
-  ];
+  ]));
 
   constructor(public resourceService: ResourceService, private router: Router,
     private contentSearchService: ContentSearchService,
     private activatedRoute: ActivatedRoute, private cdr: ChangeDetectorRef,
-    public layoutService: LayoutService, private formService: FormService) { }
+    public layoutService: LayoutService, private formService: FormService,
+    private cacheService: CacheService) { }
 
   get filterData() {
     return _.get(this.pageData, 'metaData.filters') || ['medium', 'gradeLevel', 'board', 'channel', 'subject', 'audience', 'publisher', 'se_subjects', 'se_boards', 'se_gradeLevels', 'se_mediums'];
@@ -148,7 +151,7 @@ export class SearchFilterComponent implements OnInit, OnDestroy {
   }
   ngOnInit() {
     this.checkForWindowSize();
-    merge(this.boardChangeHandler(), this.fetchSelectedFilterOptions(), this.handleFilterChange(), this.getFacets())
+    merge(this.boardChangeHandler(), this.fetchSelectedFilterOptions(), this.handleFilterChange(), this.getFacets(), this.filterConfig$)
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe(null, error => {
         console.error('Error while fetching filters');
@@ -351,6 +354,9 @@ export class SearchFilterComponent implements OnInit, OnDestroy {
   }
 
   onSearchFrameworkFilterReset() {
+    if (this.cacheService.exists('searchFilters')) {
+      this.cacheService.remove('searchFilters');
+    }
     if (this.searchFrameworkFilterComponent) {
       this.searchFrameworkFilterComponent.resetFilter();
     }
@@ -380,5 +386,17 @@ export class SearchFilterComponent implements OnInit, OnDestroy {
       this.updateFiltersList({ filters });
       this.hardRefreshFilter();
     }));
+  }
+
+  get filterConfig$() {
+    return this.resourceService.languageSelected$.pipe(
+      switchMap(_ => this._filterConfig$),
+      tap((config: IFrameworkCategoryFilterFieldTemplateConfig[]) => {
+        this.filterFormTemplateConfig = config;
+        this.refreshSearchFilterComponent = false;
+        this.cdr.detectChanges();
+        this.refreshSearchFilterComponent = true;
+      })
+    );
   }
 }

@@ -11,7 +11,7 @@ import { Ibatch, IStatusOption } from './../../interfaces/';
 import { WorkSpaceService } from '../../services';
 import * as _ from 'lodash-es';
 import { IImpressionEventInput } from '@sunbird/telemetry';
-import { SuiModalService } from 'ng2-semantic-ui';
+import { SuiModalService } from 'ng2-semantic-ui-v9';
 @Component({
   selector: 'app-collaborating-on',
   templateUrl: './collaborating-on.component.html'
@@ -231,8 +231,7 @@ export class CollaboratingOnComponent extends WorkSpace implements OnInit, After
     };
     this.searchContentWithLockStatus(searchParams).subscribe(
       (data: ServerResponse) => {
-        if (data.result.count && data.result.content &&
-          data.result.content.length > 0) {
+        if (data.result.count && !_.isEmpty(data.result.content)) {
           this.collaboratingContent = data.result.content;
           this.totalCount = data.result.count;
           this.pager = this.paginationService.getPager(data.result.count, pageNumber, limit);

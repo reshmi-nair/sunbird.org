@@ -8,7 +8,7 @@ import {
 } from '@sunbird/shared';
 import { WorkSpaceService } from '../../services';
 import * as _ from 'lodash-es';
-import { SuiModalService, TemplateModalConfig, ModalTemplate } from 'ng2-semantic-ui';
+import { SuiModalService, TemplateModalConfig, ModalTemplate } from 'ng2-semantic-ui-v9';
 import { IInteractEventInput, IImpressionEventInput } from '@sunbird/telemetry';
 
 /**
@@ -19,7 +19,7 @@ import { IInteractEventInput, IImpressionEventInput } from '@sunbird/telemetry';
   templateUrl: './uploaded.component.html'
 })
 export class UploadedComponent extends WorkSpace implements OnInit, AfterViewInit {
-  @ViewChild('modalTemplate', {static: false})
+  @ViewChild('modalTemplate')
   public modalTemplate: ModalTemplate<{ data: string }, string, string>;
   /**
   * state for content editior
@@ -187,7 +187,7 @@ export class UploadedComponent extends WorkSpace implements OnInit, AfterViewIni
     };
     this.searchContentWithLockStatus(searchParams).subscribe(
       (data: ServerResponse) => {
-        if (data.result.count && data.result.content.length > 0) {
+        if (data.result.count && !_.isEmpty(data.result.content)) {
           this.totalCount = data.result.count;
           this.pager = this.paginationService.getPager(data.result.count, this.pageNumber, this.pageLimit);
           const constantData = this.config.appConfig.WORKSPACE.Uploaded.constantData;

@@ -8,14 +8,14 @@ import * as _ from 'lodash-es';
 import {
   WindowScrollService, ILoaderMessage, PlayerConfig, ICollectionTreeOptions, NavigationHelperService,
   ToasterService, ResourceService, ContentData, ContentUtilsServiceService, ITelemetryShare, ConfigService,
-  ExternalUrlPreviewService, LayoutService, UtilService, ConnectionService, OfflineCardService
+  ExternalUrlPreviewService, LayoutService, UtilService, ConnectionService, OfflineCardService,
 } from '@sunbird/shared';
 import { IInteractEventObject, IInteractEventEdata, IImpressionEventInput, IEndEventInput, IStartEventInput, TelemetryService } from '@sunbird/telemetry';
 import * as TreeModel from 'tree-model';
 import { DeviceDetectorService } from 'ngx-device-detector';
 import { PopupControlService } from '../../../../service/popup-control.service';
 import { PublicPlayerService } from '@sunbird/public';
-import { TocCardType, PlatformType } from '@project-sunbird/common-consumption-v8';
+import { TocCardType, PlatformType } from '@project-sunbird/common-consumption-v9';
 import { CsGroupAddableBloc } from '@project-sunbird/client-services/blocs';
 import { ContentManagerService } from '../../../public/module/offline/services';
 
@@ -47,6 +47,7 @@ export class CollectionPlayerComponent implements OnInit, OnDestroy, AfterViewIn
   collectionStatus: string;
   contentId: string;
   collectionTreeNodes: any;
+  layoutConfiguration: any;
   collectionTitle: string;
   contentTitle: string;
   playerConfig: Observable<any>;
@@ -83,7 +84,6 @@ export class CollectionPlayerComponent implements OnInit, OnDestroy, AfterViewIn
   isCopyAsCourseClicked: Boolean = false;
   selectAll: Boolean = false;
   selectedItems = [];
-  layoutConfiguration: any;
   loaderMessage: ILoaderMessage = {
     headerMessage: 'Please wait...',
     loaderMessage: 'Fetching content details!'
@@ -129,10 +129,12 @@ export class CollectionPlayerComponent implements OnInit, OnDestroy, AfterViewIn
   }
 
   ngOnInit() {
+    this.layoutConfiguration = this.layoutService.initlayoutConfig();
     this.isDesktopApp = this.utilService.isDesktopApp;
     this.noContentMessage = _.get(this.resourceService, 'messages.stmsg.m0121');
     this.playerServiceReference = this.userService.loggedIn ? this.playerService : this.publicPlayerService;
     this.initLayout();
+
     this.dialCode = _.get(this.route, 'snapshot.queryParams.dialCode');
     this.contentType = _.get(this.route, 'snapshot.queryParams.contentType') || 'Collection';
     this.contentData = this.getContent();
@@ -140,9 +142,9 @@ export class CollectionPlayerComponent implements OnInit, OnDestroy, AfterViewIn
       this.isGroupAdmin = !_.isEmpty(_.get(this.route.snapshot, 'queryParams.groupId')) && _.get(data.params, 'groupData.isAdmin');
       this.groupId = _.get(data, 'groupId') || _.get(this.route.snapshot, 'queryParams.groupId');
     });
-
+ 
     if (this.isDesktopApp) {
-      this.contentManagerService.contentDownloadStatus$.pipe(takeUntil(this.unsubscribe$)).subscribe( contentDownloadStatus => {
+      this.contentManagerService.contentDownloadStatus$.pipe(takeUntil(this.unsubscribe$)).subscribe(contentDownloadStatus => {
         this.contentDownloadStatus = contentDownloadStatus;
         this.checkDownloadStatus();
       });
@@ -220,9 +222,9 @@ export class CollectionPlayerComponent implements OnInit, OnDestroy, AfterViewIn
     this.playerConfig = this.getPlayerConfig(id).pipe(map((content) => {
 
       const CData: Array<{}> = this.dialCode ? [{ id: this.dialCode, type: 'dialCode' }] : [];
-        if (this.groupId) {
-          CData.push({ id: this.groupId, type: 'Group' });
-        }
+      if (this.groupId) {
+        CData.push({ id: this.groupId, type: 'Group' });
+      }
 
       content.context.objectRollup = this.objectRollUp;
       this.telemetryContentImpression = {
@@ -284,7 +286,7 @@ export class CollectionPlayerComponent implements OnInit, OnDestroy, AfterViewIn
       relativeTo: this.route
     };
     if (id) {
-      if (this.queryParams){
+      if (this.queryParams) {
         this.queryParams['contentId'] = id;
       } else {
         this.queryParams = {};
@@ -368,7 +370,7 @@ export class CollectionPlayerComponent implements OnInit, OnDestroy, AfterViewIn
           this.telemetryCdata.push({ id: this.dialCode, type: 'dialCode' });
         }
         if (this.groupId) {
-          this.telemetryCdata.push({ id: this.groupId, type: 'Group'});
+          this.telemetryCdata.push({ id: this.groupId, type: 'Group' });
         }
         this.collectionStatus = params.collectionStatus;
         return this.getCollectionHierarchy(params.collectionId);
@@ -467,13 +469,16 @@ export class CollectionPlayerComponent implements OnInit, OnDestroy, AfterViewIn
     if (this.dialCode) {
       this.router.navigate(['/get/dial/', this.dialCode]);
     } else {
-      const { url, queryParams: { textbook = null } = {} } = this.navigationHelperService.getPreviousUrl();
+      const previousPageUrl = this.navigationHelperService.getPreviousUrl();
+      const { url, queryParams: { textbook = null } = {} } = previousPageUrl;
       if (url && ['/explore-course', '/learn'].some(val => url.startsWith(val)) && textbook) {
         const navigateUrl = this.userService.loggedIn ? '/search/Library' : '/explore';
         this.router.navigate([navigateUrl, 1], { queryParams: { key: textbook } });
+      } else if (previousPageUrl.queryParams) {
+        this.router.navigate([previousPageUrl.url], { queryParams: previousPageUrl.queryParams });
       } else {
-        let url = this.userService.loggedIn ? '/resources' : '/explore';
-        this.navigationHelperService.navigateToPreviousUrl(url);
+        const url = this.userService.loggedIn ? '/resources' : '/explore';
+        this.router.navigate([url], { queryParams: { selectedTab: 'textbook' } });
       }
     }
   }
@@ -511,7 +516,7 @@ export class CollectionPlayerComponent implements OnInit, OnDestroy, AfterViewIn
 
     if (this.groupId) {
       this.tocTelemetryInteractEdata.id = 'group-library-toc';
-      this.tocTelemetryInteractCdata = [{id: this.groupId, type: 'Group'}]
+      this.tocTelemetryInteractCdata = [{ id: this.groupId, type: 'Group' }];
     }
   }
 
@@ -605,8 +610,8 @@ export class CollectionPlayerComponent implements OnInit, OnDestroy, AfterViewIn
   }
 
   private setTelemetryStartEndData() {
-    if (this.groupId && !_.find(this.telemetryCdata, {id: this.groupId})) {
-      this.telemetryCdata.push({ id: this.groupId, type: 'Group'});
+    if (this.groupId && !_.find(this.telemetryCdata, { id: this.groupId })) {
+      this.telemetryCdata.push({ id: this.groupId, type: 'Group' });
     }
     const deviceInfo = this.deviceDetectorService.getDeviceInfo();
     setTimeout(() => {
@@ -722,7 +727,7 @@ export class CollectionPlayerComponent implements OnInit, OnDestroy, AfterViewIn
       const downloadStatus = ['CANCELED', 'CANCEL', 'FAILED', 'DOWNLOAD'];
       const status = this.contentDownloadStatus[this.collectionData.identifier];
       this.collectionData['downloadStatus'] = _.isEqual(downloadStatus, status) ? 'DOWNLOAD' :
-      (_.includes(['INPROGRESS', 'RESUME', 'INQUEUE'], status) ? 'DOWNLOADING' : _.isEqual(status, 'COMPLETED') ? 'DOWNLOADED' : status);
+        (_.includes(['INPROGRESS', 'RESUME', 'INQUEUE'], status) ? 'DOWNLOADING' : _.isEqual(status, 'COMPLETED') ? 'DOWNLOADED' : status);
     }
   }
 
@@ -789,14 +794,14 @@ export class CollectionPlayerComponent implements OnInit, OnDestroy, AfterViewIn
       collection['downloadStatus'] = this.resourceService.messages.stmsg.m0138;
       if (!(error.error.params.err === 'LOW_DISK_SPACE')) {
         this.toasterService.error(this.resourceService.messages.fmsg.m0090);
-          }
+      }
     });
   }
 
   deleteCollection(collectionData) {
     this.disableDelete = true;
     this.logTelemetry('delete-collection');
-    const request = {request: {contents: [collectionData.identifier]}};
+    const request = { request: { contents: [collectionData.identifier] } };
     this.contentManagerService.deleteContent(request).pipe(takeUntil(this.unsubscribe$)).subscribe(data => {
       this.toasterService.success(this.resourceService.messages.stmsg.desktop.deleteTextbookSuccessMessage);
       collectionData['downloadStatus'] = 'DOWNLOAD';

@@ -6,7 +6,7 @@ import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { TermsAndConditionsPopupComponent } from './terms-conditions-popup.component';
 import { TelemetryModule } from '@sunbird/telemetry';
-import { SuiModule } from 'ng2-semantic-ui';
+import { SuiModule } from 'ng2-semantic-ui-v9';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { tNcMockResponse } from './terms-conditions-popup.component.spec.data';
 import { UserService, TenantService } from '@sunbird/core';
@@ -107,7 +107,7 @@ describe('TermsAndConditionsPopupComponent', () => {
     userService._userData$.next({ err: null, userProfile: mockUserData });
     spyOn(userService, 'acceptTermsAndConditions').and.returnValue(observableOf({}));
     spyOn(component, 'onClose').and.callThrough();
-    component.onSubmitTnc();
+    component.onSubmitTnc('');
     expect(component.onClose).toHaveBeenCalled();
   });
 
@@ -121,7 +121,7 @@ describe('TermsAndConditionsPopupComponent', () => {
     userService._userData$.next({err: null, userProfile: userData});
     spyOn(userService, 'acceptTermsAndConditions').and.returnValue(observableOf({}));
     spyOn(component, 'onClose').and.callThrough();
-    component.onSubmitTnc();
+    component.onSubmitTnc('');
     expect(component.onClose).toHaveBeenCalled();
     expect(userService.acceptTermsAndConditions).toHaveBeenCalledWith(
       {request: {version: undefined, userId: 'mock iD'}});
@@ -136,7 +136,7 @@ describe('TermsAndConditionsPopupComponent', () => {
     userService._userData$.next({ err: null, userProfile: mockUserData });
     spyOn(toasterService, 'error').and.callThrough();
     spyOn(userService, 'acceptTermsAndConditions').and.callFake(() => observableThrowError({}));
-    component.onSubmitTnc();
+    component.onSubmitTnc('');
     expect(component.disableContinueBtn).toBeFalsy();
     expect(toasterService.error).toHaveBeenCalledWith(resourceService.messages.fmsg.m0085);
   });

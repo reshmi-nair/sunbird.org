@@ -10,26 +10,28 @@ import {
   AccountRecoveryInfoComponent, CreateUserComponent, ChooseUserComponent, SubmitTeacherDetailsComponent
 } from './components';
 import { SuiSelectModule, SuiModalModule, SuiAccordionModule, SuiPopupModule, SuiDropdownModule,
-  SuiProgressModule, SuiRatingModule, SuiCollapseModule } from 'ng2-semantic-ui';
+  SuiProgressModule, SuiRatingModule, SuiCollapseModule } from 'ng2-semantic-ui-v9';
 import { CoreModule } from '@sunbird/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 // import { WebExtensionModule } from '@project-sunbird/web-extensions';
 import { TelemetryModule } from '@sunbird/telemetry';
 import { AvatarModule } from 'ngx-avatar';
 import { ContentSearchModule } from '@sunbird/content-search';
-import {CommonConsumptionModule} from '@project-sunbird/common-consumption-v8';
+import {CommonConsumptionModule} from '@project-sunbird/common-consumption-v9';
 import { CertificateDirectivesModule } from 'sb-svg2pdf';
 import { CsModule } from '@project-sunbird/client-services';
 import { CsLibInitializerService } from '../../service/CsLibInitializer/cs-lib-initializer.service';
-import { CommonFormElementsModule } from 'common-form-elements';
-import {LocationModule} from "../location";
+import { CommonFormElementsModule } from 'common-form-elements-web-v9';
+import {LocationModule} from '../location';
+import { MatTooltipModule } from '@angular/material/tooltip';
+
 
 export const csCourseServiceFactory = (csLibInitializerService: CsLibInitializerService) => {
   if (!CsModule.instance.isInitialised) {
     csLibInitializerService.initializeCs();
   }
   return CsModule.instance.courseService;
-}
+};
 @NgModule({
   imports: [
     CommonModule,
@@ -50,6 +52,7 @@ export const csCourseServiceFactory = (csLibInitializerService: CsLibInitializer
     CertificateDirectivesModule,
     CommonFormElementsModule,
     LocationModule,
+    MatTooltipModule
   ],
   declarations: [ProfilePageComponent, ProfileBadgeComponent, UpdateContactDetailsComponent,
    AccountRecoveryInfoComponent,

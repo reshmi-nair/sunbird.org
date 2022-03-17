@@ -26,7 +26,7 @@ export class BatchDetailsComponent implements OnInit, OnDestroy {
   @Input() batchId: string;
   @Input() courseHierarchy: any;
   @Input() courseProgressData: any;
-
+  isOpen = true;
   courseMentor = false;
   batchList = [];
   userList = [];
@@ -36,7 +36,8 @@ export class BatchDetailsComponent implements OnInit, OnDestroy {
   showBatchPopup = false;
   statusOptions = [
     { name: 'Ongoing', value: 1 },
-    { name: 'Upcoming', value: 0 }
+    { name: 'Upcoming', value: 0 },
+    { name: 'Expired', value: 2 }
   ];
   todayDate = dayjs(new Date()).format('YYYY-MM-DD');
   progress = 0;
@@ -48,7 +49,6 @@ export class BatchDetailsComponent implements OnInit, OnDestroy {
   telemetryCdata: Array<{}> = [];
   @Output() allBatchDetails = new EventEmitter();
   allowBatchCreation: boolean;
-  @ViewChild('batchListModal', {static: false}) batchListModal;
   isTrackable = false;
   courseCreator = false;
   viewBatch = false;
@@ -60,6 +60,13 @@ export class BatchDetailsComponent implements OnInit, OnDestroy {
   tocId = '';
   isConnected = false;
   isDesktopApp = false;
+  isExpiredBatchEditable = true;
+  showBatchDetailsBeforeJoin = false;
+  batchDetails: {};
+  showCertificateDetails = false;
+  showCompletionCertificate = false;
+  showMeritCertificate = false;
+  meritCertPercent = 0;
 
   constructor(public resourceService: ResourceService, public permissionService: PermissionService,
     public userService: UserService, public courseBatchService: CourseBatchService, public toasterService: ToasterService,
@@ -144,12 +151,7 @@ export class BatchDetailsComponent implements OnInit, OnDestroy {
        .subscribe((data) => {
           const batchList = _.union(data[0].result.response.content, data[1].result.response.content);
           this.courseConsumptionService.emitBatchList(batchList);
-          const batches = _.map(batchList, batch => {
-              if (batch.status !== 2) {
-                return batch;
-              }
-          });
-          this.ongoingAndUpcomingBatchList = _.compact(batches);
+          this.ongoingAndUpcomingBatchList = _.compact(batchList);
           this.getSelectedBatches();
            if (this.batchList.length > 0) {
              this.fetchUserDetails();
@@ -171,6 +173,8 @@ export class BatchDetailsComponent implements OnInit, OnDestroy {
           if (data.result.response.content && data.result.response.content.length > 0) {
             this.batchList = data.result.response.content;
             this.fetchUserDetails();
+            this.showBatchDetails();
+            this.ShowCertDetails();
           } else {
             this.showBatchList = true;
           }
@@ -188,7 +192,15 @@ export class BatchDetailsComponent implements OnInit, OnDestroy {
     this.batchList = _.filter(this.ongoingAndUpcomingBatchList, batch => {
       return (_.isEqual(batch.status, this.batchStatus));
     });
-    this.showCreateBatchBtn = this.ongoingAndUpcomingBatchList.length <= 0;
+    let showCreateBtn = true;
+    _.filter(this.ongoingAndUpcomingBatchList, batch => {
+      if (batch.status === 1 || batch.status === 0) {
+        showCreateBtn = false;
+        this.isExpiredBatchEditable = false;
+        return ;
+      }
+  });
+    this.showCreateBatchBtn = showCreateBtn; // this.ongoingAndUpcomingBatchList.length <= 0;
   }
   getJoinCourseBatchDetails() {
     this.showAllBatchList = false;
@@ -226,7 +238,31 @@ export class BatchDetailsComponent implements OnInit, OnDestroy {
         });
   }
 
+  showBatchDetails() {
+    this.showBatchDetailsBeforeJoin = !this.enrolledBatchInfo;
+    this.batchDetails = this.batchList[0];
+  }
+
+  ShowCertDetails(isEnrolledBatch?: boolean) {
+    let batchDetails: any;
+    if (isEnrolledBatch) {
+      batchDetails = this.enrolledBatchInfo
+    } else {
+      if (this.batchList && this.batchList[0]) {
+        batchDetails = this.batchList[0];
+      }
+    }
+    this.showCertificateDetails = !(_.isEmpty(_.get(batchDetails, 'certTemplates'))) ? true : false;
+    const certDetails = _.get(batchDetails, 'certTemplates');
+    for (var key in certDetails) {
+      const certCriteria = certDetails[key]['criteria'];
+      this.showCompletionCertificate = _.get(certCriteria, 'enrollment.status') === 2 ? true : false;
+      this.showMeritCertificate = _.get(certCriteria, 'assessment.score') ? true : false;
+      this.meritCertPercent = _.get(certCriteria, 'assessment.score.>=')
+    }
+  }
   getEnrolledCourseBatchDetails() {
+    this.ShowCertDetails(true);
     if (_.get(this.enrolledBatchInfo, 'participant')) {
       const participant = [];
       _.forIn(this.enrolledBatchInfo.participant, (value, key) => {
@@ -279,9 +315,7 @@ export class BatchDetailsComponent implements OnInit, OnDestroy {
   }
   enrollBatch(batch) {
     this.showJoinModal = false;
-    const batchStartDate = new Date(batch['startDate']);
-    const currentdate = new Date();
-    if (currentdate < batchStartDate) {
+    if (batch.status === 0) {
       this.showMessageModal = true;
       this.batchMessage = (this.resourceService.messages.emsg.m009).replace('{startDate}', batch.startDate);
     } else {
@@ -312,9 +346,6 @@ export class BatchDetailsComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    if (this.batchListModal && this.batchListModal.deny) {
-      this.batchListModal.deny();
-    }
     this.unsubscribe.next();
     this.unsubscribe.complete();
   }

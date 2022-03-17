@@ -33,7 +33,7 @@ export const enrolledBatch = {
             'courseLogoUrl': 'https://ekstep-public-dev.s3-ap-south-1.amazonaws.com/e_1475774424986.thumb.jpeg',
             'tocUrl': 'https://ekstep-public-dev/artifact/do_112470675618004992181toc.json', 'status': 'Live'
           },
-          'endDate': '2020-11-20',"enrollmentEndDate":"2020-11-20", 'description': 'test', 'countIncrementDate': '2018-04-20 20:00:01:286+0000',
+          'endDate': '2020-11-20', 'enrollmentEndDate': '2020-11-20', 'description': 'test', 'countIncrementDate': '2018-04-20 20:00:01:286+0000',
           'countDecrementDate': null, 'updatedDate': '2018-04-20', 'participant': { 'ac918519-f8b8-4150-bd90-56ead42454d0': true },
           'countIncrementStatus': true, 'createdDate': '2018-04-20 17:14:08:271+0000', 'createdBy': '159e93d1-da0c-4231-be94-e75b0c226d7c',
           'courseCreator': '874ed8a5-782e-4f6c-8f36-e0288455901e', 'hashTagId': '01248661388792627227', 'mentors': [], 'name': 'Test batch',
@@ -43,7 +43,7 @@ export const enrolledBatch = {
       }
     }
   };
-  
+
   export const enrolledBatchWithCertificate = {
     'id': 'api.course.batch.read', 'ver': 'v1', 'ts': '2018-05-30 03:32:04:000+0000',
     'params': { 'resmsgid': null, 'msgid': '6ed12357-0075-5766-1151-996c48bf714e', 'err': null, 'status': 'success', 'errmsg': null },
@@ -72,6 +72,36 @@ export  const allBatchDetails = {
       'response': {
         'count': 2,
         'content': [{
+          'certTemplates': {
+            'do_2133804886798745601318': {
+              'identifier': 'do_2133804886798745601318',
+              'previewUrl': 'https://sunbirdstagingpublic.blob.core.windows.net/sunbird-content-staging/content/do_2133804886798745601318/artifact/do_2133804886798745601318_1633360434903_certificate_2021-10-04_20_43.svg',
+              'criteria': {
+                'assessment': {
+                  'score': {
+                    '>=': 70
+                  }
+                },
+                'enrollment': {
+                  'status': 2
+                }
+              },
+              'name': 'Testing',
+              'issuer': {
+                'name': 'Gujarat Council of Educational Research and Training',
+                'url': 'https://gcert.gujarat.gov.in/gcert/'
+              },
+              'url': 'https://sunbirdstagingpublic.blob.core.windows.net/sunbird-content-staging/content/do_2133804886798745601318/artifact/do_2133804886798745601318_1633360434903_certificate_2021-10-04_20_43.svg',
+              'signatoryList': [
+                {
+                  'image': '',
+                  'name': 'Testing',
+                  'designation': 'CEO',
+                  'id': 'CEO/CEO'
+                }
+              ]
+            }
+          },
           'identifier': '01248661735846707228', 'createdFor': ['0123673542904299520', '0123673689120112640',
             'ORG_001'], 'courseAdditionalInfo': {
               'courseName': '29 course', 'leafNodesCount': '1',
@@ -87,6 +117,36 @@ export  const allBatchDetails = {
           'enrollmentType': 'invite-only', 'courseId': 'do_112470675618004992181', 'startDate': '2018-04-20',
           'status': 1
         }, {
+          'certTemplates': {
+            'do_2133804886798745601318': {
+              'identifier': 'do_2133804886798745601318',
+              'previewUrl': 'https://sunbirdstagingpublic.blob.core.windows.net/sunbird-content-staging/content/do_2133804886798745601318/artifact/do_2133804886798745601318_1633360434903_certificate_2021-10-04_20_43.svg',
+              'criteria': {
+                'assessment': {
+                  'score': {
+                    '>=': 70
+                  }
+                },
+                'enrollment': {
+                  'status': 2
+                }
+              },
+              'name': 'Testing',
+              'issuer': {
+                'name': 'Gujarat Council of Educational Research and Training',
+                'url': 'https://gcert.gujarat.gov.in/gcert/'
+              },
+              'url': 'https://sunbirdstagingpublic.blob.core.windows.net/sunbird-content-staging/content/do_2133804886798745601318/artifact/do_2133804886798745601318_1633360434903_certificate_2021-10-04_20_43.svg',
+              'signatoryList': [
+                {
+                  'image': '',
+                  'name': 'Testing',
+                  'designation': 'CEO',
+                  'id': 'CEO/CEO'
+                }
+              ]
+            }
+          },
           'identifier': '01248661388792627227', 'createdFor': ['0123673542904299520', '0123673689120112640', 'ORG_001'],
           'courseAdditionalInfo': {
             'courseName': '29 course', 'leafNodesCount': '1', 'description': '',
@@ -101,6 +161,36 @@ export  const allBatchDetails = {
           'courseId': 'do_112470675618004992181', 'startDate': '2018-04-20', 'status': 1
         },
         {
+          'certTemplates': {
+            'do_2133804886798745601318': {
+              'identifier': 'do_2133804886798745601318',
+              'previewUrl': 'https://sunbirdstagingpublic.blob.core.windows.net/sunbird-content-staging/content/do_2133804886798745601318/artifact/do_2133804886798745601318_1633360434903_certificate_2021-10-04_20_43.svg',
+              'criteria': {
+                'assessment': {
+                  'score': {
+                    '>=': 70
+                  }
+                },
+                'enrollment': {
+                  'status': 2
+                }
+              },
+              'name': 'Testing',
+              'issuer': {
+                'name': 'Gujarat Council of Educational Research and Training',
+                'url': 'https://gcert.gujarat.gov.in/gcert/'
+              },
+              'url': 'https://sunbirdstagingpublic.blob.core.windows.net/sunbird-content-staging/content/do_2133804886798745601318/artifact/do_2133804886798745601318_1633360434903_certificate_2021-10-04_20_43.svg',
+              'signatoryList': [
+                {
+                  'image': '',
+                  'name': 'Testing',
+                  'designation': 'CEO',
+                  'id': 'CEO/CEO'
+                }
+              ]
+            }
+          },
           'identifier': '01248661388792627278', 'createdFor': ['0123673542904299520', '0123673689120112640', 'ORG_001'],
           'courseAdditionalInfo': {
             'courseName': '29 course', 'leafNodesCount': '1', 'description': '',

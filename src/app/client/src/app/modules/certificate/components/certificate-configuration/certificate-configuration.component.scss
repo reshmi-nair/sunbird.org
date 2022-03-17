@@ -56,14 +56,11 @@
       overflow-y: auto;
       padding-right: 0.5rem;
       padding-left: 0;
-
-
       html[dir="rtl"] & {
         padding-right: 0;
         padding-left: 0.5rem;
       }
     }
-
     .certificates-label {
       font-size: calculateRem(18px);
       letter-spacing: 0;
@@ -71,7 +68,6 @@
     }
 
     .certificate-content-area {
-      height: 100%;
       width: 100%;
     }
 
@@ -305,7 +301,11 @@
     }
   }
 }
-
+::ng-deep {
+  .overlay-buttons .sb-btn-no-border{
+    align-items: center;
+  }
+}
 
 .progess-add-content {
   .left-border {

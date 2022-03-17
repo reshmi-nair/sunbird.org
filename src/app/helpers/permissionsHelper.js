@@ -13,6 +13,7 @@ const telemetryHelper       = require('./telemetryHelper');
 const learnerURL            = envHelper.LEARNER_URL;
 const apiAuthToken          = envHelper.PORTAL_API_AUTH_TOKEN;
 const { logger }            = require('@project-sunbird/logger');
+const { getBearerToken, getAuthToken } = require('../helpers/kongTokenHelper')
 
 let PERMISSIONS_HELPER = {
 
@@ -34,7 +35,7 @@ let PERMISSIONS_HELPER = {
         if (body.result.response.managedToken) {
           reqObj.session.managedToken = body.result.response.managedToken
         }
-        reqObj.session.roles = body.result.response.roles
+        reqObj.session.roles = _.map(body.result.response.roles, 'role');
         if (body.result.response.organisations) {
           _.forEach(body.result.response.organisations, function (org) {
             if (org.roles && _.isArray(org.roles)) {
@@ -64,6 +65,9 @@ let PERMISSIONS_HELPER = {
         if (!_.includes(reqObj.session.roles, 'PUBLIC')) {
           reqObj.session.roles.push('PUBLIC');
         }
+        if (!_.includes(reqObj.session.roles, 'ANONYMOUS')) {
+          reqObj.session.roles.push('ANONYMOUS');
+        }
       }
     } catch (e) {
       logger.error({msg: 'setUserSessionData :: Error while saving user session data', err: e});
@@ -80,7 +84,7 @@ let PERMISSIONS_HELPER = {
    */
   getCurrentUserRoles: function (reqObj, callback, userIdentifier, isManagedUser) {
     var userId = userIdentifier || reqObj.session.userId;
-    var url = learnerURL + 'user/v1/read/' + userId;
+    var url = learnerURL + 'user/v5/read/' + userId;
     if (isManagedUser) {
       url = url + '?withTokens=true'
     }
@@ -92,8 +96,8 @@ let PERMISSIONS_HELPER = {
         'ts': dateFormat(new Date(), 'yyyy-mm-dd HH:MM:ss:lo'),
         'content-type': 'application/json',
         'accept': 'application/json',
-        'Authorization': 'Bearer ' + apiAuthToken,
-        'x-authenticated-user-token': reqObj.kauth.grant.access_token.token
+        'Authorization': 'Bearer ' + getBearerToken(reqObj),
+        'x-authenticated-user-token':  getAuthToken(reqObj)
       },
       json: true
     }
@@ -130,7 +134,7 @@ let PERMISSIONS_HELPER = {
           }
         });
       } else if (body.responseCode !== 'OK') {
-        logger.error({ msg: 'getCurrentUserRoles :: Error while reading user/v1/read', body });
+        logger.error({ msg: 'getCurrentUserRoles :: Error while reading user/v5/read', body });
         callback(body, null);
       } else {
         logger.error({ msg: 'getCurrentUserRoles error while user/v1/read', error });

@@ -4,7 +4,7 @@ import { CoreModule } from '@sunbird/core';
 import { WorkspaceRoutingModule } from './workspace-routing.module';
 import { SharedModule } from '@sunbird/shared';
 import { SlickModule } from 'ngx-slick';
-import { SuiModule } from 'ng2-semantic-ui/dist';
+import { SuiModule } from 'ng2-semantic-ui-v9';
 import { FormsModule, ReactiveFormsModule, } from '@angular/forms';
 import { WorkSpaceService, EditorService , BatchService, ReviewCommentsService} from './services';
 import {
@@ -26,8 +26,8 @@ import { ReviewCommentsComponent } from './components/review-comments/review-com
 import { OrderModule } from 'ngx-order-pipe';
 import { PlayerHelperModule } from '@sunbird/player-helper';
 import { ContentSearchModule } from '@sunbird/content-search';
-import { CollectionEditorLibraryModule } from '@project-sunbird/sunbird-collection-editor';
-
+import { CollectionEditorLibraryModule } from '@project-sunbird/sunbird-collection-editor-v9';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 @NgModule({
   imports: [
@@ -44,7 +44,8 @@ import { CollectionEditorLibraryModule } from '@project-sunbird/sunbird-collecti
     OrderModule,
     PlayerHelperModule,
     ContentSearchModule,
-    CollectionEditorLibraryModule
+    CollectionEditorLibraryModule,
+    MatTooltipModule
   ],
   declarations: [WorkspaceComponent, WorkspacesidebarComponent, DateFilterXtimeAgoPipe,
     CreateContentComponent, DraftComponent, ReviewSubmissionsComponent,

@@ -29,7 +29,7 @@ describe('ProfilePageComponent', () => {
           object: { type: '', ver: '1.0' }
         }
       }
-    }
+    };
     getCurrentNavigation = () => {
       return { state: {} };
     }
@@ -43,7 +43,7 @@ describe('ProfilePageComponent', () => {
         telemetry: { env: env }
       }
     };
-    
+
   }
   class MockDomToImage {
     toPng() { }
@@ -142,7 +142,7 @@ describe('ProfilePageComponent', () => {
         { provide: 'JSPDF', useValue: Promise.resolve(MockJsPDF) },
         { provide: 'CS_COURSE_SERVICE', useClass: MockCSService },
         { provide: ResourceService, useValue: resourceBundle },
-        ToasterService, CertRegService, TelemetryService, OrgDetailsService,],
+        ToasterService, CertRegService, TelemetryService, OrgDetailsService, ],
       schemas: [NO_ERRORS_SCHEMA]
     })
       .compileComponents();
@@ -268,7 +268,7 @@ describe('ProfilePageComponent', () => {
     const profileService = TestBed.get(ProfileService);
     const toasterService = TestBed.get(ToasterService);
     component.userProfile = Response.userProfile;
-    component.profileModal = { modal: { deny: () => { } } };
+    component.profileModal = { deny: () => { } };
     spyOn(profileService, 'updateProfile').and.returnValue(observableOf({}));
     spyOn(toasterService, 'success');
     component.updateProfile(mockFrameworkData);
@@ -282,7 +282,7 @@ describe('ProfilePageComponent', () => {
     const profileService = TestBed.get(ProfileService);
     const toasterService = TestBed.get(ToasterService);
     component.userProfile = Response.userProfile;
-    component.profileModal = { modal: { deny: () => { } } };
+    component.profileModal = { deny: () => { } };
     spyOn(toasterService, 'warning');
     spyOn(profileService, 'updateProfile').and.callFake(() => observableThrowError({}));
     component.updateProfile(mockFrameworkData);
@@ -320,7 +320,7 @@ describe('ProfilePageComponent', () => {
     spyOn(telemetryService, 'interact').and.stub();
     component.navigateToCourse(courseData);
     expect(telemetryService.interact).toHaveBeenCalledWith(telemetryData);
-    expect(router.navigate).toHaveBeenCalledWith(['learn/course/do_1234']);
+    expect(router.navigate).toHaveBeenCalledWith(['learn/course/do_1234/batch/124579954']);
   });
   it('should assign location data to nonCustodianUserLocation through setNonCustodianUserLocation', () => {
     component.userProfile = Response.userData;
@@ -529,4 +529,23 @@ describe('ProfilePageComponent', () => {
     component.copyToClipboard('user');
     expect(component.toasterService.success).toHaveBeenCalledWith(resourceBundle.messages.profile.smsg.m0041);
   });
+
+  it('should close the profile popup on onLocationModalClose() called',()=>{
+    let event = {
+      isSubmitted : false
+    }
+    component.showEditUserDetailsPopup =!component.showEditUserDetailsPopup;
+    component.onLocationModalClose(event);
+    expect(component.showFullScreenLoader).toBe(false);
+  })
+
+  it('should close the profile popup on onLocationModalClose() called when submission is true',()=>{
+    let event = {
+      isSubmitted : true
+    }
+    component.showEditUserDetailsPopup =!component.showEditUserDetailsPopup;
+    component.onLocationModalClose(event);
+    expect(component.showFullScreenLoader).toBe(true);
+  })
+
 });

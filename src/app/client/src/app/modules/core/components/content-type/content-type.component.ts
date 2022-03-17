@@ -1,7 +1,7 @@
 import { Component, Input, OnDestroy, OnInit, Output, EventEmitter } from '@angular/core';
 import { FormService, UserService } from './../../services';
 import * as _ from 'lodash-es';
-import { LayoutService, ResourceService, UtilService,IUserData} from '@sunbird/shared';
+import { LayoutService, ResourceService, UtilService, IUserData, NavigationHelperService, InterpolatePipe} from '@sunbird/shared';
 import { Router, ActivatedRoute } from '@angular/router';
 import { combineLatest, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -16,12 +16,14 @@ import { TelemetryService } from '@sunbird/telemetry';
 export class ContentTypeComponent implements OnInit, OnDestroy {
   @Output() closeSideMenu = new EventEmitter<any>();
   @Input() layoutConfiguration;
+  @Input() showBackButton = false;
   contentTypes;
   selectedContentType;
   isDesktopApp = false;
   public unsubscribe$ = new Subject<void>();
   subscription: any;
-  userType:any;
+  userType: any;
+  returnTo: string;
   constructor(
     public formService: FormService,
     public resourceService: ResourceService,
@@ -31,14 +33,8 @@ export class ContentTypeComponent implements OnInit, OnDestroy {
     public activatedRoute: ActivatedRoute,
     public layoutService: LayoutService,
     private utilService: UtilService,
-  ) {
-    this.subscription = this.utilService.currentRole.subscribe(async (result) => {
-      if (result) {
-        this.userType = result;
-        this.makeFormChange();
-      }
-    });
-  }
+    public navigationhelperService: NavigationHelperService,
+  ) {}
 
 
   ngOnInit() {
@@ -120,7 +116,7 @@ export class ContentTypeComponent implements OnInit, OnDestroy {
     if (ct) {
       this.selectedContentType = ct.contentType;
     } else {
-      this.selectedContentType = "all";
+      this.selectedContentType = 'all';
     }
   }
 
@@ -128,14 +124,13 @@ export class ContentTypeComponent implements OnInit, OnDestroy {
     if (!this.userType) {
       if (this.userService.loggedIn) {
         this.userService.userData$.subscribe((profileData: IUserData) => {
-          if(profileData.userProfile["profileUserType"]["type"] !== null){
-          this.userType = profileData.userProfile["profileUserType"]["type"];
+          if (_.get(profileData, 'userProfile.profileUserType.type')) {
+          this.userType = profileData.userProfile['profileUserType']['type'];
           }
           this.makeFormChange();
         });
-      }
-      else {
-        let user = localStorage.getItem("userType");
+      } else {
+        const user = localStorage.getItem('userType');
         if (user) {
           this.userType = user;
           this.makeFormChange();
@@ -143,9 +138,9 @@ export class ContentTypeComponent implements OnInit, OnDestroy {
       }
     }
   }
-  makeFormChange(){
-    let index=this.contentTypes.findIndex(cty=>cty.contentType==="observation");
-    if (this.userType != "administrator") {
+  makeFormChange() {
+    const index = this.contentTypes.findIndex(cty => cty.contentType === 'observation');
+    if (this.userType != 'administrator') {
       this.contentTypes[index].isEnabled = false;
     } else {
       this.contentTypes[index].isEnabled = true;
@@ -182,5 +177,4 @@ export class ContentTypeComponent implements OnInit, OnDestroy {
   isLayoutAvailable() {
     return this.layoutService.isLayoutAvailable(this.layoutConfiguration);
   }
-
 }

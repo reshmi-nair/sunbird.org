@@ -6,7 +6,7 @@ import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { CoreModule } from '@sunbird/core';
 import { TelemetryModule } from '@sunbird/telemetry';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
-import { SuiModule } from 'ng2-semantic-ui';
+import { SuiModule } from 'ng2-semantic-ui-v9';
 import { BehaviorSubject, of, throwError } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { mockActivityList } from './activity-list.component.data.spec';
@@ -98,7 +98,7 @@ describe('ActivityListComponent', () => {
   });
 
 
-  it('should call openActivity for Admin', () => {
+  it('should call openActivity', () => {
     spyOn(component, 'addTelemetry');
     spyOn(component['playerService'], 'playContent');
     component.groupData = {id: '123'};
@@ -116,32 +116,6 @@ describe('ActivityListComponent', () => {
     expect(component['playerService'].playContent).toHaveBeenCalledWith(event.data, {groupId: '123'});
     expect(component.addTelemetry).toHaveBeenCalled();
   });
-
-  it('should call openActivity for group member', fakeAsync(() => {
-    spyOn(component, 'addTelemetry');
-    component.groupData = {id: '123'};
-    const event = {
-      data: {
-      name: 'Class 5 English',
-      identifier: 'do_123523212190',
-      appIcon: 'https://ntpproductionall.blob.core.windows.net/ntp-content-production/content/do_3129265279296552961416/artifact/book_2_1491393340123.thumb_1577945304197.png',
-      organisation: ['Pre-prod Custodian Organization'],
-      subject: 'Social Science',
-      primaryCategory: 'Course',
-      mimeType: 'collection'
-    }};
-    component.groupData.isAdmin = true;
-    component.groupData.active = true;
-    const activatedRoute = TestBed.get(ActivatedRoute);
-    activatedRoute.changeQueryParams({ contentType: 'Course',
-    title: 'ACTIVITY_COURSE_TITLE'});
-    tick(100);
-    const option = {relativeTo: component['activateRoute'], queryParams: { primaryCategory: 'Course',
-    title: 'ACTIVITY_COURSE_TITLE', mimeType: 'collection', groupId: '123'}};
-    component.openActivity(event, 'ACTIVITY_COURSE_TITLE');
-    expect(router.navigate).toHaveBeenCalledWith(['activity-details', 'do_123523212190'], option);
-    expect(component.addTelemetry).toHaveBeenCalled();
-  }));
 
   it('should call getMenuData', () => {
     component.showMenu = false;
@@ -212,7 +186,7 @@ describe('ActivityListComponent', () => {
     spyOn(component, 'addTelemetry');
     component.toggleModal();
     expect(component.showModal).toEqual(false);
-    expect(component.addTelemetry).toHaveBeenCalledWith('close-remove-activity-popup',[], {},
+    expect(component.addTelemetry).toHaveBeenCalledWith('close-remove-activity-popup', [], {},
     {id: 'do_1235232121343', type: 'Course', ver: '1.0'});
   });
 

@@ -1,7 +1,7 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { UserOnboardingComponent, Stage } from './user-onboarding.component';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
-import { SuiModule } from 'ng2-semantic-ui';
+import { SuiModule } from 'ng2-semantic-ui-v9';
 import { SharedModule } from '@sunbird/shared';
 import { RouterTestingModule } from '@angular/router/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
@@ -11,6 +11,8 @@ import { PopupControlService } from '../../../../service/popup-control.service';
 import { APP_BASE_HREF } from '@angular/common';
 import { configureTestSuite } from '@sunbird/test-util';
 import { CacheService } from 'ng2-cache-service';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+
 
 describe('UserOnboardingComponent', () => {
   let component: UserOnboardingComponent;
@@ -24,7 +26,8 @@ describe('UserOnboardingComponent', () => {
         SuiModule,
         SharedModule.forRoot(),
         HttpClientTestingModule,
-        RouterTestingModule
+        RouterTestingModule,
+        BrowserAnimationsModule
       ],
       providers: [TelemetryService, TenantService, PopupControlService, { provide: APP_BASE_HREF, useValue: 'test' }],
       schemas: [NO_ERRORS_SCHEMA]
@@ -71,15 +74,10 @@ describe('UserOnboardingComponent', () => {
 
   it('should call locationSubmit', () => {
     const popupControlService = TestBed.get(PopupControlService);
-    component.onboardingModal = {
-      deny: () => { }
-    };
     spyOn(popupControlService, 'changePopupStatus');
-    spyOn(component.onboardingModal, 'deny');
     spyOn(component.close, 'emit');
     component.locationSubmit();
     expect(popupControlService.changePopupStatus).toHaveBeenCalledWith(true);
-    expect(component.onboardingModal.deny).toHaveBeenCalled();
     expect(component.close.emit).toHaveBeenCalled();
   });
 

@@ -53,7 +53,7 @@
               class="d-block text-center font-weight-bold">{{resourceService?.frmelmnts?.lbl?.downloadDikshaForMobile | interpolate:'{instance}': instance}}</label>
             <a class="d-block app-download" (click)="redirectToMobileApp()" tabindex="0">
               <img class="playStore-img cursor-pointer" src="/assets/images/google_playstore.png"
-                alt="{{resourceService.frmelmnts?.lnk?.footerDIKSHAForMobile | interpolate:'{instance}':  instance}}">
+                alt="{{ resourceService?.frmelmnts?.lbl?.altGoogleplay }}">
             </a>
             <p class="d-block pt-10">{{resourceService.frmelmnts?.lbl?.getUnlimitedAccess}}</p>
           </div>
@@ -70,7 +70,7 @@
             <span>| &copy; {{date | date:'yyyy'}}, {{instance}}</span>
           </label>
           <label class="sb-footer-license">
-            <span><img alt="{{resourceService.frmelmnts?.lbl?.CCbyLicense}}" src="/assets/images/CCby.svg">&nbsp;&nbsp;{{resourceService.frmelmnts?.lbl?.CCbyLicense}}</span>
+           <span><img alt="{{resourceService.frmelmnts?.lbl?.CCbyLicense}}" src="/assets/images/CCby.svg">&nbsp;&nbsp;{{resourceService.frmelmnts?.lbl?.CCbyLicense}}</span>
           </label>
         </div>
       </div>
@@ -84,7 +84,7 @@
       <div class="sbt-container">
         <img src="/assets/images/footer-line.svg" class="sbt-skyline-path" alt="line path">
         <div class="sbt-footer-shade">
-          <img src="/assets/images/footer-flower.svg" alt="flower footer shade image">
+          <img src="/assets/images/footer-flower.svg" alt="flower image shade is showing on footer">
         </div>
         <div class="ui grid stackable px-72">
           <div class="six wide column contantDetails px-0">
@@ -146,7 +146,7 @@
               <label class="d-block text-center font-weight-bold sbt-footer-title">{{resourceService.frmelmnts?.lnk?.footerDIKSHAForMobile | interpolate:'{instance}':  instance}}</label>
               <a class="d-block app-download" (click)="redirectToMobileApp()">
                 <img tabindex="0" class="playStore-img cursor-pointer" src="/assets/images/google_playstore.png"
-                  alt="{{resourceService.frmelmnts?.lnk?.footerDIKSHAForMobile | interpolate:'{instance}':  instance}}">
+                  alt="{{ resourceService?.frmelmnts?.lbl?.altGoogleplay }}">
               </a>
             </div>
           </div>

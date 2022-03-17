@@ -1,5 +1,5 @@
 import { DashboardModule } from '@sunbird/dashboard';
-import { UserService, CoreModule } from '@sunbird/core';
+import { UserService, CoreModule, TncService } from '@sunbird/core';
 import { TelemetryModule } from '@sunbird/telemetry';
 import { SharedModule, NavigationHelperService, ToasterService, ResourceService } from '@sunbird/shared';
 import { async, ComponentFixture, TestBed, tick, fakeAsync } from '@angular/core/testing';
@@ -11,7 +11,7 @@ import { ReportService } from '../../services';
 import { ActivatedRoute, Router } from '@angular/router';
 import { of } from 'rxjs';
 import { ISummaryObject } from '../../interfaces';
-import { mockLatestReportSummary, mockReportObj,chartData,filters } from './report.component.spec.data';
+import { mockLatestReportSummary, mockReportObj, chartData, filters } from './report.component.spec.data';
 import { mockParameterizedReports } from '../list-all-reports/list-all-reports.component.spec.data';
 describe('ReportComponent', () => {
   let component: ReportComponent;
@@ -63,7 +63,7 @@ describe('ReportComponent', () => {
       declarations: [],
       schemas: [NO_ERRORS_SCHEMA],
       imports: [HttpClientTestingModule, SharedModule.forRoot(), TelemetryModule.forRoot(), CoreModule, DashboardModule],
-      providers: [ToasterService, UserService, NavigationHelperService, ReportService,
+      providers: [ToasterService, UserService, TncService, NavigationHelperService, ReportService,
         { provide: ActivatedRoute, useValue: fakeActivatedRoute },
         { provide: Router, useValue: routerStub },
         { provide: ResourceService, useValue: resourceServiceMockData }]
@@ -381,24 +381,25 @@ describe('ReportComponent', () => {
 
     component.reportData = {
       charts:[{
-        chartData:chartData
+        chartData:chartData,
+        chartConfig : { id:"chartId" }
       }
     ]
-    }
+    };
     const data = component.getAllChartData();
-    expect(data).toEqual(chartData);
+    expect(data).toEqual([{ data:chartData, id:"chartId"}]);
   }));
 
   it('should get chart data', fakeAsync(() => {
     component.ngOnInit();
     tick(1000);
     component.chartsReportData = {
-      charts:[{
+      charts: [{
           chartConfig : {
             id: 123
           }
       }]
-    }
+    };
     const data = component.getChartData({
         chartConfig : {
           id: 123
@@ -418,12 +419,12 @@ describe('ReportComponent', () => {
     component.ngOnInit();
     tick(1000);
     const data = component.filterChanged({
-      chartData:chartData,
-      filters:filters
+      chartData: chartData,
+      filters: filters
     });
     expect(component.globalFilterChange).toEqual({
-      chartData:chartData,
-      filters:filters
+      chartData: chartData,
+      filters: filters
     });
 
   }));
@@ -433,16 +434,17 @@ describe('ReportComponent', () => {
     tick(1000);
     component.reportData = {
       charts:[{
-        chartData:chartData
+        chartData:chartData,
+        chartConfig : { id:"chartId" }
       }
     ]
-    }
+    };
     component.resetFilter();
-    expect(component.resetFilters).toEqual({ data:chartData,reset:true });
+    expect(component.resetFilters).toEqual({ data:[ { id:"chartId",data:chartData }],reset:true });
 
   }));
 
-  
+
 
   it('should handle markdown update stream', done => {
     const spy = spyOn(reportService, 'updateReport').and.returnValue(of({}));
@@ -464,6 +466,31 @@ describe('ReportComponent', () => {
       done();
     });
     component.markdownUpdated$.next(input);
+  });
+
+  it('should get tnc details for report viewer', () => {
+    const reportViewerTncService = TestBed.get(TncService);
+    spyOn(reportViewerTncService, 'getReportViewerTnc').and.returnValue(of(
+      {
+        'id': 'api',
+        'params': {
+          'status': 'success',
+        },
+        'responseCode': 'OK',
+        'result': {
+          'response': {
+            'id': 'orgAdminTnc',
+            'field': 'orgAdminTnc',
+            'value': '{"latestVersion":"v4","v4":{"url":"http://test.com/tnc.html"}}'
+          }
+        }
+      }
+    ));
+    spyOn(component, 'showReportViewerTncForFirstUser').and.returnValue(true);
+    component.showTncPopup = true;
+    component.getReportViewerTncPolicy();
+    expect(reportViewerTncService.getReportViewerTnc).toHaveBeenCalled();
+    expect(component.showTncPopup).toBeTruthy();
   });
 
 });

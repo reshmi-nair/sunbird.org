@@ -7,6 +7,7 @@ import { PopupControlService } from '../../../../service/popup-control.service';
 import { LocationService } from '../..';
 import { LocationSelectionComponent } from './location-selection.component';
 import { of, Observable, throwError } from 'rxjs';
+import { MatDialog } from '@angular/material/dialog';
 
 describe('LocationSelectionComponent', () => {
     let locationSelectionComponent: LocationSelectionComponent;
@@ -44,9 +45,13 @@ describe('LocationSelectionComponent', () => {
     const mockRouter: Partial<Route> = {};
     const mockUserService: Partial<UserService> = {};
     const mockOrgDetailsService: Partial<OrgDetailsService> = {};
+    const getDialogByIdSpy = jasmine.createSpy('getDialogById');
+    const matDialogService: Partial<MatDialog> = {
+        getDialogById: getDialogByIdSpy
+    };
     const mockUtilsService: Partial<UtilService> = {
-        updateRoleChange: ()=>{}
-    }
+        updateRoleChange: () => {}
+    };
     beforeAll(() => {
         locationSelectionComponent = new LocationSelectionComponent(
             mockResourceService as ResourceService,
@@ -60,7 +65,8 @@ describe('LocationSelectionComponent', () => {
             mockTelemetryService as TelemetryService,
             mockFormService as FormService,
             mockOrgDetailsService as OrgDetailsService,
-            mockUtilsService as UtilService
+            mockUtilsService as UtilService,
+            matDialogService as MatDialog
         );
     });
 
@@ -88,23 +94,17 @@ describe('LocationSelectionComponent', () => {
     it('should close the popup after submitting', () => {
         // arrange
         spyOn(mockPopupControlService, 'changePopupStatus').and.callThrough();
-        locationSelectionComponent.onboardingModal = {
-            deny(): any {
-                return {};
-            }
-        };
         locationSelectionComponent.close = {
             emit(): any {
                 return {};
             }
         } as any;
-        spyOn(locationSelectionComponent.onboardingModal, 'deny').and.callThrough();
         spyOn(locationSelectionComponent.close, 'emit').and.callThrough();
         // act
         locationSelectionComponent.closeModal();
+        expect(getDialogByIdSpy).toHaveBeenCalled();
         // assert
         expect(mockPopupControlService.changePopupStatus).toHaveBeenCalledWith(true);
-        expect(locationSelectionComponent.onboardingModal.deny).toHaveBeenCalled();
         expect(locationSelectionComponent.close.emit).toHaveBeenCalled();
     });
 

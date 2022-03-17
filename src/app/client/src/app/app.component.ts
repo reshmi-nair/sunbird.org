@@ -8,7 +8,7 @@ import {
 import { Component, HostListener, OnInit, ViewChild, Inject, OnDestroy, ChangeDetectorRef, ElementRef, Renderer2, NgZone } from '@angular/core';
 import {
   UserService, PermissionService, CoursesService, TenantService, OrgDetailsService, DeviceRegisterService,
-  SessionExpiryInterceptor, FormService, ProgramsService, GeneraliseLabelService
+  SessionExpiryInterceptor, FormService, GeneraliseLabelService
 } from '@sunbird/core';
 import * as _ from 'lodash-es';
 import { ProfileService } from '@sunbird/profile';
@@ -24,10 +24,10 @@ import { SBTagModule } from 'sb-tag-manager';
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
-  styles: ['.header-block { display: none;}']
+  styleUrls: ['./app.component.scss']
 })
 export class AppComponent implements OnInit, OnDestroy {
-  @ViewChild('frameWorkPopUp', { static: false }) frameWorkPopUp;
+  @ViewChild('frameWorkPopUp') frameWorkPopUp;
   /**
    * user profile details.
    */
@@ -95,7 +95,7 @@ export class AppComponent implements OnInit, OnDestroy {
   showUserTypePopup = false;
   deviceId: string;
   dataThemeAttribute: string;
-  scrollHeight:number;
+  scrollHeight: number;
   public botObject: any = {};
   isBotEnabled = (<HTMLInputElement>document.getElementById('isBotConfigured'))
     ? (<HTMLInputElement>document.getElementById('isBotConfigured')).value : 'false';
@@ -115,9 +115,11 @@ export class AppComponent implements OnInit, OnDestroy {
   isGuestUser = true;
   guestUserDetails;
   showYearOfBirthPopup = false;
-  @ViewChild('increaseFontSize', { static: false }) increaseFontSize: ElementRef;
-  @ViewChild('decreaseFontSize', { static: false }) decreaseFontSize: ElementRef;
-  @ViewChild('resetFontSize', { static: false }) resetFontSize: ElementRef;
+  public isIOS = false;
+  @ViewChild('increaseFontSize') increaseFontSize: ElementRef;
+  @ViewChild('decreaseFontSize') decreaseFontSize: ElementRef;
+  @ViewChild('resetFontSize') resetFontSize: ElementRef;
+  @ViewChild('darkModeToggle') darkModeToggle: ElementRef;
 
   constructor(private cacheService: CacheService, private browserCacheTtlService: BrowserCacheTtlService,
     public userService: UserService, private navigationHelperService: NavigationHelperService,
@@ -126,8 +128,7 @@ export class AppComponent implements OnInit, OnDestroy {
     private telemetryService: TelemetryService, public router: Router, private configService: ConfigService,
     private orgDetailsService: OrgDetailsService, private activatedRoute: ActivatedRoute,
     private profileService: ProfileService, private toasterService: ToasterService, public utilService: UtilService,
-    public formService: FormService, private programsService: ProgramsService,
-    @Inject(DOCUMENT) private _document: any, public sessionExpiryInterceptor: SessionExpiryInterceptor,
+    public formService: FormService, @Inject(DOCUMENT) private _document: any, public sessionExpiryInterceptor: SessionExpiryInterceptor,
     public changeDetectorRef: ChangeDetectorRef, public layoutService: LayoutService,
     public generaliseLabelService: GeneraliseLabelService, private renderer: Renderer2, private zone: NgZone,
     private connectionService: ConnectionService) {
@@ -150,9 +151,21 @@ export class AppComponent implements OnInit, OnDestroy {
     this.telemetryService.syncEvents(false);
     this.ngOnDestroy();
   }
+
   handleLogin() {
     window.location.replace('/sessionExpired');
     this.cacheService.removeAll();
+  }
+
+  private setDynamicPageTitle() {
+    let child = this.activatedRoute.firstChild;
+    while (child.firstChild) {
+      child = child.firstChild;
+    }
+    const pageTitle = _.get(child, 'snapshot.data.pageTitle') || _.get(child, 'snapshot.data.telemetry.pageid') || _.get(this.userService, 'rootOrgName');
+    if (pageTitle) {
+      document.title = pageTitle;
+    }
   }
 
   handleHeaderNFooter() {
@@ -161,6 +174,7 @@ export class AppComponent implements OnInit, OnDestroy {
         filter(event => event instanceof NavigationEnd),
         tap((event: NavigationEnd) => this._routeData$.next(event))
       ).subscribe(data => {
+        this.setDynamicPageTitle();
         this.hideHeaderNFooter = _.get(this.activatedRoute, 'snapshot.firstChild.firstChild.data.hideHeaderNFooter') ||
           _.get(this.activatedRoute, 'snapshot.firstChild.firstChild.firstChild.data.hideHeaderNFooter');
       });
@@ -193,28 +207,30 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   setTagManager() {
-    console.log("Tag Manager");
+    console.log('Tag Manager');
     window['TagManager'] = SBTagModule.instance;
     window['TagManager'].init();
-    if(this.userService.loggedIn) {
+    if (this.userService.loggedIn) {
       if (localStorage.getItem('tagManager_' + this.userService.userid)) {
         window['TagManager'].SBTagService.restoreTags(localStorage.getItem('tagManager_' + this.userService.userid));
-      } 
+      }
     } else {
       if (localStorage.getItem('tagManager_' + 'guest')) {
         window['TagManager'].SBTagService.restoreTags(localStorage.getItem('tagManager_' + 'guest'));
-      } 
+      }
     }
   }
 
   setTheme() {
     const themeColour = localStorage.getItem('layoutColour') || 'Default';
+    this.renderer.setAttribute(this.darkModeToggle.nativeElement, 'aria-label', `Selected theme ${themeColour}`);
     this.setSelectedThemeColour(themeColour);
     document.documentElement.setAttribute('data-theme', themeColour);
     this.layoutService.setLayoutConfig(this.layoutConfiguration);
   }
 
   ngOnInit() {
+    this.isIOS = this.utilService.isIos;
     this.isDesktopApp = this.utilService.isDesktopApp;
     if (this.isDesktopApp) {
       this._document.body.classList.add('desktop-app');
@@ -252,7 +268,6 @@ export class AppComponent implements OnInit, OnDestroy {
             this.isGuestUser = false;
             this.permissionService.initialize();
             this.courseService.initialize();
-            this.programsService.initialize();
             this.userService.startSession();
             this.checkForCustodianUser();
             return this.setUserDetails();
@@ -295,9 +310,10 @@ export class AppComponent implements OnInit, OnDestroy {
     this.botObject['imageUrl'] = image.imageUrl;
     this.botObject['title'] = this.botObject['header'] = this.title;
     this.generaliseLabelService.getGeneraliseResourceBundle();
-    //keyboard accessibility enter key click event
+  // keyboard accessibility enter key click event
     document.onkeydown = function(e) {
-      if(e.keyCode === 13) { // The Enter/Return key
+      const element = document.getElementById('overlay-button') as HTMLElement;
+      if (e.keyCode === 13 && document.activeElement !== element) { // The Enter/Return key
         (document.activeElement  as HTMLElement).click();
       }
     };
@@ -685,14 +701,14 @@ export class AppComponent implements OnInit, OnDestroy {
   private setPortalTitleLogo(): void {
     this.tenantService.tenantData$.subscribe(data => {
       if (!data.err) {
-        document.title = _.get(this.userService, 'rootOrgName') || _.get(data, 'tenantData.titleName');
+        // document.title = _.get(this.userService, 'rootOrgName') || _.get(data, 'tenantData.titleName');
         document.querySelector('link[rel*=\'icon\']').setAttribute('href', data.tenantData.favicon);
       }
     });
   }
 
   closeFrameworkPopup () {
-    this.frameWorkPopUp.modal.deny();
+    this.frameWorkPopUp && this.frameWorkPopUp.deny();
     this.showFrameWorkPopUp = false;
   }
   /**
@@ -748,8 +764,8 @@ export class AppComponent implements OnInit, OnDestroy {
     if (this.resourceDataSubscription) {
       this.resourceDataSubscription.unsubscribe();
     }
-    if(window['TagManager']) {
-      if(this.userService.loggedIn) {
+    if (window['TagManager']) {
+      if (this.userService.loggedIn) {
         localStorage.setItem('tagManager_' + this.userService.userid, JSON.stringify(window['TagManager'].SBTagService));
       } else {
         localStorage.setItem('tagManager_' + 'guest', JSON.stringify(window['TagManager'].SBTagService));
@@ -813,7 +829,6 @@ export class AppComponent implements OnInit, OnDestroy {
       this.isDisableFontSize(localFontSize);
     }
   }
-
   changeFontSize(value: string) {
 
     const elFontSize = window.getComputedStyle(document.documentElement).getPropertyValue('font-size');
@@ -823,16 +838,25 @@ export class AppComponent implements OnInit, OnDestroy {
     this.fontSize = parseInt(currentFontSize);
 
     if (value === 'increase') {
+      this.renderer.setAttribute(this.increaseFontSize.nativeElement, 'aria-pressed', 'true');
+      this.renderer.removeAttribute(this.decreaseFontSize.nativeElement, 'aria-pressed');
+      this.renderer.removeAttribute(this.resetFontSize.nativeElement, 'aria-pressed');
       this.fontSize = this.fontSize + 2;
       if (this.fontSize <= 20) {
         this.setLocalFontSize(this.fontSize);
       }
     } else if (value === 'decrease') {
+      this.renderer.setAttribute(this.decreaseFontSize.nativeElement, 'aria-pressed', 'true');
+      this.renderer.removeAttribute(this.increaseFontSize.nativeElement, 'aria-pressed');
+      this.renderer.removeAttribute(this.resetFontSize.nativeElement, 'aria-pressed');
       this.fontSize = this.fontSize - 2;
       if (this.fontSize >= 12) {
         this.setLocalFontSize(this.fontSize);
       }
     } else {
+      this.renderer.setAttribute(this.resetFontSize.nativeElement, 'aria-pressed', 'true');
+      this.renderer.removeAttribute(this.increaseFontSize.nativeElement, 'aria-pressed');
+      this.renderer.removeAttribute(this.decreaseFontSize.nativeElement, 'aria-pressed');
       this.setLocalFontSize(this.defaultFontSize);
     }
 
@@ -865,30 +889,30 @@ export class AppComponent implements OnInit, OnDestroy {
     }
   }
   skipToMainContent() {
-    const getTheme = document.documentElement.attributes["layout"].value;
-    if (getTheme == "joy") {
-      const headerElement=document.getElementsByClassName('sbt-fluid-header-bg');
-      if(headerElement.length>0){
-        const headerHeight = headerElement[headerElement.length-1].clientHeight;
-        if(typeof window.orientation !== 'undefined'){
-          this.scrollHeight =  headerElement[0].clientHeight+150;
-        }else{
-          this.scrollHeight =  headerHeight *2;
+    const getTheme = document.documentElement.attributes['layout'].value;
+    if (getTheme == 'joy') {
+      const headerElement = document.getElementsByClassName('sbt-fluid-header-bg');
+      if (headerElement.length > 0) {
+        const headerHeight = headerElement[headerElement.length - 1].clientHeight;
+        if (typeof window.orientation !== 'undefined') {
+          this.scrollHeight =  headerElement[0].clientHeight + 150;
+        } else {
+          this.scrollHeight =  headerHeight * 2;
         }
         this.scrollTo(this.scrollHeight);
        }
     } else {
-      const header = document.getElementsByTagName("app-header");
+      const header = document.getElementsByTagName('app-header');
       const headerElement = header[0].children[0].children[0].clientHeight;
-      if (document.getElementsByTagName("app-search-filter").length > 0) {
-        const searchFilter = document.getElementsByTagName("app-search-filter")[0]
+      if (document.getElementsByTagName('app-search-filter').length > 0) {
+        const searchFilter = document.getElementsByTagName('app-search-filter')[0]
           .children[0].clientHeight;
         this.scrollTo(searchFilter + headerElement + 48);
       } else if (
-        document.getElementsByTagName("app-global-search-filter").length > 0
+        document.getElementsByTagName('app-global-search-filter').length > 0
       ) {
         const searchFilter = document.getElementsByTagName(
-          "app-global-search-filter"
+          'app-global-search-filter'
         )[0].children[0].clientHeight;
         this.scrollTo(searchFilter + headerElement + 48);
       } else {
@@ -899,7 +923,7 @@ export class AppComponent implements OnInit, OnDestroy {
   scrollTo(height) {
     window.scroll({
       top: height,
-      behavior: "smooth",
+      behavior: 'smooth',
     });
   }
   getLocalTheme() {
@@ -911,6 +935,7 @@ export class AppComponent implements OnInit, OnDestroy {
   changeTheme() {
     this.dataThemeAttribute = document.documentElement.getAttribute('data-theme');
     this.dataThemeAttribute = this.dataThemeAttribute === 'Default' ? 'Darkmode' : 'Default';
+    this.renderer.setAttribute(this.darkModeToggle.nativeElement, 'aria-label', `Selected theme ${this.dataThemeAttribute}`);
     this.setLocalTheme(this.dataThemeAttribute);
     localStorage.setItem('data-theme', this.dataThemeAttribute);
   }

@@ -30,7 +30,8 @@ export class PublicBatchDetailsComponent implements OnInit, OnDestroy {
   showBatchList = false;
   statusOptions = [
     { name: 'Ongoing', value: 1 },
-    { name: 'Upcoming', value: 0 }
+    { name: 'Upcoming', value: 0 },
+    { name: 'Expired', value: 2 }
   ];
   todayDate = dayjs(new Date()).format('YYYY-MM-DD');
   signInInteractEdata: IInteractEventEdata;
@@ -38,6 +39,12 @@ export class PublicBatchDetailsComponent implements OnInit, OnDestroy {
   telemetryInteractObject: IInteractEventObject;
   enrollToBatch: any;
   tocId = '';
+  showBatchDetailsBeforeJoin = false;
+  showCertificateDetails = false;
+  showCompletionCertificate = false;
+  showMeritCertificate = false;
+  meritCertPercent = 0;
+  batchDetails: any;
   constructor(private browserCacheTtlService: BrowserCacheTtlService, private cacheService: CacheService,
     public resourceService: ResourceService, public courseBatchService: CourseBatchService, public toasterService: ToasterService,
     public router: Router, public userService: UserService, public telemetryService: TelemetryService,
@@ -79,6 +86,8 @@ export class PublicBatchDetailsComponent implements OnInit, OnDestroy {
         this.allBatchDetails.emit(_.get(data, 'result.response'));
         if (data.result.response.content && data.result.response.content.length > 0) {
           this.batchList = data.result.response.content;
+          this.showBatchDetails();
+          this.ShowCertDetails();
         }
         this.showBatchList = true;
       },
@@ -155,10 +164,29 @@ export class PublicBatchDetailsComponent implements OnInit, OnDestroy {
 
   setUrlToCourse() {
     const queryParam = this.tocId ? `?textbook=${this.tocId}` : '';
-    if(this.utilService.isDesktopApp) {
+    if (this.utilService.isDesktopApp) {
       this.electronService.get({ url: `${this.config.urlConFig.URLS.OFFLINE.LOGIN}?redirectTo=${this.baseUrl + queryParam}`}).subscribe();
     } else {
       window.location.href = this.baseUrl + queryParam;
+    }
+  }
+
+  showBatchDetails() {
+    this.showBatchDetailsBeforeJoin = this.batchList[0] ? true : false;
+    this.batchDetails = this.batchList[0];
+  }
+  ShowCertDetails() {
+    if (this.batchList && this.batchList[0]) {
+      const batchDetails = this.batchList[0]
+      this.showCertificateDetails = !(_.isEmpty(_.get(batchDetails, 'certTemplates'))) ? true : false;
+      const certDetails = _.get(batchDetails, 'certTemplates');
+      for (var key in certDetails) {
+        const certCriteria = certDetails[key]['criteria'];
+        this.showCompletionCertificate = _.get(certCriteria, 'enrollment.status') === 2 ? true : false;
+        this.showMeritCertificate = _.get(certCriteria, 'assessment.score') ? true : false;
+        this.meritCertPercent = _.get(certCriteria, 'assessment.score.>=')
+      }
+
     }
   }
 }

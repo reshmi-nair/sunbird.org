@@ -11,6 +11,7 @@ const dateFormat = require('dateformat')
 const {decodeToken} = require('./jwtHelper');
 const { logger } = require('@project-sunbird/logger');
 const { ProxyLogger } = require("@project-sunbird/logger/decorator");
+const { getBearerToken } = require('../helpers/kongTokenHelper')
 
 const keycloakGoogle = getKeyCloakClient({
   resource: envHelper.KEYCLOAK_GOOGLE_CLIENT.clientId,
@@ -40,6 +41,15 @@ const keycloakMergeGoogleAndroid = getKeyCloakClient({
     secret: envHelper.KEYCLOAK_GOOGLE_ANDROID_CLIENT.secret
   }
 })
+const keycloakGoogleIos = getKeyCloakClient({
+  resource: envHelper.KEYCLOAK_GOOGLE_IOS_CLIENT.clientId,
+  bearerOnly: true,
+  serverUrl: envHelper.PORTAL_MERGE_AUTH_SERVER_URL,
+  realm: envHelper.PORTAL_REALM,
+  credentials: {
+    secret: envHelper.KEYCLOAK_GOOGLE_IOS_CLIENT.secret
+  }
+})
 
 const keycloakGoogleDesktop = getKeyCloakClient({
   resource: envHelper.KEYCLOAK_GOOGLE_DESKTOP_CLIENT.clientId,
@@ -57,6 +67,16 @@ const keycloakMergeGoogleDesktop = getKeyCloakClient({
   realm: envHelper.PORTAL_REALM,
   credentials: {
     secret: envHelper.KEYCLOAK_GOOGLE_DESKTOP_CLIENT.secret
+  }
+})
+
+const keycloakMergeGoogleIos =  getKeyCloakClient({
+  resource: envHelper.KEYCLOAK_GOOGLE_CLIENT.clientId,
+  bearerOnly: true,
+  serverUrl: envHelper.PORTAL_MERGE_AUTH_SERVER_URL,
+  realm: envHelper.PORTAL_REALM,
+  credentials: {
+    secret: envHelper.KEYCLOAK_GOOGLE_CLIENT.secret
   }
 })
 
@@ -144,6 +164,10 @@ const createSession = async (emailId, reqQuery, req, res) => {
     keycloakClient = keycloakGoogleDesktop;
     keycloakMergeClient = keycloakMergeGoogleDesktop;
     scope = 'offline_access';
+  } else if(reqQuery.client_id === 'ios'){
+    keycloakClient = keycloakGoogleIos;
+    keycloakMergeClient = keycloakMergeGoogleIos;
+    scope = 'offline_access';
   }
 
   // merge account in progress
@@ -211,7 +235,7 @@ const createUserWithMailId = async (accountDetails, client_id, req) => {
     body: {
       params: {
         source: client_id,
-        signupType: "google"
+        signupType: client_id === "apple" ? "apple" : "google"
       },
       request: {
         firstName: accountDetails.name,
@@ -225,7 +249,7 @@ const createUserWithMailId = async (accountDetails, client_id, req) => {
     if (data.responseCode === 'OK') {
       return data;
     } else {
-      logger.error({msg: 'googleOauthHelper: createUserWithMailId failed', additionalInfo: {data}});
+      logger.error({msg: client_id + 'OauthHelper: createUserWithMailId failed', additionalInfo: {data}});
       throw new Error(_.get(data, 'params.errmsg') || _.get(data, 'params.err'));
     }
   })
@@ -237,7 +261,7 @@ const getHeaders = (req) => {
     'ts': dateFormat(new Date(), 'yyyy-mm-dd HH:MM:ss:lo'),
     'content-type': 'application/json',
     'accept': 'application/json',
-    'Authorization': 'Bearer ' + envHelper.PORTAL_API_AUTH_TOKEN
+    'Authorization': 'Bearer ' + getBearerToken(req)
   }
 }
 module.exports = { googleOauth, createSession, fetchUserByEmailId, createUserWithMailId };

@@ -2,7 +2,7 @@ import { UserService, TncService } from '@sunbird/core';
 import { IGroupCard, GROUP_DETAILS, MY_GROUPS, CREATE_GROUP, acceptTnc } from './../../interfaces';
 import { Component, OnInit, OnDestroy, EventEmitter } from '@angular/core';
 import { GroupsService } from '../../services';
-import { ResourceService, LayoutService, ToasterService } from '@sunbird/shared';
+import { ResourceService, LayoutService, ToasterService, NavigationHelperService } from '@sunbird/shared';
 import { Router, ActivatedRoute } from '@angular/router';
 import * as _ from 'lodash-es';
 import { Subject, combineLatest, of, BehaviorSubject } from 'rxjs';
@@ -37,12 +37,14 @@ export class MyGroupsComponent implements OnInit, OnDestroy {
     private activatedRoute: ActivatedRoute,
     private layoutService: LayoutService,
     private toasterService: ToasterService,
-    private tncService: TncService
+    private tncService: TncService,
+    private navigationhelperService: NavigationHelperService,
     ) { }
 
   ngOnInit() {
     this.showModal = !localStorage.getItem('login_ftu_groups');
     this.initLayout();
+    this.getLatestTnc();
     this.getMyGroupList();
     this.setTelemetryImpression({type: PAGE_LOADED});
     this.groupService.closeForm.pipe(takeUntil(this.unsubscribe$)).subscribe(() => {
@@ -84,20 +86,26 @@ export class MyGroupsComponent implements OnInit, OnDestroy {
   checkUserAcceptedTnc() {
     const accepted = this.groupService.isUserAcceptedTnc();
     if (accepted) {
-      this.getLatestTnc(accepted);
+      this.isTncUpdatedAfterAcceptance(accepted);
     } else {
       this.showTncModal = this.groupsList.length > 0;
-      const data = this.showTncModal ? this.getLatestTnc() : '';
     }
   }
 
-  getLatestTnc(accepted?) {
+  getLatestTnc() {
     this.tncService.getGroupsTnc().subscribe(data => {
       this.groupService.groupsTncDetails = _.get(data, 'result.response');
-      if (accepted) {
-        this.showTncModal =  this.groupService.isTncUpdated() ? this.groupsList.length > 0 : false;
-      }
     });
+  }
+
+  /**
+   * @param  {boolean} accepted
+   * @description - It will check if the tnc is updated which was previously accepted
+   */
+  isTncUpdatedAfterAcceptance(accepted: boolean) {
+    if (accepted) {
+      this.showTncModal =  this.groupService.isTncUpdated() ? this.groupsList.length > 0 : false;
+    }
   }
 
   public showCreateFormModal() {
@@ -244,6 +252,10 @@ export class MyGroupsComponent implements OnInit, OnDestroy {
       this.groupService.userData = _.get(data, 'result.response');
       this.getMyGroupList();
     });
+  }
+
+  goBack() {
+    this.navigationhelperService.goBack();
   }
 
   ngOnDestroy() {

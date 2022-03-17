@@ -32,7 +32,7 @@ export class AddMemberComponent implements OnInit, OnDestroy {
   telemetryImpression: IImpressionEventInput;
   public unsubscribe$ = new Subject<void>();
   @Output() members = new EventEmitter<any>();
-  @ViewChild('captchaRef', {static: false}) captchaRef: RecaptchaComponent;
+  @ViewChild('captchaRef') captchaRef: RecaptchaComponent;
   captchaResponse = '';
   googleCaptchaSiteKey = '';
   isCaptchEnabled = false;
@@ -200,7 +200,7 @@ export class AddMemberComponent implements OnInit, OnDestroy {
     this.showModal = visibility;
   }
 
-  setInteractData (id, extra?, Cdata?, edata?) {
+  setInteractData (id, extra?, Cdata?, edata?, obj?) {
     const interactData = {
       context: {
         env: _.get(this.activatedRoute, 'snapshot.data.telemetry.env'),
@@ -215,8 +215,7 @@ export class AddMemberComponent implements OnInit, OnDestroy {
         id: id,
         type: 'CLICK',
         pageid:  _.get(this.activatedRoute, 'snapshot.data.telemetry.pageid')
-      },
-      object: {}
+      }
     };
     if (edata) {
       interactData.edata.type = edata.type;
@@ -227,7 +226,9 @@ export class AddMemberComponent implements OnInit, OnDestroy {
     if (Cdata) {
       interactData.context.cdata.push(Cdata);
     }
-
+    if (obj) {
+      interactData['object'] = obj;
+    }
     this.telemetryService.interact(interactData);
   }
 

@@ -12,6 +12,7 @@ import { IInteractEventEdata, IImpressionEventInput, TelemetryService } from '@s
 import { takeUntil, map, mergeMap, first, filter, debounceTime, tap, delay } from 'rxjs/operators';
 import { CacheService } from 'ng2-cache-service';
 import { ContentManagerService } from '../../../offline/services';
+import {omit, groupBy, get, uniqBy, toLower, find, map as _map, forEach, each} from 'lodash-es';
 
 @Component({
   templateUrl: './explore-content.component.html',
@@ -36,7 +37,7 @@ export class ExploreContentComponent implements OnInit, OnDestroy, AfterViewInit
   public facets: Array<string>;
   public facetsList: any;
   public paginationDetails: IPagination;
-  public contentList: Array<ICard> = [];
+  public contentList: Array<any> = [];
   public cardIntractEdata: IInteractEventEdata;
   public loaderMessage: ILoaderMessage;
   public numberOfSections = new Array(this.configService.appConfig.SEARCH.PAGE_LIMIT);
@@ -81,14 +82,15 @@ export class ExploreContentComponent implements OnInit, OnDestroy, AfterViewInit
     this.searchService.getContentTypes().pipe(takeUntil(this.unsubscribe$)).subscribe(formData => {
       this.allTabData = _.find(formData, (o) => o.title === 'frmelmnts.tab.all');
       this.formData = formData;
-      this.globalSearchFacets = _.get(this.allTabData, 'search.facets');
+      this.globalSearchFacets = (this.queryParams && this.queryParams.searchFilters) ?
+      JSON.parse(this.queryParams.searchFilters) : _.get(this.allTabData, 'search.facets');
       this.listenLanguageChange();
       this.initFilters = true;
     }, error => {
       this.toasterService.error(this.resourceService.frmelmnts.lbl.fetchingContentFailed);
       this.navigationhelperService.goBack();
     });
-    
+
     this.initLayout();
     this.frameworkService.channelData$.pipe(takeUntil(this.unsubscribe$)).subscribe((channelData) => {
       if (!channelData.err) {
@@ -118,13 +120,13 @@ export class ExploreContentComponent implements OnInit, OnDestroy, AfterViewInit
     this.checkForBack();
     this.moveToTop();
   }
-  goback(){
+  goback() {
     if (this.navigationhelperService['_history'].length > 1) {
       this.navigationhelperService.goBack();
     }
   }
-  checkForBack(){
-    if(_.get(this.activatedRoute, 'snapshot.queryParams["showClose"]') === 'true'){
+  checkForBack() {
+    if (_.get(this.activatedRoute, 'snapshot.queryParams["showClose"]') === 'true') {
       this.showBackButton = true;
     }
   }
@@ -197,7 +199,7 @@ export class ExploreContentComponent implements OnInit, OnDestroy, AfterViewInit
     const pageType = _.get(this.queryParams, 'pageTitle');
     const filters: any = this.schemaService.schemaValidator({
       inputObj: this.queryParams || {}, properties: _.get(this.schemaService.getSchema('content'), 'properties') || {},
-      omitKeys: ['key', 'sort_by', 'sortType', 'appliedFilters', 'softConstraints', 'selectedTab', 'mediaType', 'contentType', 'utm_source']
+      omitKeys: ['key', 'sort_by', 'sortType', 'appliedFilters', 'softConstraints', 'selectedTab', 'description', 'mediaType', 'contentType', 'searchFilters', 'utm_source']
     });
     if (!filters.channel) {
       filters.channel = this.hashTagId;
@@ -206,13 +208,13 @@ export class ExploreContentComponent implements OnInit, OnDestroy, AfterViewInit
     filters.primaryCategory = filters.primaryCategory || ((_.get(filters, 'primaryCategory.length') && filters.primaryCategory) || _.get(this.allTabData, 'search.filters.primaryCategory'));
     filters.mimeType = filters.mimeType || _.get(mimeType, 'values');
     _.forEach(_filters, (el, key) => {
-      if(key !== 'primaryCategory' && key !== 'mimeType' && !_.has(filters, key)){
+      if (key !== 'primaryCategory' && key !== 'mimeType' && !_.has(filters, key)) {
         filters[key] = el;
       }
     });
 
     // Replacing cbse/ncert value with cbse
-    const cbseNcertExists =[_.get(filters, 'board[0]'), _.get(filters, 'board'), _.get(filters, 'se_boards[0]'), _.get(filters, 'se_boards')].some(board => _.toLower(board) === 'cbse/ncert');
+    const cbseNcertExists = [_.get(filters, 'board[0]'), _.get(filters, 'board'), _.get(filters, 'se_boards[0]'), _.get(filters, 'se_boards')].some(board => _.toLower(board) === 'cbse/ncert');
     if (cbseNcertExists) {
       filters.se_boards = ['cbse'];
     }
@@ -230,7 +232,8 @@ export class ExploreContentComponent implements OnInit, OnDestroy, AfterViewInit
     const option: any = {
       filters: _.omitBy(filters || {}, value => _.isArray(value) ? (!_.get(value, 'length') ? true : false) : false),
       fields: _.get(this.allTabData, 'search.fields'),
-      limit: _.get(this.allTabData, 'search.limit'),
+      limit: _.get(this.allTabData, 'search.limit') ?  _.get(this.allTabData, 'search.limit')
+      : this.configService.appConfig.SEARCH.PAGE_LIMIT,
       pageNumber: this.paginationDetails.currentPage,
       query: this.queryParams.key,
       mode: 'soft',
@@ -251,7 +254,45 @@ export class ExploreContentComponent implements OnInit, OnDestroy, AfterViewInit
     this.searchService.contentSearch(option)
       .pipe(
         mergeMap(data => {
-          const channelFacet = _.find(_.get(data, 'result.facets') || [], facet => _.get(facet, 'name') === 'channel')
+          const { subject: selectedSubjects = [] } = (this.selectedFilters || {}) as { subject: [] };
+          const filteredContents = omit(groupBy(get(data, 'result.content') || get(data, 'result.QuestionSet'), content => {
+            return ((this.queryParams['primaryCategory'] && this.queryParams['primaryCategory'].length > 0) ? content['subject'] : content['primaryCategory']);
+        }), ['undefined']);
+        for (const [key, value] of Object.entries(filteredContents)) {
+            const isMultipleSubjects = key && key.split(',').length > 1;
+            if (isMultipleSubjects) {
+                const subjects = key && key.split(',');
+                subjects.forEach((subject) => {
+                    if (filteredContents[subject]) {
+                        filteredContents[subject] = uniqBy(filteredContents[subject].concat(value), 'identifier');
+                    } else {
+                        filteredContents[subject] = value;
+                    }
+                });
+                delete filteredContents[key];
+            }
+        }
+        const sections = [];
+        for (const section in filteredContents) {
+            if (section) {
+                if (selectedSubjects.length && !(find(selectedSubjects, selectedSub => toLower(selectedSub) === toLower(section)))) {
+                    continue;
+                }
+                sections.push({
+                    name: section,
+                    contents: filteredContents[section]
+                });
+            }
+        }
+        _map(sections, (section) => {
+            forEach(section.contents, contents => {
+                contents.cardImg = contents.appIcon || 'assets/images/book.png';
+            });
+            return section;
+        });
+        this.contentList = sections;
+        this.addHoverData();
+          const channelFacet = _.find(_.get(data, 'result.facets') || [], facet => _.get(facet, 'name') === 'channel');
           if (channelFacet) {
             const rootOrgIds = this.orgDetailsService.processOrgData(_.get(channelFacet, 'values'));
             return this.orgDetailsService.searchOrgDetails({
@@ -262,7 +303,7 @@ export class ExploreContentComponent implements OnInit, OnDestroy, AfterViewInit
                 channelFacet.values = _.get(orgDetails, 'content');
                 return of(data);
               })
-            )
+            );
           }
           return of(data);
         })
@@ -273,8 +314,6 @@ export class ExploreContentComponent implements OnInit, OnDestroy, AfterViewInit
         this.facetsList = this.searchService.processFilterData(_.get(data, 'result.facets'));
         this.paginationDetails = this.paginationService.getPager(data.result.count, this.paginationDetails.currentPage,
           this.configService.appConfig.SEARCH.PAGE_LIMIT);
-          this.contentList = _.concat(_.get(data, 'result.content') || [], _.get(data, 'result.QuestionSet') || []) || [];
-          this.addHoverData();
         this.totalCount = data.result.count;
         this.setNoResultMessage();
       }, err => {
@@ -288,12 +327,14 @@ export class ExploreContentComponent implements OnInit, OnDestroy, AfterViewInit
       });
   }
   addHoverData() {
-    _.forEach(this.contentList, contents => {
-      if (this.contentDownloadStatus[contents.identifier]) {
-        contents['downloadStatus'] = this.contentDownloadStatus[contents.identifier];
-      }
-    });
-    this.contentList = this.utilService.addHoverData(this.contentList, true);
+    each(this.contentList, (contentSection) => {
+      forEach(contentSection.contents, content => {
+          if (this.contentDownloadStatus[content.identifier]) {
+              content['downloadStatus'] = this.contentDownloadStatus[content.identifier];
+          }
+      });
+      this.contentList[contentSection] = this.utilService.addHoverData(contentSection.contents, true);
+   });
   }
   moveToTop() {
     window.scroll({
@@ -450,7 +491,7 @@ export class ExploreContentComponent implements OnInit, OnDestroy, AfterViewInit
       });
   }
 
-  logTelemetry(content, actionId) {
+logTelemetry(content, actionId) {
     const telemetryInteractObject = {
       id: content.identifier,
       type: content.contentType,
@@ -479,4 +520,53 @@ export class ExploreContentComponent implements OnInit, OnDestroy, AfterViewInit
     }
     this.telemetryService.interact(appTelemetryInteractData);
   }
+  public viewAll(event) {
+    this.moveToTop();
+    this.logViewAllTelemetry(event);
+    const searchQueryParams: any = {};
+    searchQueryParams.defaultSortBy = JSON.stringify({ lastPublishedOn: 'desc' });
+    searchQueryParams['exists'] = undefined;
+    searchQueryParams['primaryCategory'] = this.queryParams.primaryCategory ? this.queryParams.primaryCategory : [event.name];
+    this.queryParams.primaryCategory ? (searchQueryParams['subject'] = [event.name]) :
+    (searchQueryParams['se_subjects'] = this.queryParams.se_subjects);
+    searchQueryParams['selectedTab'] = 'all';
+    searchQueryParams['visibility'] = [];
+    searchQueryParams['appliedFilters'] = true;
+    const sectionUrl = '/explore' + '/view-all/' + event.name.replace(/\s/g, '-');
+    this.router.navigate([sectionUrl, 1], { queryParams: searchQueryParams, state: {} });
+ }
+
+ public isUserLoggedIn(): boolean {
+  return this.userService && (this.userService.loggedIn || false);
 }
+
+logViewAllTelemetry(event) {
+  const telemetryData = {
+      cdata: [{
+          type: 'section',
+          id: event.name
+      }],
+      edata: {
+          id: 'view-all'
+      }
+  };
+  this.getInteractEdata(telemetryData);
+}
+
+getInteractEdata(event) {
+  const cardClickInteractData = {
+      context: {
+          cdata: event.cdata,
+          env: this.isUserLoggedIn() ? 'library' : this.activatedRoute.snapshot.data.telemetry.env,
+      },
+      edata: {
+          id: get(event, 'edata.id'),
+          type: 'click',
+          pageid: this.isUserLoggedIn() ? 'library' : this.activatedRoute.snapshot.data.telemetry.pageid
+      },
+      object: get(event, 'object')
+  };
+  this.telemetryService.interact(cardClickInteractData);
+}
+}
+

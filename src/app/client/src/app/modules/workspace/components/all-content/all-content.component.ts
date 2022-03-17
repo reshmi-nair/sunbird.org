@@ -12,7 +12,7 @@ import { Ibatch, IStatusOption } from './../../interfaces/';
 import { WorkSpaceService } from '../../services';
 import * as _ from 'lodash-es';
 import { IImpressionEventInput } from '@sunbird/telemetry';
-import { SuiModalService, TemplateModalConfig, ModalTemplate } from 'ng2-semantic-ui';
+import { SuiModalService, TemplateModalConfig, ModalTemplate } from 'ng2-semantic-ui-v9';
 import { debounceTime, map } from 'rxjs/operators';
 import { ContentIDParam } from '../../interfaces/delteparam';
 
@@ -24,7 +24,7 @@ import { ContentIDParam } from '../../interfaces/delteparam';
 
 export class AllContentComponent extends WorkSpace implements OnInit, AfterViewInit {
 
-  @ViewChild('modalTemplate', {static: false})
+  @ViewChild('modalTemplate')
   public modalTemplate: ModalTemplate<{ data: string }, string, string>;
   /**
      * state for content editior
@@ -293,7 +293,8 @@ export class AllContentComponent extends WorkSpace implements OnInit, AfterViewI
     }
     this.searchContentWithLockStatus(searchParams).subscribe(
       (data: ServerResponse) => {
-        if (data.result.count && (data.result.content.length > 0 || data.result.QuestionSet.length > 0)) {
+        if (data.result.count && (!_.isEmpty(data.result.content) ||
+        (!_.isEmpty(data.result.QuestionSet)))) {
           if (this.isQuestionSetFilterEnabled === true && data.result.QuestionSet) {
             data.result.content = _.concat(data.result.content, data.result.QuestionSet);
           }

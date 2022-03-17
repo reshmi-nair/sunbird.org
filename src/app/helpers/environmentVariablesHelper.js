@@ -10,11 +10,12 @@ let envVariables = {
   sunbird_instance_name: env.sunbird_instance || 'Sunbird',
   DEFAULT_CHANNEL: env.sunbird_default_channel,
   PORTAL_API_WHITELIST_CHECK: env.sunbird_enable_api_whitelist || 'true',
-  PORTAL_SESSION_SECRET_KEY: (env.sunbird_portal_session_secret && env.sunbird_portal_session_secret !== '') 
+  PORTAL_SESSION_SECRET_KEY: (env.sunbird_portal_session_secret && env.sunbird_portal_session_secret !== '')
   ? env.sunbird_portal_session_secret.split(',') : '',
 
   // discussion forum
   discussions_middleware: env.discussions_middleware || 'http://discussionsmw-service:3002',
+  uci_service_base_url: env.uci_service_base_url || "http://kong:8000",
 
   // Application Start-up - Hosts and PORT Configuration
   PORTAL_PORT: env.sunbird_port || 3000,
@@ -40,6 +41,7 @@ let envVariables = {
   ENABLE_PERMISSION_CHECK: env.sunbird_enabless_permission_check || 0,
   CONFIG_SERVICE_ENABLED: env.config_service_enabled || false,
   CRYPTO_ENCRYPTION_KEY: env.crypto_encryption_key || '030702bc8696b8ee2aa71b9f13e4251e',
+  CRYPTO_ENCRYPTION_KEY_EXTERNAL:env.crypto_encryption_key_external || '030702me8696b8ee2aa71x9n13l4251e',
   LOG_FINGERPRINT_DETAILS: env.sunbird_log_fingerprint_details || 'true',
   REPORT_SERVICE_URL: env.sunbird_report_service_url || 'https://staging.open-sunbird.org/api/data/v1/report-service',
   SUNBIRD_PORTAL_BASE_URL: env.sunbird_portal_base_url,
@@ -49,7 +51,7 @@ let envVariables = {
   sunbird_kid_public_key_base_path: env.sunbird_kid_public_key_base_path || '/keys/',
   reportsListVersion: env.reportsListVersion || 'v1',
   sunbird_data_product_service: env.sunbird_data_product_service || 'https://staging.ntp.net.in/',
-  ML_SERVICE_BASE_URL: env.ML_SERVICE_BASE_URL || "https://survey.preprod.ntp.net.in/staging",
+  ML_SERVICE_BASE_URL: env.ml_survey_url || 'https://survey.preprod.ntp.net.in/staging',
   SUNBIRD_PROTO: env.sunbird_base_proto,
 
   // TTL and Intervals
@@ -65,6 +67,8 @@ let envVariables = {
   PORTAL_TELEMETRY_PACKET_SIZE: env.sunbird_telemetry_packet_size || 1000,
   TELEMETRY_SERVICE_LOCAL_URL: env.sunbird_telemetry_service_local_url || 'http://telemetry-service:9001/',
 
+  // generic editor content size 150 MB
+  SUNBIRD_DEFAULT_FILE_SIZE: env.sunbird_default_file_size || 150,
 
   // Keycloak Configuration
   KEY_CLOAK_PUBLIC: env.sunbird_keycloak_public || 'true',
@@ -96,6 +100,10 @@ let envVariables = {
   KEYCLOAK_DESKTOP_CLIENT: {
     clientId: env.sunbird_desktop_keycloak_client_id || 'desktop',
   },
+  KEYCLOAK_GOOGLE_IOS_CLIENT: {
+    clientId: env.sunbird_google_oauth_ios_clientId,
+    secret: env.sunbird_trampoline_desktop_keycloak_secret
+  },
 
   PORTAL_TRAMPOLINE_CLIENT_ID: env.sunbird_trampoline_client_id || 'trampoline',
   PORTAL_TRAMPOLINE_SECRET: env.sunbird_trampoline_secret,
@@ -107,6 +115,10 @@ let envVariables = {
   GOOGLE_OAUTH_CONFIG: {
     clientId: env.sunbird_google_oauth_clientId,
     clientSecret: env.sunbird_google_oauth_clientSecret
+  },
+  GOOGLE_OAUTH_CONFIG_IOS: {
+    clientId: env.sunbird_google_oauth_ios_clientId,
+    clientSecret: env.sunbird_google_oauth_ios_clientSecret
   },
   sunbird_google_captcha_site_key: env.sunbird_google_captcha_site_key,
   google_captcha_private_key: env.google_captcha_private_key,
@@ -122,6 +134,7 @@ let envVariables = {
   CACHE_STORE: env.sunbird_cache_store || 'memory',
   PORTAL_SESSION_STORE_TYPE: env.sunbird_session_store_type || 'in-memory',
   CLOUD_STORAGE_URLS: env.sunbird_cloud_storage_urls,
+  SUNBIRD_PUBLIC_STORAGE_ACCOUNT_NAME: env.sunbird_azure_storage_account_name,
   PORTAL_CASSANDRA_CONSISTENCY_LEVEL: env.sunbird_cassandra_consistency_level || 'one',
   PORTAL_CASSANDRA_REPLICATION_STRATEGY: env.sunbird_cassandra_replication_strategy || '{"class":"SimpleStrategy","replication_factor":1}',
   sunbird_azure_report_container_name: env.sunbird_azure_report_container_name || 'reports',
@@ -132,6 +145,9 @@ let envVariables = {
   sunbird_portal_video_max_size: env.sunbird_portal_video_max_size || '50',
   sunbird_azure_resourceBundle_container_name: env.sunbird_azure_resourceBundle_container_name || 'label',
 
+  // generic editor question set and coleections children contents limit
+  SUNBIRD_QUESTIONSET_CHILDREN_LIMIT: env.sunbird_questionset_children_limit || 500,
+  SUNBIRD_COLLECTION_CHILDREN_LIMIT: env.sunbird_collection_children_limit || 1200,
 
   // Default Language Configuration
   sunbird_default_language: env.sunbird_portal_default_language || 'en',
@@ -200,7 +216,46 @@ let envVariables = {
   //ML URLs
   ML_URL: {
     OBSERVATION_URL: ''
-  }
+  },
+
+  // Kong device registration and refresh token keys
+  KONG_DEVICE_REGISTER_TOKEN: env.sunbird_kong_device_register || 'false',
+  KONG_DEVICE_REGISTER_ANONYMOUS_TOKEN: env.sunbird_kong_device_register_anonymous || 'false',
+  KONG_DEVICE_REGISTER_AUTH_TOKEN: env.sunbird_kong_device_register_token,
+  sunbird_anonymous_session_ttl: env.sunbird_anonymous_session_ttl ? parseInt(env.sunbird_anonymous_session_ttl) : 10 * 60 * 1000,
+  sunbird_default_device_token: env.sunbird_default_device_token || '',
+  // Kong endpoints
+  sunbird_anonymous_device_register_api: env.sunbird_anonymous_device_register_api || '',
+  sunbird_loggedin_device_register_api: env.sunbird_loggedin_device_register_api || '',
+  sunbird_kong_refresh_token_api: env.sunbird_kong_refresh_token_api || '',
+
+  // Device register API for anonymous users
+  sunbird_anonymous_register_token: env.sunbird_anonymous_register_token || '',
+  // Device register API for logged in users
+  sunbird_loggedin_register_token: env.sunbird_loggedin_register_token || '',
+
+  // Fallback token for device register API for `anonymous` users
+  sunbird_anonymous_default_token: env.sunbird_anonymous_default_token || '',
+  // Fallback token for device register API for `logged` users
+  sunbird_logged_default_token: env.sunbird_logged_default_token || '',
+
+  // Redis storage
+  PORTAL_REDIS_URL: env.sunbird_redis_urls,
+  PORTAL_REDIS_PORT: env.sunbird_redis_port,
+  PORTAL_REDIS_TYPE: env.sunbird_redis_type,
+  PORTAL_REDIS_PASSWORD: env.sunbird_redis_password,
+  PORTAL_REDIS_CONNECTION_STRING: env.portal_redis_connection_string,
+  // VDN URL
+  vdnURL:env.vdnURL || '',
+
+  // Add below variable for Apple Login
+  APPLE_SIGNIN_KEY_URL: "https://appleid.apple.com/auth/keys",
+
+  //Redirect and ErrorCallback domain
+  REDIRECT_ERROR_CALLBACK_DOMAIN:env.portal_redirect_error_callback_domain || '',
+
+  // UCI
+  sunbird_portal_uci_bot_phone_number: env.sunbird_portal_uci_bot_phone_number || '',
 }
 
 envVariables.PORTAL_CASSANDRA_URLS = (env.sunbird_cassandra_urls && env.sunbird_cassandra_urls !== '')
@@ -214,9 +269,12 @@ try {
   if (process.env.sunbird_environment === 'local' && fs.existsSync(devConfig)) {
     const devVariables = require('./devConfig');
     module.exports = devVariables;
+    // console.log('local---->',devVariables);
   } else {
     module.exports = envVariables;
+   // console.log('env---->',envVariables);
   }
 } catch (error) {
   module.exports = envVariables;
+  // console.log('errorEnv---->',envVariables);
 }

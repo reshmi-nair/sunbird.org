@@ -13,8 +13,7 @@ export class AddSummaryModalComponent implements OnInit, OnDestroy, AfterViewIni
   @Output() submitButtonEvent = new EventEmitter();
   @Input() input: ISummaryObject;
   @Output() closeModalEvent = new EventEmitter();
-  @ViewChild('modal', {static: false}) modal;
-  @ViewChild('editor', {static: false}) public editorRef: ElementRef;
+  @ViewChild('editor') public editorRef: ElementRef;
   public editorInstance: any;
 
   private toolbarItems = ['undo', 'redo', 'bold', 'italic', 'blockQuote', 'heading', 'link', 'numberedList', 'bulletedList', 'fontFamily',
@@ -73,9 +72,6 @@ export class AddSummaryModalComponent implements OnInit, OnDestroy, AfterViewIni
   }
 
   public closeModal(): void {
-    if (this.modal) {
-      this.modal.deny();
-    }
     this.closeModalEvent.emit(true);
   }
 }

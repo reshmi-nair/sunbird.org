@@ -8,6 +8,7 @@
       align-items: center;
       min-height: calculateRem(64px);
       padding: calculateRem(8px);
+      background-color: var(--white);
     }
 
     &__title {
@@ -57,7 +58,7 @@
   position: relative;
   height: 0;
   width: 100%;
-
+  z-index: 99;
   &[data-ratio="16:9"] {
     padding-top: 56.25%;
   }

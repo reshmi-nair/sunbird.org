@@ -1,5 +1,5 @@
 import { AfterViewInit, Component, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
-import { ResourceService, ToasterService, NavigationHelperService,UtilService } from '@sunbird/shared';
+import { ResourceService, ToasterService, NavigationHelperService, UtilService } from '@sunbird/shared';
 import { DeviceRegisterService, FormService, OrgDetailsService, UserService } from '../../../../modules/core/services';
 import { Router } from '@angular/router';
 import { LocationService } from '../../services/location/location.service';
@@ -7,6 +7,7 @@ import { IImpressionEventInput, IInteractEventInput, TelemetryService } from '@s
 import { PopupControlService } from '../../../../service/popup-control.service';
 import { IDeviceProfile } from '../../../../modules/shared-feature/interfaces/deviceProfile';
 import { SbFormLocationSelectionDelegate } from '../delegate/sb-form-location-selection.delegate';
+import { MatDialog } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-location-selection',
@@ -16,12 +17,12 @@ import { SbFormLocationSelectionDelegate } from '../delegate/sb-form-location-se
 export class LocationSelectionComponent implements OnInit, OnDestroy, AfterViewInit {
   @Input() isClosable = true;
   @Input() deviceProfile: IDeviceProfile;
-  @Output() close = new EventEmitter<void>();
+  @Output() close = new EventEmitter<any>();
   @ViewChild('onboardingModal', { static: true }) onboardingModal;
-
   telemetryImpression: IImpressionEventInput;
-
   sbFormLocationSelectionDelegate: SbFormLocationSelectionDelegate;
+  isSubmitted:boolean=false;
+  public locationSelectionModalId = "location-selection";
 
   constructor(
     public resourceService: ResourceService,
@@ -35,7 +36,8 @@ export class LocationSelectionComponent implements OnInit, OnDestroy, AfterViewI
     protected telemetryService: TelemetryService,
     protected formService: FormService,
     private orgDetailsService: OrgDetailsService,
-    private utilService: UtilService
+    private utilService: UtilService,
+    private matDialog: MatDialog
   ) {
     this.sbFormLocationSelectionDelegate = new SbFormLocationSelectionDelegate(
       this.userService,
@@ -79,14 +81,15 @@ export class LocationSelectionComponent implements OnInit, OnDestroy, AfterViewI
   }
 
   closeModal() {
-    this.onboardingModal.deny();
+    const dialogRef = this.matDialog.getDialogById(this.locationSelectionModalId);
+    dialogRef && dialogRef.close();
     this.popupControlService.changePopupStatus(true);
-    this.close.emit();
+    this.close.emit({isSubmitted:this.isSubmitted});
   }
 
   async updateUserLocation() {
     try {
-      const result:any = await this.sbFormLocationSelectionDelegate.updateUserLocation();
+      const result: any = await this.sbFormLocationSelectionDelegate.updateUserLocation();
 
       /* istanbul ignore else */
       if (result.userProfile) {
@@ -97,7 +100,7 @@ export class LocationSelectionComponent implements OnInit, OnDestroy, AfterViewI
       /* istanbul ignore else */
       if (result.deviceProfile) {
         if (!result.type) {
-          this.utilService.updateRoleChange(localStorage.getItem("userType"));
+          this.utilService.updateRoleChange(localStorage.getItem('userType'));
         }
         this.telemetryLogEvents('Device Profile', result.userProfile === 'success');
       }
@@ -106,6 +109,7 @@ export class LocationSelectionComponent implements OnInit, OnDestroy, AfterViewI
     } catch (e) {
       this.toasterService.error(this.resourceService.messages.fmsg.m0049);
     } finally {
+      this.isSubmitted=true;
       this.closeModal();
     }
   }

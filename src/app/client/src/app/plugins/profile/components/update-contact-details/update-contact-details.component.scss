@@ -1,5 +1,6 @@
 @import "variables";
 @import "components/form";
+@import "pages/mat-modal";
 
 .ui.grey.button {
   background: var(--gray-200);
@@ -19,7 +20,7 @@
 
 .ui.basic.error.label {
   background: none !important;
-  color: var(--red-100) !important;
+  color: #A30010 !important;
   border: 0 !important;
   padding-left: 0;
   font-size: 1rem;

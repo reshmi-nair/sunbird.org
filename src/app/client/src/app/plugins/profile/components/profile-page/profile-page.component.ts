@@ -27,7 +27,7 @@ import {CacheService} from 'ng2-cache-service';
 import {takeUntil} from 'rxjs/operators';
 import { CertificateDownloadAsPdfService } from 'sb-svg2pdf';
 import { CsCourseService } from '@project-sunbird/client-services/services/course/interface';
-import { FieldConfig, FieldConfigOption } from 'common-form-elements';
+import { FieldConfig, FieldConfigOption } from 'common-form-elements-web-v9';
 
 @Component({
   templateUrl: './profile-page.component.html',
@@ -39,8 +39,8 @@ export class ProfilePageComponent implements OnInit, OnDestroy, AfterViewInit {
   { formType: 'config', formAction: 'get', contentType: 'userType', component: 'portal' };
   private static readonly DEFAULT_PERSONA_LOCATION_CONFIG_FORM_REQUEST =
   { formType: 'profileConfig', contentType: 'default', formAction: 'get' };
-  @ViewChild('profileModal', {static: false}) profileModal;
-  @ViewChild('slickModal', {static: false}) slickModal;
+  @ViewChild('profileModal') profileModal;
+  @ViewChild('slickModal') slickModal;
   userProfile: any;
   contributions = [];
   totalContributions: Number;
@@ -93,9 +93,9 @@ export class ProfilePageComponent implements OnInit, OnDestroy, AfterViewInit {
   isDesktopApp;
   userLocation: {};
   persona: {};
-  subPersona: string;
+  subPersona: string[];
   isConnected = true;
-  showFullScreenLoader: boolean = false;
+  showFullScreenLoader = false;
 
   constructor(@Inject('CS_COURSE_SERVICE') private courseCService: CsCourseService, private cacheService: CacheService,
   public resourceService: ResourceService, public coursesService: CoursesService,
@@ -116,12 +116,12 @@ export class ProfilePageComponent implements OnInit, OnDestroy, AfterViewInit {
     this.isDesktopApp = this.utilService.isDesktopApp;
 
     this.activatedRoute.queryParams.subscribe((params) => {
-      if (params["showEditUserDetailsPopup"]) {
-        this.showEditUserDetailsPopup=true;
+      if (params['showEditUserDetailsPopup']) {
+        this.showEditUserDetailsPopup = true;
       }
       });
 
-    if(this.isDesktopApp) {
+    if (this.isDesktopApp) {
       this.connectionService.monitor()
       .pipe(takeUntil(this.unsubscribe$)).subscribe(isConnected => {
         this.isConnected = isConnected;
@@ -141,7 +141,7 @@ export class ProfilePageComponent implements OnInit, OnDestroy, AfterViewInit {
         this.getPersonaConfig(role).then((val) => {
           this.persona = val;
         });
-        this.getSubPersonaConfig(this.userProfile.profileUserType.subType, role.toLowerCase(), this.userLocation).then((val) => {
+        this.getSubPersonaConfig(role.toLowerCase(), this.userLocation).then((val) => {
           this.subPersona = val;
         });
         this.userFrameWork = this.userProfile.framework ? _.cloneDeep(this.userProfile.framework) : {};
@@ -215,14 +215,18 @@ export class ProfilePageComponent implements OnInit, OnDestroy, AfterViewInit {
           orgList.push(org);
         }
       }
-      _.forEach(org.roles, (value, key) => {
-        if (value !== 'PUBLIC') {
-          const roleName = _.find(this.userProfile.roleList, { id: value });
-          if (roleName) {
-            this.roles.push(roleName['name']);
-          }
+    });
+    let userRoles;
+    if (_.get(this.userProfile, 'roles') && !_.isEmpty(this.userProfile.roles)) {
+      userRoles = _.map(this.userProfile.roles, 'role');
+    }
+    _.forEach(userRoles, (value, key) => {
+      if (value !== 'PUBLIC') {
+        const roleName = _.find(this.userProfile.roleList, { id: value });
+        if (roleName) {
+          this.roles.push(roleName['name']);
         }
-      });
+      }
     });
     this.roles = _.uniq(this.roles).sort();
     orgList = _.sortBy(orgList, ['modifiedJoinDate']);
@@ -372,12 +376,12 @@ export class ProfilePageComponent implements OnInit, OnDestroy, AfterViewInit {
     this.profileService.updateProfile({ framework: data }).subscribe(res => {
       this.userProfile.framework = data;
       this.toasterService.success(this.resourceService.messages.smsg.m0046);
-      this.profileModal.modal.deny();
-      this.showEdit = false;
+      this.profileModal && this.profileModal.deny();
+      // this.showEdit = false;
     }, err => {
-      this.showEdit = false;
+      // this.showEdit = false;
       this.toasterService.warning(this.resourceService.messages.emsg.m0012);
-      this.profileModal.modal.deny();
+      this.profileModal && this.profileModal.deny();
       this.cacheService.set('showFrameWorkPopUp', 'installApp');
     });
   }
@@ -406,6 +410,10 @@ export class ProfilePageComponent implements OnInit, OnDestroy, AfterViewInit {
         this.isCustodianOrgUser = false;
       }
     });
+  }
+
+  goBack() {
+    this.navigationhelperService.goBack();
   }
 
   setInteractEventData() {
@@ -502,6 +510,7 @@ export class ProfilePageComponent implements OnInit, OnDestroy, AfterViewInit {
    */
   navigateToCourse(coursedata) {
     const courseId = _.get(coursedata, 'courseId');
+    const batchId = _.get(coursedata, 'batchId')
     const interactData = {
       context: {
         env: _.get(this.activatedRoute.snapshot.data.telemetry, 'env'),
@@ -523,7 +532,7 @@ export class ProfilePageComponent implements OnInit, OnDestroy, AfterViewInit {
       }
     };
     this.telemetryService.interact(interactData);
-    this.router.navigate([`learn/course/${courseId}`]);
+    this.router.navigate([`learn/course/${courseId}/batch/${batchId}`]);
   }
 
   toggleOtherCertific(showMore) {
@@ -575,12 +584,12 @@ export class ProfilePageComponent implements OnInit, OnDestroy, AfterViewInit {
     setTimeout(() => {
       const element = document.getElementById(this.scrollToId);
       if (!element) { return; }
-      var elementPosition = element.getBoundingClientRect().top;
-      var offsetPosition = elementPosition - 144;
+      const elementPosition = element.getBoundingClientRect().top;
+      const offsetPosition = elementPosition - 144;
 
       window.scrollTo({
           top: offsetPosition,
-          behavior: "smooth"
+          behavior: 'smooth'
       });
     });
   }
@@ -600,8 +609,9 @@ private async getPersonaConfig(persona: string) {
   return formFields.find(config => config.code === persona);
 }
 
-private async getSubPersonaConfig(subPersonaCode: string, persona: string, userLocation: any): Promise<string> {
-  if (!subPersonaCode || !persona) {
+private async getSubPersonaConfig(persona: string, userLocation: any): Promise<string[]> {
+  if ((!this.userProfile.profileUserTypes || !this.userProfile.profileUserTypes.length) &&
+  (!this.userProfile.profileUserType || !this.userProfile.profileUserType.subType)) {
       return undefined;
   }
   let formFields;
@@ -616,26 +626,44 @@ private async getSubPersonaConfig(subPersonaCode: string, persona: string, userL
   }
 
   const personaConfig = formFields.find(formField => formField.code === 'persona');
+  const subPersonaList = [];
+  if (_.get(personaConfig, 'templateOptions.multiple')) {
+    if (this.userProfile.profileUserTypes && this.userProfile.profileUserTypes.length) {
+      this.userProfile.profileUserTypes.forEach(ele => {
+        if (_.get(ele, 'subType')) {
+          subPersonaList.push(ele.subType);
+        }
+      });
+    } else {
+      subPersonaList.push(this.userProfile.profileUserType.subType);
+    }
+  } else {
+    subPersonaList.push(this.userProfile.profileUserType.subType);
+  }
 
   const personaChildrenConfig: FieldConfig<any>[] = personaConfig['children'][persona];
   const subPersonaConfig = personaChildrenConfig.find(formField => formField.code === 'subPersona');
   if (!subPersonaConfig) {
       return undefined;
    }
-  const subPersonaFieldConfigOption = (subPersonaConfig.templateOptions.options as FieldConfigOption<any>[]).
-              find(option => option.value === subPersonaCode);
-  return subPersonaFieldConfigOption ? subPersonaFieldConfigOption.label : undefined;
+   const subPersonaFieldConfigOption = [];
+   subPersonaList.forEach((ele) => {
+    subPersonaFieldConfigOption.push((subPersonaConfig.templateOptions.options as FieldConfigOption<any>[]).
+    find(option => option.value === ele).label);
+   });
+
+  return subPersonaFieldConfigOption;
 }
 
-public onLocationModalClose() {
+public onLocationModalClose(event) {
   this.showEditUserDetailsPopup = !this.showEditUserDetailsPopup;
-  this.showFullScreenLoader = true;
-  setTimeout(()=> {
-    if(this.showFullScreenLoader){
+  this.showFullScreenLoader = !event?.isSubmitted ? false : true;
+  setTimeout(() => {
+    if (this.showFullScreenLoader) {
       this.showFullScreenLoader = false;
       this.toasterService.error(this.resourceService.messages.emsg.m0005);
     }
-  }, 5000)
+  }, 5000);
 }
 
 }

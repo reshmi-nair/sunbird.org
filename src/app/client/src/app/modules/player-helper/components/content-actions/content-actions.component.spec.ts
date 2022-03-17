@@ -15,7 +15,7 @@ import { PublicPlayerService } from '@sunbird/public';
 import { configureTestSuite } from '@sunbird/test-util';
 import { ContentManagerService } from '../../../public/module/offline/services';
 import { APP_BASE_HREF } from '@angular/common';
-import { actionButtons } from './actionButtons';
+import { actionButtons, fullScreenActionButtons } from './actionButtons';
 
 
 describe('ContentActionsComponent', () => {
@@ -42,7 +42,7 @@ describe('ContentActionsComponent', () => {
       providers: [
         { provide: ActivatedRoute, useValue: ActivatedRouteStub },
         { provide: ResourceService, useValue: actionsData.resourceBundle },
-        PublicPlayerService, TelemetryService,{ provide: APP_BASE_HREF, useValue: '/' }
+        PublicPlayerService, TelemetryService, { provide: APP_BASE_HREF, useValue: '/' }
       ],
       schemas: [CUSTOM_ELEMENTS_SCHEMA]
     })
@@ -142,7 +142,7 @@ describe('ContentActionsComponent', () => {
   it('should call downloadContent and successfuly content downloaded', () => {
     component.isDesktopApp = true;
     spyOn(component['contentManagerService'], 'startDownload').and.returnValue(of(actionsData.downloadContent.success));
-    spyOn(component, 'changeContentStatus').and.callThrough();;
+    spyOn(component, 'changeContentStatus').and.callThrough();
     component.contentData = actionsData.contentData;
     component.downloadContent(actionsData.contentData);
     component['contentManagerService'].startDownload({}).subscribe(data => {
@@ -258,7 +258,7 @@ describe('ContentActionsComponent', () => {
     spyOn(component, 'changeContentStatus');
     const utilService = TestBed.get(UtilService);
     utilService._isDesktopApp = true;
-    spyOn(contentManagerService, 'contentDownloadStatus').and.returnValue(of([{}]))
+    spyOn(contentManagerService, 'contentDownloadStatus').and.returnValue(of([{}]));
     component.ngOnInit();
     expect(component.changeContentStatus).toHaveBeenCalled();
   });
@@ -273,6 +273,30 @@ describe('ContentActionsComponent', () => {
       return e.label === 'Fullscreen';
     });
     expect(fullScreenObj.disabled).toBeTruthy();
+  });
+
+  it('shoud see if a telemetry ASSESS event is sent then update the fullscreen to disabled', () => {
+    const obj = {detail:{telemetryData:{eid:'ASSESS'}}};
+    component.assessmentEvents=of(obj);
+    component.isFullScreen = false;
+    component.actionButtons = actionButtons;
+    component.ngOnInit();
+    const fullScreenObj = component.actionButtons.find((e) => {
+      return e.name === 'fullscreen';
+    });
+    expect(fullScreenObj.isInActive).toBeTruthy();
+  });
+
+  it('shoud see if a telemetry ASSESS event is sent then update the minimise to disabled', () => {
+    const obj = {detail:{telemetryData:{eid:'ASSESS'}}};
+    component.assessmentEvents=of(obj);
+    component.isFullScreen = true;
+    component.fullScreenActionButtons = fullScreenActionButtons;
+    component.ngOnInit();
+    const fullScreenObj = component.fullScreenActionButtons.find((e) => {
+      return e.name === 'minimize';
+    });
+    expect(fullScreenObj.isInActive).toBeTruthy();
   });
 
 });

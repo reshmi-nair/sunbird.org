@@ -1,25 +1,19 @@
-import { IShareEventData, IShareEventInput } from '@sunbird/telemetry';
-import {
-  Component, OnInit, Input, EventEmitter,
-  ElementRef, ViewChild, Renderer, Output
-} from '@angular/core';
+import { IShareEventData } from '@sunbird/telemetry';
+import { Component, OnInit, Input, ElementRef, ViewChild, Renderer2 } from '@angular/core';
 import { ResourceService } from '../../services/index';
-import { IPopup } from 'ng2-semantic-ui';
+import { IPopup } from 'ng2-semantic-ui-v9';
 import { ISharelink, ITelemetryShare } from './../../interfaces';
 import { ActivatedRoute, Router, NavigationExtras } from '@angular/router';
 @Component({
   selector: 'app-share-link',
-  templateUrl: './share-link.component.html'
+  templateUrl: './share-link.component.html',
+  styleUrls: ['./share-link.component.scss']
 })
 export class ShareLinkComponent implements OnInit {
   /**
   * position for the popup
   */
   position: string;
-  /**
-   * To show / hide modal
-  */
-  sharelinkModal = false;
   /**
   *baseUrl;
   */
@@ -39,13 +33,9 @@ export class ShareLinkComponent implements OnInit {
     pageid: this.activatedRoute.snapshot.data.telemetry.env
   };
   /**
-  *Output for Sharelink;
-  */
-  @Output() close = new EventEmitter<any>();
-  /**
   *Element Ref  for copyLinkButton;
   */
-  @ViewChild('copyLinkButton', {static: false}) copyLinkButton: ElementRef;
+  @ViewChild('copyLinkButton') copyLinkButton: ElementRef;
   /**
   *Element Ref  for copyLinkData;
   */
@@ -63,19 +53,13 @@ export class ShareLinkComponent implements OnInit {
   *@param {ResourceService} SearchService Reference of SearchService
   *@param {WorkSpaceService} WorkSpaceService Reference of SearchService
   */
-  constructor(resourceService: ResourceService, private _renderer: Renderer, public activatedRoute: ActivatedRoute) {
+  constructor(resourceService: ResourceService, private _renderer: Renderer2, public activatedRoute: ActivatedRoute) {
     this.resourceService = resourceService;
     this.position = 'top center';
     this.baseUrl = document.location.origin + '/';
   }
   ngOnInit() {
     this.initializeModal();
-  }
-  /**
-  * popDenys
-  */
-  popDeny(pop) {
-    pop.close();
   }
   /**
   * initializeModal
@@ -99,10 +83,5 @@ export class ShareLinkComponent implements OnInit {
     popup.open();
     $('#copyLinkData').select();
     document.execCommand('copy');
-  }
-
-  public closeModal(contentShareModal) {
-    contentShareModal.deny();
-    this.close.emit();
   }
 }

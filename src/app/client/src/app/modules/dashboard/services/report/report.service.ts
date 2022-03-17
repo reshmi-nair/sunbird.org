@@ -14,8 +14,9 @@ import { UUID } from 'angular2-uuid';
 
 const PRE_DEFINED_PARAMETERS = ['$slug', '$board', '$state', '$channel'];
 
+
 @Injectable()
-export class ReportService {
+export class ReportService  {
 
   private _superAdminSlug: string;
 
@@ -24,7 +25,7 @@ export class ReportService {
   constructor(private sanitizer: DomSanitizer, private usageService: UsageService, private userService: UserService,
     private configService: ConfigService, private baseReportService: BaseReportService, private permissionService: PermissionService,
     private courseProgressService: CourseProgressService, private searchService: SearchService,
-    private frameworkService: FrameworkService, private profileService: ProfileService) {
+    private frameworkService: FrameworkService, private profileService: ProfileService ) {
     try {
       this._superAdminSlug = (<HTMLInputElement>document.getElementById('superAdminSlug')).value;
     } catch (error) {
@@ -36,10 +37,13 @@ export class ReportService {
     return this.usageService.getData(filePath).pipe(
       map(configData => {
         return {
+          loaded:true,
           result: _.get(configData, 'result'),
           ...(id && { id })
         };
       })
+      ,catchError(error => of({ loaded:false }))
+
     );
   }
 
@@ -53,6 +57,8 @@ export class ReportService {
     });
     return forkJoin(...apiCalls).pipe(
       mergeMap(response => {
+
+        response = response.filter(function(item){ if(item ){ return item.loaded = true } });
         return this.getFileMetaData(dataSources).pipe(
           map(metadata => {
             return _.map(response, res => {
@@ -61,12 +67,6 @@ export class ReportService {
             });
           })
         );
-      }),
-      catchError(err => {
-        if (err.status === 404) {
-          return throwError({ messageText: 'messages.stmsg.reportNotReady' });
-        }
-        return throwError(err);
       })
     );
   }
@@ -176,7 +176,7 @@ export class ReportService {
       const { chartType, dataSource = null, mapData = {} } = chart;
       const chartObj: any = {};
       chartObj.chartConfig = chart;
-      if(!chartObj.chartConfig['id']){
+      if (!chartObj.chartConfig['id']) {
         chartObj.chartConfig['id']  = UUID.UUID();
       }
       chartObj.downloadUrl = downloadUrl;
@@ -190,8 +190,14 @@ export class ReportService {
           reportData: chartObj.chartData
         };
       }
-      return chartObj;
-    });
+      if(chartObj && chartObj.chartData && chartObj.chartData.length > 0){
+        return chartObj;
+      }
+    }).filter(function(chartData){
+       if(chartData ){
+          return (chartData['chartData'] != null || chartData['chartData'] != undefined) 
+        }
+      });
   }
 
   public prepareTableData(tablesArray: any, data: any, downloadUrl: string, hash?: string): Array<{}> {
@@ -202,11 +208,17 @@ export class ReportService {
       const tableData: any = {};
       tableData.id = tableId;
       tableData.name = _.get(table, 'name') || 'Table';
+      tableData.config = _.get(table, 'config') ||  false;
+      if(!tableData.config){
+        tableData.data = _.get(table, 'values') || _.get(dataset, _.get(table, 'valuesExpr'));   
+      } else {
+        tableData.data = dataset.data;
+      }
       tableData.header = _.get(table, 'columns') || _.get(dataset, _.get(table, 'columnsExpr'));
-      tableData.data = _.get(table, 'values') || _.get(dataset, _.get(table, 'valuesExpr'));
       tableData.downloadUrl = this.resolveParameterizedPath(_.get(table, 'downloadUrl') || downloadUrl,
         hash ? this.getParameterFromHash(hash) : null);
       return tableData;
+
     });
   }
 
@@ -218,6 +230,12 @@ export class ReportService {
   }
 
   private getTableData(data: { result: any, id: string }[], tableId) {
+    if (data.length === 1) {
+      const [dataSource] = data;
+      if (dataSource.id === 'default') {
+        return dataSource.result;
+      }
+    }
     return this.getDataSourceById(data, tableId) || {};
   }
 
